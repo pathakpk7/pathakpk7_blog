@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -30,16 +31,27 @@ export function StudioSidebar() {
     <aside className="w-64 border-r border-zinc-800 bg-zinc-900 text-zinc-100 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] shrink-0 hidden md:flex">
       <div className="p-4 space-y-6">
         {/* Brand */}
-        <div className="space-y-1 px-2">
-          <div className="flex items-center space-x-2">
-            <span className="font-serif-editorial text-xl font-bold tracking-tight text-white">
-              Writer Studio
-            </span>
-            <span className="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1.5 py-0.5 rounded font-mono font-semibold">
-              CMS
-            </span>
+        <div className="flex items-center space-x-3 px-2">
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0">
+            <Image
+              src="/logo.jpg"
+              alt="ThePathak.tech Logo"
+              fill
+              sizes="32px"
+              className="object-cover"
+            />
           </div>
-          <p className="text-[11px] text-zinc-400">ThePathak.tech Author CMS</p>
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-1.5">
+              <span className="font-serif-editorial text-lg font-bold tracking-tight text-white">
+                Writer Studio
+              </span>
+              <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded font-mono font-semibold">
+                CMS
+              </span>
+            </div>
+            <p className="text-[10px] text-zinc-400">ThePathak.tech Author CMS</p>
+          </div>
         </div>
 
         {/* New Post Button */}

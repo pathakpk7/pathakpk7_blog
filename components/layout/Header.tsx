@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Search, Menu, X, BookOpen, PenTool, LogOut, Home, Settings, User } from "lucide-react";
 import { Navigation } from "./Navigation";
@@ -32,13 +33,25 @@ export function Header({ onOpenSearch }: HeaderProps) {
             </button>
 
             {/* Brand Logo & Editorial Subtitle */}
-            <Link href="/" className="group flex flex-col">
-              <span className="font-serif-editorial text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
-              </span>
-              <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 -mt-1 font-medium">
-                Tech • Science • Code • Words
-              </span>
+            <Link href="/" className="group flex items-center space-x-2.5">
+              <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/60 dark:border-zinc-800 shrink-0">
+                <Image
+                  src="/logo.jpg"
+                  alt="ThePathak.tech Logo"
+                  fill
+                  sizes="36px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif-editorial text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+                </span>
+                <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 -mt-1 font-medium">
+                  Tech • Science • Code • Words
+                </span>
+              </div>
             </Link>
           </div>
 

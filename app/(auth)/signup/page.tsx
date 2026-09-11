@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { User, Mail, Lock, AtSign, ArrowRight, AlertCircle } from "lucide-react";
@@ -59,9 +60,21 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
       <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-2xl border border-border shadow-xl">
-        <div className="text-center space-y-2">
-          <Link href="/" className="font-serif-editorial text-3xl font-bold tracking-tight text-foreground">
-            ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+        <div className="text-center space-y-3">
+          <Link href="/" className="inline-flex flex-col items-center group">
+            <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-border mb-2 group-hover:scale-105 transition-transform">
+              <Image
+                src="/logo.jpg"
+                alt="ThePathak.tech Logo"
+                fill
+                sizes="64px"
+                className="object-cover"
+                priority
+              />
+            </div>
+            <span className="font-serif-editorial text-2xl font-bold tracking-tight text-foreground">
+              ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+            </span>
           </Link>
           <h2 className="text-xl font-bold text-foreground">Create a Reader Account</h2>
           <p className="text-xs text-muted-foreground">
