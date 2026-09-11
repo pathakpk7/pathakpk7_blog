@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { validateUsername } from "@/lib/validation/username";
+import { getSafeAvatarUrl } from "@/lib/utils";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const defaultAvatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${cleanUsername}`;
+    const defaultAvatarUrl = getSafeAvatarUrl(null, cleanUsername);
 
     const user = await db.user.create({
       data: {

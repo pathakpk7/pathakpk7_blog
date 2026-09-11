@@ -10,25 +10,22 @@ import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalL
 import { useRouter } from "next/navigation";
 
 export const PRESET_AVATARS = [
-  // Female Anime Characters (Human)
-  { id: "avatar-anime-aria", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria", title: "Aria (Female Anime)", gender: "female" },
-  { id: "avatar-anime-sakura", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sakura", title: "Sakura (Female Anime)", gender: "female" },
-  { id: "avatar-anime-luna", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Luna", title: "Luna (Female Anime)", gender: "female" },
-  { id: "avatar-anime-yuki", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Yuki", title: "Yuki (Female Anime)", gender: "female" },
-  { id: "avatar-anime-mia", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Mia", title: "Mia (Female Anime)", gender: "female" },
-  { id: "avatar-anime-hana", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Hana", title: "Hana (Female Anime)", gender: "female" },
-  { id: "avatar-anime-rin", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Rin", title: "Rin (Female Anime)", gender: "female" },
-  { id: "avatar-anime-akari", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Akari", title: "Akari (Female Anime)", gender: "female" },
+  // Female Anime Characters (High Fidelity)
+  { id: "avatar-anime-aria", url: "/avatars/anime-aria.jpg", title: "Aria (Violet Hair • City Twilight)", gender: "female" },
+  { id: "avatar-anime-sakura", url: "/avatars/anime-sakura.jpg", title: "Sakura (Pink Hair • Cherry Blossoms)", gender: "female" },
+  { id: "avatar-anime-luna", url: "/avatars/anime-luna.jpg", title: "Luna (Midnight Hair • Starry Cosmos)", gender: "female" },
+  { id: "avatar-anime-yuki", url: "/avatars/anime-yuki.jpg", title: "Yuki (Silver Hair • Winter Serenade)", gender: "female" },
+  { id: "avatar-anime-mia", url: "/avatars/anime-mia.jpg", title: "Mia (Chestnut Hair • Autumn Library)", gender: "female" },
+  { id: "avatar-anime-rin", url: "/avatars/anime-rin.jpg", title: "Rin (Cyber Teal • Neon Dive)", gender: "female" },
+  { id: "avatar-anime-akari", url: "/avatars/anime-akari.jpg", title: "Akari (Auburn Braids • Sunset Glow)", gender: "female" },
 
-  // Male Anime Characters (Human)
-  { id: "avatar-anime-kai", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kai", title: "Kai (Male Anime)", gender: "male" },
-  { id: "avatar-anime-ren", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ren", title: "Ren (Male Anime)", gender: "male" },
-  { id: "avatar-anime-sora", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sora", title: "Sora (Male Anime)", gender: "male" },
-  { id: "avatar-anime-haruto", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Haruto", title: "Haruto (Male Anime)", gender: "male" },
-  { id: "avatar-anime-kenji", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kenji", title: "Kenji (Male Anime)", gender: "male" },
-  { id: "avatar-anime-kaito", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kaito", title: "Kaito (Male Anime)", gender: "male" },
-  { id: "avatar-anime-ryoto", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ryoto", title: "Ryoto (Male Anime)", gender: "male" },
-  { id: "avatar-anime-shin", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Shin", title: "Shin (Male Anime)", gender: "male" },
+  // Male Anime Characters (High Fidelity)
+  { id: "avatar-anime-kai", url: "/avatars/anime-kai.jpg", title: "Kai (Dark Hair • Shibuya Night)", gender: "male" },
+  { id: "avatar-anime-ren", url: "/avatars/anime-ren.jpg", title: "Ren (Silver Hair • Rooftop Sunset)", gender: "male" },
+  { id: "avatar-anime-sora", url: "/avatars/anime-sora.jpg", title: "Sora (Brown Wavy • Tech & Coffee)", gender: "male" },
+  { id: "avatar-anime-haruto", url: "/avatars/anime-haruto.jpg", title: "Haruto (Glasses • Studio Architect)", gender: "male" },
+  { id: "avatar-anime-kenji", url: "/avatars/anime-kenji.jpg", title: "Kenji (Cyber Undercut • Neon ARC)", gender: "male" },
+  { id: "avatar-anime-shin", url: "/avatars/anime-shin.jpg", title: "Shin (Blond • Radiant Sky)", gender: "male" },
 ];
 
 interface SettingsFormProps {
@@ -225,7 +222,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Female (8)
+                    Female ({PRESET_AVATARS.filter((a) => a.gender === "female").length})
                   </button>
                   <button
                     type="button"
@@ -236,12 +233,12 @@ export function SettingsForm({ user }: SettingsFormProps) {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    Male (8)
+                    Male ({PRESET_AVATARS.filter((a) => a.gender === "male").length})
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 pt-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-7 gap-3 pt-2">
                 {PRESET_AVATARS.filter((a) => avatarGenderFilter === "all" || a.gender === avatarGenderFilter).map((avatar) => {
                   const isSelected = selectedAvatar === avatar.url;
                   return (
@@ -249,16 +246,16 @@ export function SettingsForm({ user }: SettingsFormProps) {
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.url)}
-                      className={`relative group h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-100 dark:bg-zinc-900 ${
+                      className={`relative group h-20 w-20 rounded-2xl overflow-hidden border-2 transition-all bg-zinc-900 ${
                         isSelected
                           ? "border-blue-600 dark:border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30"
                           : "border-border hover:border-zinc-400 dark:hover:border-zinc-600"
                       }`}
                       title={avatar.title}
                     >
-                      <Image src={avatar.url} alt={avatar.title} fill className="object-contain p-1" unoptimized />
+                      <Image src={avatar.url} alt={avatar.title} fill className="object-cover" />
                       {isSelected && (
-                        <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-blue-600/40 flex items-center justify-center">
                           <Check className="w-5 h-5 text-white drop-shadow-md" />
                         </div>
                       )}

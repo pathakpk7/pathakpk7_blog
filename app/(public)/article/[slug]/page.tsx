@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { db } from "@/lib/db/prisma";
 import { auth } from "@/auth";
-import { formatDate, calculateReadingTime } from "@/lib/utils";
+import { formatDate, calculateReadingTime, getSafeAvatarUrl } from "@/lib/utils";
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
@@ -203,13 +203,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               href={`/${post.author?.profile?.username || "pathak"}`}
               className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
                 <Image
-                  src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
+                  src={getSafeAvatarUrl(authorAvatar, post.author?.profile?.username || "pathak")}
                   alt={authorName}
                   fill
-                  className="object-contain p-0.5"
-                  unoptimized
+                  className="object-cover"
                 />
               </div>
               <span className="font-semibold text-foreground">{authorName}</span>

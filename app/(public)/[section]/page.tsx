@@ -3,8 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { ProfileTabs } from "@/components/profile/ProfileTabs";
+import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare } from "lucide-react";
+import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -143,6 +144,9 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
   // Otherwise, check if this matches a unique User Profile handle
   let profile: any = null;
   let userPosts: any[] = [];
+  let likedPosts: any[] = [];
+  let bookmarkedPosts: any[] = [];
+  let userComments: any[] = [];
 
   try {
     profile = await db.profile.findFirst({
@@ -163,11 +167,50 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
                 tags: { include: { tag: true } },
               },
             },
+            likes: {
+              orderBy: { createdAt: "desc" },
+              include: {
+                post: {
+                  include: {
+                    author: { include: { profile: true } },
+                    tags: { include: { tag: true } },
+                  },
+                },
+              },
+            },
+            bookmarks: {
+              orderBy: { createdAt: "desc" },
+              include: {
+                post: {
+                  include: {
+                    author: { include: { profile: true } },
+                    tags: { include: { tag: true } },
+                  },
+                },
+              },
+            },
+            comments: {
+              where: {
+                status: { in: ["APPROVED", "PENDING"] },
+              },
+              orderBy: { createdAt: "desc" },
+              include: {
+                post: {
+                  select: {
+                    id: true,
+                    title: true,
+                    slug: true,
+                    section: true,
+                  },
+                },
+              },
+            },
             _count: {
               select: {
                 posts: { where: { status: "PUBLISHED" } },
                 likes: true,
                 bookmarks: true,
+                comments: true,
               },
             },
           },
@@ -177,6 +220,13 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
 
     if (profile) {
       userPosts = profile.user?.posts || [];
+      likedPosts = (profile.user?.likes || [])
+        .map((l: any) => l.post)
+        .filter((p: any) => p && p.status === "PUBLISHED");
+      bookmarkedPosts = (profile.user?.bookmarks || [])
+        .map((b: any) => b.post)
+        .filter((p: any) => p && p.status === "PUBLISHED");
+      userComments = (profile.user?.comments || []).filter((c: any) => c && c.post);
     }
   } catch (err) {
     console.warn("Profile lookup fallback:", err);
@@ -186,8 +236,9 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     notFound();
   }
 
-  const avatarUrl = profile.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${profile.username}`;
+  const avatarUrl = getSafeAvatarUrl(profile.avatarUrl, profile.username);
   const isAdmin = profile.user?.role === "ADMIN" || profile.user?.email === "prasoon7pathak@gmail.com";
+  const hasPublishedPosts = userPosts.length > 0;
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 min-h-screen">
@@ -206,13 +257,12 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
       <section className="bg-card p-6 sm:p-8 rounded-2xl border border-border shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center space-x-4">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-border bg-zinc-950 shrink-0 p-1">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-border bg-zinc-950 shrink-0 shadow-sm">
               <Image
                 src={avatarUrl}
                 alt={profile.displayName}
                 fill
-                className="object-contain p-1"
-                unoptimized
+                className="object-cover"
               />
             </div>
             <div className="space-y-1">
@@ -221,12 +271,12 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
                   {profile.displayName}
                 </h1>
                 {isAdmin ? (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider">
                     Admin / Author
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-muted text-muted-foreground uppercase">
-                    Reader
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-muted text-muted-foreground uppercase tracking-wider">
+                    Community Member
                   </span>
                 )}
               </div>
@@ -263,17 +313,19 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
         )}
 
         {/* Community Stats */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/60 text-center">
+        <div className={`grid ${isAdmin || hasPublishedPosts ? "grid-cols-4" : "grid-cols-3"} gap-4 pt-4 border-t border-border/60 text-center`}>
+          {(isAdmin || hasPublishedPosts) && (
+            <div className="space-y-1">
+              <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+                {profile.user?._count?.posts || 0}
+              </span>
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Published
+              </p>
+            </div>
+          )}
           <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
-              {profile.user?._count?.posts || 0}
-            </span>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Published Articles
-            </p>
-          </div>
-          <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+            <span className="text-xl sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
               {profile.user?._count?.likes || 0}
             </span>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
@@ -281,45 +333,34 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
             </p>
           </div>
           <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+            <span className="text-xl sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
               {profile.user?._count?.bookmarks || 0}
             </span>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Saved in Library
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Publications by User */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between border-b border-border pb-4">
-          <div className="flex items-center space-x-2">
-            <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h2 className="font-serif-editorial text-2xl font-bold text-foreground">
-              Publications by {profile.displayName}
-            </h2>
-          </div>
-          <span className="text-xs font-mono text-muted-foreground">
-            {userPosts.length} {userPosts.length === 1 ? "article" : "articles"}
-          </span>
-        </div>
-
-        {userPosts.length === 0 ? (
-          <div className="py-12 text-center space-y-2 rounded-2xl bg-card border border-border">
-            <p className="text-sm font-semibold text-foreground">No public articles yet.</p>
-            <p className="text-xs text-muted-foreground">
-              This author hasn&apos;t published any public articles yet.
+          <div className="space-y-1">
+            <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+              {profile.user?._count?.comments || 0}
+            </span>
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Comments
             </p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {userPosts.map((post) => (
-              <ArticleCard key={post.id} post={post as any} variant="standard" />
-            ))}
-          </div>
-        )}
+        </div>
       </section>
+
+      {/* Activity History Tabs */}
+      <ProfileTabs
+        displayName={profile.displayName}
+        username={profile.username}
+        isAdmin={isAdmin}
+        publishedPosts={userPosts}
+        likedPosts={likedPosts}
+        bookmarkedPosts={bookmarkedPosts}
+        comments={userComments}
+      />
     </main>
   );
 }

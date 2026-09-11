@@ -42,7 +42,7 @@ async function main() {
             username: "pathak",
             displayName: "The Pathak",
             bio: "Lead Software Architect, Writer & Thinker exploring Technology, Science, Code, Ideas, and Words.",
-            avatarUrl: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria",
+            avatarUrl: "/avatars/anime-haruto.jpg",
             website: "https://thepathak.tech",
           },
         },

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addComment } from "@/app/actions/comment";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
 import { Send, MessageSquare, CornerDownRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -117,9 +117,9 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
             return (
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
                 <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="relative w-6 h-6 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                      <Image src={avatar} alt={author} fill className="object-contain p-0.5" unoptimized />
+                    <div className="flex items-center space-x-2.5">
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                      <Image src={getSafeAvatarUrl(avatar, username || author)} alt={author} fill className="object-cover" />
                     </div>
                     <div>
                       {username ? (
@@ -182,14 +182,14 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                     {comment.replies.map((reply) => {
                       const repAuthor = reply.user.profile?.displayName || reply.user.name || "Reader";
                       const repUsername = reply.user.profile?.username;
-                      const repAvatar = reply.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${repUsername || repAuthor}`;
+                      const repAvatar = reply.user.profile?.avatarUrl;
 
                       return (
                         <div key={reply.id} className="space-y-1 bg-muted/40 p-3 rounded-lg">
                           <div className="flex items-center justify-between text-[11px]">
                             <div className="flex items-center space-x-2">
-                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                                <Image src={repAvatar} alt={repAuthor} fill className="object-contain p-0.5" unoptimized />
+                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                                <Image src={getSafeAvatarUrl(repAvatar, repUsername || repAuthor)} alt={repAuthor} fill className="object-cover" />
                               </div>
                               {repUsername ? (
                                 <Link href={`/${repUsername}`} className="font-semibold text-foreground hover:underline">
