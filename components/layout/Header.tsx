@@ -8,6 +8,8 @@ import { Navigation } from "./Navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { useSession, signOut } from "next-auth/react";
 
+import { getSafeAvatarUrl } from "@/lib/utils";
+
 interface HeaderProps {
   onOpenSearch?: () => void;
 }
@@ -19,6 +21,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
   const userEmail = session?.user?.email?.toLowerCase();
   const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
+  const username = (session?.user as any)?.username || (session?.user?.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : "reader");
+  const avatarUrl = getSafeAvatarUrl(session?.user?.image, username);
 
   // Close mobile menu on Escape key
   useEffect(() => {
@@ -107,11 +111,11 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
               {/* User State */}
               {session?.user ? (
-                <div className="flex items-center space-x-1 sm:space-x-1.5">
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
                   {isAdmin && (
                     <Link
                       href="/studio"
-                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors shadow-xs active:scale-95"
+                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-xs active:scale-95"
                       title="Writer Studio CMS"
                     >
                       <PenTool className="w-3.5 h-3.5" />
@@ -119,6 +123,26 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     </Link>
                   )}
 
+                  {/* Profile Avatar Button -> Leads directly to interactions, likes, bookmarks, and comments */}
+                  <Link
+                    href={`/${username}`}
+                    className="group flex items-center space-x-2 p-1 pr-2.5 rounded-full border border-border hover:border-blue-500/60 bg-card hover:bg-muted/40 transition-all duration-150 active:scale-95 shadow-xs"
+                    title={`View Profile & Activity (@${username})`}
+                  >
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 border border-border/60 shrink-0">
+                      <Image
+                        src={avatarUrl}
+                        alt={session.user.name || "Profile"}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <span className="hidden md:inline-block text-xs font-semibold text-foreground max-w-[90px] truncate">
+                      {session.user.name || username}
+                    </span>
+                  </Link>
+
+                  {/* Account Settings */}
                   <Link
                     href="/settings"
                     className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
@@ -127,13 +151,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     <Settings className="w-4 h-4" />
                   </Link>
 
-                  <Link
-                    href="/library"
-                    className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
-                    title="My Library"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                  </Link>
+                  {/* Log Out */}
                   <button
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
@@ -145,7 +163,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
               ) : (
                 <Link
                   href="/login"
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md transition-colors active:scale-95"
+                  className="inline-flex items-center px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
                 >
                   Sign In
                 </Link>
@@ -158,8 +176,43 @@ export function Header({ onOpenSearch }: HeaderProps) {
         {mobileMenuOpen && (
           <div
             ref={drawerRef}
-            className="lg:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pt-3 pb-6 space-y-3 relative z-40 shadow-xl"
+            className="lg:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pt-3 pb-6 space-y-4 relative z-40 shadow-xl"
           >
+            {session?.user && (
+              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
+                <Link
+                  href={`/${username}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center space-x-3"
+                >
+                  <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-zinc-900 border border-border shrink-0">
+                    <Image
+                      src={avatarUrl}
+                      alt={session.user.name || "Profile"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-foreground leading-tight">
+                      {session.user.name || "Reader"}
+                    </p>
+                    <p className="text-xs font-mono text-blue-600 dark:text-blue-400">
+                      @{username}
+                    </p>
+                  </div>
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-muted-foreground"
+                  title="Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
             <div className="flex flex-col space-y-1">
               <Link
                 href="/"
@@ -218,15 +271,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
               >
                 About Platform
               </Link>
-              <Link
-                href="/settings"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
-              >
-                <Settings className="w-4 h-4 text-zinc-500" />
-                <span>Account Settings</span>
-              </Link>
             </div>
+
             <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col space-y-2">
               {session?.user ? (
                 <>
@@ -241,12 +287,20 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     </Link>
                   )}
                   <Link
-                    href="/library"
+                    href={`/${username}`}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
                   >
-                    <BookOpen className="w-4 h-4" />
-                    <span>My Library</span>
+                    <User className="w-4 h-4" />
+                    <span>My Profile & Interactions</span>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Account Settings</span>
                   </Link>
                   <button
                     onClick={() => {

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
-import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare } from "lucide-react";
+import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare, Settings } from "lucide-react";
 import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -236,9 +237,14 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     notFound();
   }
 
+  const session = await auth();
   const avatarUrl = getSafeAvatarUrl(profile.avatarUrl, profile.username);
   const isAdmin = profile.user?.role === "ADMIN" || profile.user?.email === "prasoon7pathak@gmail.com";
   const hasPublishedPosts = userPosts.length > 0;
+  const isOwnProfile =
+    session?.user?.id === profile.userId ||
+    session?.user?.email === profile.user?.email ||
+    (session?.user as any)?.username === profile.username;
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 min-h-screen">
@@ -292,17 +298,30 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
             </div>
           </div>
 
-          {profile.website && (
-            <a
-              href={profile.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition-colors"
-            >
-              <span>Website</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          )}
+          <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
+            {isOwnProfile && (
+              <Link
+                href="/settings"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all duration-150 shadow-xs active:scale-95"
+                title="Manage profile, avatar, username, and appearance"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>Edit Profile & Settings</span>
+              </Link>
+            )}
+
+            {profile.website && (
+              <a
+                href={profile.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition-colors"
+              >
+                <span>Website</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
         </div>
 
         {/* Bio */}

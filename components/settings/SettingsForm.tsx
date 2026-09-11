@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { updateProfile } from "@/app/actions/profile";
 import { validateUsername } from "@/lib/validation/username";
-import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalLink, Globe } from "lucide-react";
+import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalLink, Globe, Heart, Bookmark as BookmarkIcon, MessageSquare, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export const PRESET_AVATARS = [
@@ -46,7 +46,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
-  const [activeTab, setActiveTab] = useState<"profile" | "appearance" | "account">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "appearance" | "activity" | "account">("profile");
 
   const [username, setUsername] = useState(user.profile?.username || "");
   const [displayName, setDisplayName] = useState(user.profile?.displayName || "");
@@ -55,7 +55,6 @@ export function SettingsForm({ user }: SettingsFormProps) {
     user.profile?.avatarUrl || PRESET_AVATARS[0].url
   );
 
-  const [avatarGenderFilter, setAvatarGenderFilter] = useState<"all" | "female" | "male">("all");
   const [usernameStatus, setUsernameStatus] = useState<{
     checking: boolean;
     available?: boolean;
@@ -160,6 +159,18 @@ export function SettingsForm({ user }: SettingsFormProps) {
         </button>
 
         <button
+          onClick={() => setActiveTab("activity")}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
+            activeTab === "activity"
+              ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+        >
+          <Heart className="w-4 h-4 text-rose-500" />
+          <span>Activity & History</span>
+        </button>
+
+        <button
           onClick={() => setActiveTab("account")}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
             activeTab === "account"
@@ -170,6 +181,19 @@ export function SettingsForm({ user }: SettingsFormProps) {
           <Shield className="w-4 h-4" />
           <span>Account Overview</span>
         </button>
+
+        <div className="pt-2 border-t border-border/80 hidden md:block">
+          <Link
+            href={`/${user.profile?.username || cleanHandle}`}
+            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+          >
+            <span className="flex items-center space-x-2">
+              <User className="w-3.5 h-3.5" />
+              <span>Public Profile</span>
+            </span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Main Content Form */}
@@ -190,56 +214,17 @@ export function SettingsForm({ user }: SettingsFormProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Avatar Gallery Selector */}
             <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
-                    Anime Human Character Avatars (Male & Female)
-                  </label>
-                  <p className="text-xs text-muted-foreground">
-                    Choose your personalized anime human face portrait.
-                  </p>
-                </div>
-
-                {/* Filter Pills */}
-                <div className="flex items-center space-x-1 bg-muted p-1 rounded-xl w-fit">
-                  <button
-                    type="button"
-                    onClick={() => setAvatarGenderFilter("all")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                      avatarGenderFilter === "all"
-                        ? "bg-card text-foreground shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    All ({PRESET_AVATARS.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAvatarGenderFilter("female")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                      avatarGenderFilter === "female"
-                        ? "bg-card text-pink-600 dark:text-pink-400 font-semibold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Female ({PRESET_AVATARS.filter((a) => a.gender === "female").length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAvatarGenderFilter("male")}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                      avatarGenderFilter === "male"
-                        ? "bg-card text-blue-600 dark:text-blue-400 font-semibold shadow-xs"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    Male ({PRESET_AVATARS.filter((a) => a.gender === "male").length})
-                  </button>
-                </div>
+              <div>
+                <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
+                  Select Avatar
+                </label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Choose your personalized profile portrait.
+                </p>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-7 gap-3 pt-2">
-                {PRESET_AVATARS.filter((a) => avatarGenderFilter === "all" || a.gender === avatarGenderFilter).map((avatar) => {
+              <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-7 gap-3 pt-1">
+                {PRESET_AVATARS.map((avatar) => {
                   const isSelected = selectedAvatar === avatar.url;
                   return (
                     <button
@@ -415,6 +400,70 @@ export function SettingsForm({ user }: SettingsFormProps) {
                   <p className="text-xs text-muted-foreground">Sync automatically with operating system preferences.</p>
                 </div>
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Activity Tab */}
+        {activeTab === "activity" && (
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold font-serif-editorial text-foreground">
+                My Activity, Likes, & Library
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                View your complete interaction timeline: liked essays, bookmarked publications, and discussion comments.
+              </p>
+            </div>
+
+            <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 space-y-1.5">
+                  <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
+                    <Heart className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase font-mono">Liked Articles</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    All technical deep-dives and poems you favorited across the platform.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 space-y-1.5">
+                  <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
+                    <BookmarkIcon className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase font-mono">Saved in Library</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your bookmarked reading list for future reference and study.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 space-y-1.5">
+                  <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="text-xs font-semibold uppercase font-mono">Comments</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your feedback, thoughts, and replies in article comment threads.
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-border/60">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold text-foreground">Interactive Hub</p>
+                  <p className="text-xs text-muted-foreground">
+                    Explore all your interactions organized with filters on your profile.
+                  </p>
+                </div>
+                <Link
+                  href={`/${user.profile?.username || cleanHandle}`}
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-xs shrink-0"
+                >
+                  <span>Open My Profile & Activity</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
           </div>
         )}

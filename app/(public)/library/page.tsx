@@ -15,6 +15,14 @@ export default async function LibraryPage() {
     redirect("/login?callbackUrl=/library");
   }
 
+  const username =
+    (session.user as any)?.username ||
+    (session.user?.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : null);
+
+  if (username) {
+    redirect(`/${username}`);
+  }
+
   const userId = session.user.id;
 
   const [likes, bookmarks, history] = await Promise.all([
