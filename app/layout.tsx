@@ -32,9 +32,12 @@ export const metadata: Metadata = {
   description: "An independent editorial publishing platform focused on interpretation over repetition.",
   metadataBase: new URL("https://thepathak.tech"),
   icons: {
-    icon: "/icon.jpg",
-    shortcut: "/icon.jpg",
-    apple: "/apple-icon.jpg",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "ThePathak.tech — Technology • Science • Code • Words",
@@ -45,9 +48,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/logo.jpg",
-        width: 800,
-        height: 800,
+        url: "/logo.png",
+        width: 1024,
+        height: 1024,
         alt: "ThePathak.tech Logo",
       },
     ],

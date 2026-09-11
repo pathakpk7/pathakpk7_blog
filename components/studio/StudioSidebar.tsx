@@ -32,13 +32,14 @@ export function StudioSidebar() {
       <div className="p-4 space-y-6">
         {/* Brand */}
         <div className="flex items-center space-x-3 px-2">
-          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0">
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0 bg-zinc-950">
             <Image
-              src="/logo.jpg"
+              src="/emblem.png"
               alt="ThePathak.tech Logo"
               fill
-              sizes="32px"
-              className="object-cover"
+              sizes="64px"
+              className="object-contain p-0.5"
+              unoptimized
             />
           </div>
           <div className="space-y-0.5">

@@ -53,14 +53,15 @@ function LoginForm() {
     <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-2xl border border-border shadow-xl">
       <div className="text-center space-y-3">
         <Link href="/" className="inline-flex flex-col items-center group">
-          <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-border mb-2 group-hover:scale-105 transition-transform">
+          <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-border mb-2 group-hover:scale-105 transition-transform bg-zinc-950">
             <Image
-              src="/logo.jpg"
+              src="/emblem.png"
               alt="ThePathak.tech Logo"
               fill
-              sizes="64px"
-              className="object-cover"
+              sizes="128px"
+              className="object-contain p-1"
               priority
+              unoptimized
             />
           </div>
           <span className="font-serif-editorial text-2xl font-bold tracking-tight text-foreground">

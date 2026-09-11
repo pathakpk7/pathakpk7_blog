@@ -10,13 +10,14 @@ export function Footer() {
           {/* Brand Col */}
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-xs border border-zinc-200 dark:border-zinc-800 shrink-0">
+              <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-xs border border-zinc-200 dark:border-zinc-800 shrink-0 bg-zinc-950">
                 <Image
-                  src="/logo.jpg"
+                  src="/emblem.png"
                   alt="ThePathak.tech Logo"
                   fill
-                  sizes="40px"
-                  className="object-cover"
+                  sizes="80px"
+                  className="object-contain p-0.5"
+                  unoptimized
                 />
               </div>
               <span className="font-serif-editorial text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
