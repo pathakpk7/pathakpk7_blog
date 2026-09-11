@@ -10,22 +10,25 @@ import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalL
 import { useRouter } from "next/navigation";
 
 export const PRESET_AVATARS = [
-  { id: "avatar-anime-aria", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria", title: "Anime Adventurer (Aria)" },
-  { id: "avatar-anime-kai", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kai", title: "Anime Adventurer (Kai)" },
-  { id: "avatar-anime-ren", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ren", title: "Anime Blade (Ren)" },
-  { id: "avatar-anime-sora", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sora", title: "Anime Mage (Sora)" },
-  { id: "avatar-lorelei-maya", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Maya", title: "Artistic Illustrated (Maya)" },
-  { id: "avatar-lorelei-leo", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Leo", title: "Artistic Illustrated (Leo)" },
-  { id: "avatar-lorelei-zoe", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Zoe", title: "Artistic Illustrated (Zoe)" },
-  { id: "avatar-avataaars-alex", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Alex", title: "Cartoon Modern (Alex)" },
-  { id: "avatar-avataaars-jordan", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Jordan", title: "Cartoon Modern (Jordan)" },
-  { id: "avatar-avataaars-taylor", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Taylor", title: "Cartoon Modern (Taylor)" },
-  { id: "avatar-notionists-felix", url: "https://api.dicebear.com/9.x/notionists/svg?seed=Felix", title: "Editorial Sketch (Felix)" },
-  { id: "avatar-notionists-oliver", url: "https://api.dicebear.com/9.x/notionists/svg?seed=Oliver", title: "Editorial Sketch (Oliver)" },
-  { id: "avatar-micah-elena", url: "https://api.dicebear.com/9.x/micah/svg?seed=Elena", title: "Graphic Portrait (Elena)" },
-  { id: "avatar-micah-marcus", url: "https://api.dicebear.com/9.x/micah/svg?seed=Marcus", title: "Graphic Portrait (Marcus)" },
-  { id: "avatar-micah-chloe", url: "https://api.dicebear.com/9.x/micah/svg?seed=Chloe", title: "Graphic Portrait (Chloe)" },
-  { id: "avatar-lorelei-sam", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Sam", title: "Artistic Illustrated (Sam)" },
+  // Female Anime Characters (Human)
+  { id: "avatar-anime-aria", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria", title: "Aria (Female Anime)", gender: "female" },
+  { id: "avatar-anime-sakura", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sakura", title: "Sakura (Female Anime)", gender: "female" },
+  { id: "avatar-anime-luna", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Luna", title: "Luna (Female Anime)", gender: "female" },
+  { id: "avatar-anime-yuki", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Yuki", title: "Yuki (Female Anime)", gender: "female" },
+  { id: "avatar-anime-mia", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Mia", title: "Mia (Female Anime)", gender: "female" },
+  { id: "avatar-anime-hana", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Hana", title: "Hana (Female Anime)", gender: "female" },
+  { id: "avatar-anime-rin", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Rin", title: "Rin (Female Anime)", gender: "female" },
+  { id: "avatar-anime-akari", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Akari", title: "Akari (Female Anime)", gender: "female" },
+
+  // Male Anime Characters (Human)
+  { id: "avatar-anime-kai", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kai", title: "Kai (Male Anime)", gender: "male" },
+  { id: "avatar-anime-ren", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ren", title: "Ren (Male Anime)", gender: "male" },
+  { id: "avatar-anime-sora", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sora", title: "Sora (Male Anime)", gender: "male" },
+  { id: "avatar-anime-haruto", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Haruto", title: "Haruto (Male Anime)", gender: "male" },
+  { id: "avatar-anime-kenji", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kenji", title: "Kenji (Male Anime)", gender: "male" },
+  { id: "avatar-anime-kaito", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kaito", title: "Kaito (Male Anime)", gender: "male" },
+  { id: "avatar-anime-ryoto", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ryoto", title: "Ryoto (Male Anime)", gender: "male" },
+  { id: "avatar-anime-shin", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Shin", title: "Shin (Male Anime)", gender: "male" },
 ];
 
 interface SettingsFormProps {
@@ -55,6 +58,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
     user.profile?.avatarUrl || PRESET_AVATARS[0].url
   );
 
+  const [avatarGenderFilter, setAvatarGenderFilter] = useState<"all" | "female" | "male">("all");
   const [usernameStatus, setUsernameStatus] = useState<{
     checking: boolean;
     available?: boolean;
@@ -189,22 +193,63 @@ export function SettingsForm({ user }: SettingsFormProps) {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Avatar Gallery Selector */}
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
-                Select Character Portrait (Anime, Cartoon & Illustrated Art)
-              </label>
-              <p className="text-xs text-muted-foreground">
-                Choose an illustrated character avatar across Anime, Cartoon, Editorial sketch, and Modern art styles.
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
+                    Anime Human Character Avatars (Male & Female)
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Choose your personalized anime human face portrait.
+                  </p>
+                </div>
+
+                {/* Filter Pills */}
+                <div className="flex items-center space-x-1 bg-muted p-1 rounded-xl w-fit">
+                  <button
+                    type="button"
+                    onClick={() => setAvatarGenderFilter("all")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      avatarGenderFilter === "all"
+                        ? "bg-card text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    All ({PRESET_AVATARS.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAvatarGenderFilter("female")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      avatarGenderFilter === "female"
+                        ? "bg-card text-pink-600 dark:text-pink-400 font-semibold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Female (8)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAvatarGenderFilter("male")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                      avatarGenderFilter === "male"
+                        ? "bg-card text-blue-600 dark:text-blue-400 font-semibold shadow-xs"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Male (8)
+                  </button>
+                </div>
+              </div>
 
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 pt-2">
-                {PRESET_AVATARS.map((avatar) => {
+                {PRESET_AVATARS.filter((a) => avatarGenderFilter === "all" || a.gender === avatarGenderFilter).map((avatar) => {
                   const isSelected = selectedAvatar === avatar.url;
                   return (
                     <button
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.url)}
-                      className={`relative h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-100 dark:bg-zinc-900 ${
+                      className={`relative group h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-100 dark:bg-zinc-900 ${
                         isSelected
                           ? "border-blue-600 dark:border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30"
                           : "border-border hover:border-zinc-400 dark:hover:border-zinc-600"
