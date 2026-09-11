@@ -24,6 +24,11 @@ import {
   Clock,
   Sparkles,
   ArrowLeft,
+  FileCode,
+  Undo,
+  Redo,
+  Minus,
+  Edit3,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -62,7 +67,7 @@ export function PostEditor({ initialPost }: PostEditorProps) {
   const [featured, setFeatured] = useState(initialPost?.featured || false);
   const [content, setContent] = useState(initialPost?.content || "");
 
-  const [isPreview, setIsPreview] = useState(false);
+  const [editorMode, setEditorMode] = useState<"visual" | "html" | "preview">("visual");
   const [saving, setSaving] = useState(false);
   const [saveState, setSaveState] = useState<"saved" | "saving" | "unsaved">("saved");
 
@@ -92,6 +97,14 @@ export function PostEditor({ initialPost }: PostEditorProps) {
       setSaveState("unsaved");
     },
   });
+
+  // Keep editor content synchronized when switching modes
+  const handleModeChange = (newMode: "visual" | "html" | "preview") => {
+    if (newMode === "visual" && editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content, false);
+    }
+    setEditorMode(newMode);
+  };
 
   const handleSave = async (targetStatus?: any) => {
     setSaving(true);
@@ -147,25 +160,63 @@ export function PostEditor({ initialPost }: PostEditorProps) {
           </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setIsPreview(!isPreview)}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-semibold hover:bg-zinc-800"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>{isPreview ? "Edit Mode" : "Live Preview"}</span>
-          </button>
+        <div className="flex items-center space-x-2">
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-xl">
+            <button
+              type="button"
+              onClick={() => handleModeChange("visual")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                editorMode === "visual"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+              title="Visual WYSIWYG Editor Mode"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Visual</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("html")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                editorMode === "html"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+              title="Paste or edit raw HTML source code"
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              <span>HTML Code</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleModeChange("preview")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                editorMode === "preview"
+                  ? "bg-blue-600 text-white shadow-xs"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+              title="Full typography live preview"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Preview</span>
+            </button>
+          </div>
+
           <button
             onClick={() => handleSave("DRAFT")}
             disabled={saving || !title}
-            className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold disabled:opacity-50 transition-colors"
+            title="Save as draft (will not appear on public site)"
           >
             Save Draft
           </button>
           <button
             onClick={() => handleSave("PUBLISHED")}
             disabled={saving || !title}
-            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md disabled:opacity-50"
+            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md disabled:opacity-50 transition-colors active:scale-95"
+            title="Publish article live immediately"
           >
             {saving ? "Publishing..." : "Publish Article"}
           </button>
@@ -266,66 +317,236 @@ export function PostEditor({ initialPost }: PostEditorProps) {
           />
         </div>
 
-        {/* Tiptap Toolbar & Editor Body */}
-        {!isPreview ? (
-          <div className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden">
-            {/* Toolbar */}
-            {editor && (
-              <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-800 bg-zinc-950">
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleBold().run()}
-                  className={`p-2 rounded ${editor.isActive("bold") ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Bold className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleItalic().run()}
-                  className={`p-2 rounded ${editor.isActive("italic") ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Italic className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                  className={`p-2 rounded ${editor.isActive("codeBlock") ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Code className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                  className={`p-2 rounded ${editor.isActive("heading", { level: 1 }) ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Heading1 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                  className={`p-2 rounded ${editor.isActive("heading", { level: 2 }) ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Heading2 className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                  className={`p-2 rounded ${editor.isActive("blockquote") ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"}`}
-                >
-                  <Quote className="w-4 h-4" />
-                </button>
+        {/* Content Section: Visual Editor / HTML Code Mode / Live Preview */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold uppercase tracking-wider font-mono text-[11px] text-zinc-300">
+                Article Content
+              </span>
+              <span className="text-zinc-500">•</span>
+              <span className="text-[11px]">
+                {editorMode === "visual" && "Visual Rich-Text Editor"}
+                {editorMode === "html" && "HTML Source Code Mode (Paste or edit raw HTML)"}
+                {editorMode === "preview" && "Live Article Preview"}
+              </span>
+            </div>
+
+            <div className="flex items-center space-x-1.5">
+              <button
+                type="button"
+                onClick={() => handleModeChange(editorMode === "html" ? "visual" : "html")}
+                className="text-xs font-mono text-blue-400 hover:text-blue-300 underline inline-flex items-center space-x-1"
+              >
+                <FileCode className="w-3.5 h-3.5" />
+                <span>{editorMode === "html" ? "Switch to Visual Editor" : "Paste Raw HTML Code"}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* VISUAL EDITOR MODE */}
+          {editorMode === "visual" && (
+            <div className="rounded-2xl bg-zinc-900 border border-zinc-800 overflow-hidden">
+              {/* Comprehensive Toolbar with Native Hover Tooltips */}
+              {editor && (
+                <div className="flex flex-wrap items-center gap-1 p-2 border-b border-zinc-800 bg-zinc-950">
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleBold().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("bold") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Bold (Ctrl+B) — Makes selected text bold"
+                    aria-label="Bold"
+                  >
+                    <Bold className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("italic") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Italic (Ctrl+I) — Slants selected text"
+                    aria-label="Italic"
+                  >
+                    <Italic className="w-4 h-4" />
+                  </button>
+
+                  <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("heading", { level: 1 }) ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Heading 1 — Main section headline (<h1>)"
+                    aria-label="Heading 1"
+                  >
+                    <Heading1 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("heading", { level: 2 }) ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Heading 2 — Sub-section headline (<h2>)"
+                    aria-label="Heading 2"
+                  >
+                    <Heading2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("heading", { level: 3 }) ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Heading 3 — Minor sub-headline (<h3>)"
+                    aria-label="Heading 3"
+                  >
+                    <Heading3 className="w-4 h-4" />
+                  </button>
+
+                  <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("blockquote") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Blockquote — Editorial quote block with border (<blockquote>)"
+                    aria-label="Blockquote"
+                  >
+                    <Quote className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleBulletList().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("bulletList") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Bullet List — Unordered bullet list (<ul>)"
+                    aria-label="Bullet List"
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("orderedList") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Numbered List — Ordered numerical list (<ol>)"
+                    aria-label="Numbered List"
+                  >
+                    <ListOrdered className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                    className={`p-2 rounded transition-colors ${editor.isActive("codeBlock") ? "bg-blue-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"}`}
+                    title="Code Block — Multi-line syntax formatted code block (<pre><code>)"
+                    aria-label="Code Block"
+                  >
+                    <Code className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                    className="p-2 rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 transition-colors"
+                    title="Divider — Horizontal separating line (<hr>)"
+                    aria-label="Divider"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+
+                  <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().undo().run()}
+                    disabled={!editor.can().undo()}
+                    className="p-2 rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-30 transition-colors"
+                    title="Undo (Ctrl+Z)"
+                    aria-label="Undo"
+                  >
+                    <Undo className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => editor.chain().focus().redo().run()}
+                    disabled={!editor.can().redo()}
+                    className="p-2 rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-30 transition-colors"
+                    title="Redo (Ctrl+Y)"
+                    aria-label="Redo"
+                  >
+                    <Redo className="w-4 h-4" />
+                  </button>
+
+                  <div className="ml-auto flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => handleModeChange("html")}
+                      className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-mono transition-colors"
+                      title="Switch to Raw HTML Code editor to paste HTML directly"
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-blue-400" />
+                      <span>&lt;HTML /&gt;</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+              <EditorContent editor={editor} className="p-6 min-h-[380px] text-zinc-100 text-base leading-relaxed focus:outline-none" />
+            </div>
+          )}
+
+          {/* RAW HTML CODE EDITOR MODE */}
+          {editorMode === "html" && (
+            <div className="rounded-2xl bg-zinc-950 border border-blue-500/40 overflow-hidden shadow-lg">
+              <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-900/90 text-xs">
+                <div className="flex items-center space-x-2">
+                  <FileCode className="w-4 h-4 text-blue-400" />
+                  <span className="font-semibold text-zinc-200 font-mono">Raw HTML Code Editor</span>
+                  <span className="text-zinc-500">• Paste your HTML code directly here</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => handleModeChange("visual")}
+                    className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors"
+                  >
+                    Sync to Visual Editor
+                  </button>
+                </div>
               </div>
-            )}
-            <EditorContent editor={editor} className="p-6 min-h-[350px] text-zinc-100 text-base leading-relaxed focus:outline-none" />
-          </div>
-        ) : (
-          /* Live Preview Mode */
-          <div className="p-8 rounded-2xl bg-card border border-border space-y-6">
-            <h1 className="font-serif-editorial text-4xl font-bold">{title || "Untitled Article"}</h1>
-            <p className="text-lg text-muted-foreground">{subtitle}</p>
-            <div className="prose prose-zinc dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
-          </div>
-        )}
+              <textarea
+                value={content}
+                onChange={(e) => {
+                  setContent(e.target.value);
+                  setSaveState("unsaved");
+                }}
+                placeholder="<p>Paste or write your full HTML code here...</p>&#10;<h2>Section Title</h2>&#10;<p>Content paragraph with <a href='https://...'>links</a> and <strong>bold text</strong>.</p>"
+                className="w-full min-h-[420px] p-6 bg-zinc-950 text-emerald-300 font-mono text-sm leading-relaxed focus:outline-none resize-y selection:bg-blue-900"
+                spellCheck={false}
+              />
+              <div className="p-3 bg-zinc-900 border-t border-zinc-800 text-[11px] text-zinc-400 flex items-center justify-between">
+                <span>Supports standard HTML tags: &lt;p&gt;, &lt;h1&gt;-&lt;h4&gt;, &lt;img&gt;, &lt;blockquote&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;table&gt;, &lt;pre&gt;&lt;code&gt;, etc.</span>
+                <span>{content.length} characters</span>
+              </div>
+            </div>
+          )}
+
+          {/* LIVE PREVIEW MODE */}
+          {editorMode === "preview" && (
+            <div className="p-8 rounded-2xl bg-card border border-border space-y-6">
+              <div className="border-b border-border pb-4">
+                <span className="text-xs uppercase font-mono tracking-widest text-blue-600 dark:text-blue-400 font-semibold">
+                  Preview Mode
+                </span>
+                <h1 className="font-serif-editorial text-3xl sm:text-4xl font-bold mt-2 text-foreground">
+                  {title || "Untitled Article"}
+                </h1>
+                {subtitle && <p className="text-lg text-muted-foreground mt-1">{subtitle}</p>}
+              </div>
+
+              <div
+                className="prose prose-zinc dark:prose-invert prose-editorial max-w-none"
+                dangerouslySetInnerHTML={{ __html: content || "<p className='text-muted-foreground italic'>No content written yet.</p>" }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
