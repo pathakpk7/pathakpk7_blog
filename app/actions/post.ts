@@ -90,9 +90,16 @@ export async function savePost(input: PostInput) {
     });
   }
 
+  // Thoroughly revalidate all affected public and studio paths
   revalidatePath("/");
+  revalidatePath("/studio");
   revalidatePath("/studio/posts");
+  revalidatePath(`/${input.section}`);
+  revalidatePath(`/${post.section}`);
   revalidatePath(`/article/${post.slug}`);
+  if (input.slug && input.slug !== post.slug) {
+    revalidatePath(`/article/${input.slug}`);
+  }
 
   return { success: true, post };
 }
@@ -106,7 +113,15 @@ export async function deletePost(postId: string) {
     throw new Error("Unauthorized");
   }
 
+  const existing = await db.post.findUnique({ where: { id: postId }, select: { slug: true, section: true } });
   await db.post.delete({ where: { id: postId } });
+
+  revalidatePath("/");
+  revalidatePath("/studio");
   revalidatePath("/studio/posts");
+  if (existing) {
+    revalidatePath(`/${existing.section}`);
+    revalidatePath(`/article/${existing.slug}`);
+  }
   return { success: true };
 }

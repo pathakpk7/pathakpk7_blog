@@ -9,7 +9,7 @@ import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { Clock, Calendar, Tag as TagIcon, ArrowLeft } from "lucide-react";
-import { MDXRemote } from "next-mdx-remote/rsc";
+import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +18,49 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  const { slug } = await params;
+async function renderArticleContent(content: string, isCreative: boolean) {
+  if (!content) return null;
+
+  const containerClass = isCreative
+    ? "max-w-2xl mx-auto space-y-6 text-lg leading-relaxed font-serif whitespace-pre-line py-4"
+    : "prose prose-zinc dark:prose-invert prose-editorial mx-auto max-w-3xl";
+
+  // Check if content is HTML from the Tiptap editor or rich HTML
+  const isHtml =
+    /^\s*<[a-z][\s\S]*>/i.test(content) ||
+    /<\/(p|h[1-6]|ul|ol|li|blockquote|div|pre|table|figure|section)>/i.test(content) ||
+    /<(p|h[1-6]|ul|ol|li|blockquote|div|pre|img|table|figure|br)\b[^>]*>/i.test(content);
+
+  if (isHtml) {
+    return (
+      <div
+        className={containerClass}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
+  // Attempt to compile Markdown / MDX
   try {
+    const { content: compiledContent } = await compileMDX({
+      source: content,
+      components: mdxComponents,
+    });
+
+    return <div className={containerClass}>{compiledContent}</div>;
+  } catch (err) {
+    console.warn("MDX compilation fallback triggered:", err);
+    return (
+      <div className={containerClass}>
+        <div className="whitespace-pre-wrap leading-relaxed">{content}</div>
+      </div>
+    );
+  }
+}
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  try {
+    const { slug } = await params;
     const post = await db.post.findUnique({
       where: { slug },
       select: {
@@ -35,6 +75,11 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
 
+    let publishedTime: string | undefined = undefined;
+    if (post.publishedAt instanceof Date && !isNaN(post.publishedAt.getTime())) {
+      publishedTime = post.publishedAt.toISOString();
+    }
+
     return {
       title: post.seoTitle || `${post.title} | ThePathak.tech`,
       description: post.seoDescription || post.excerpt || "",
@@ -42,7 +87,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         title: post.title,
         description: post.excerpt || "",
         type: "article",
-        publishedTime: post.publishedAt?.toISOString(),
+        publishedTime,
         images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : [],
       },
     };
@@ -119,6 +164,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const authorAvatar = post.author?.profile?.avatarUrl;
   const isCreative = post.section === "creative";
   const isHindi = post.tags?.some((t: any) => t.tag.slug === "hindi");
+  const contentElement = await renderArticleContent(post.content, isCreative);
 
   return (
     <main className="min-h-screen pb-20 pt-8">
@@ -199,9 +245,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Article Body */}
-        <div className={isCreative ? "max-w-2xl mx-auto space-y-6 text-lg leading-relaxed font-serif whitespace-pre-line py-4" : "prose prose-zinc dark:prose-invert prose-editorial mx-auto"}>
-          <MDXRemote source={post.content} components={mdxComponents} />
-        </div>
+        {contentElement}
 
         {/* Tags list */}
         {post.tags && post.tags.length > 0 && (

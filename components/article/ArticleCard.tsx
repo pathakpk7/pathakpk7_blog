@@ -30,8 +30,9 @@ export interface ArticleCardProps {
 
 export function ArticleCard({ post, variant = "standard", className }: ArticleCardProps) {
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
-  const sectionUpper = post.section.toUpperCase();
+  const sectionUpper = (post.section || "technology").toUpperCase();
   const isHindi = post.tags?.some((t: any) => (t.tag?.slug || t.slug) === "hindi");
+  const hasValidCoverImage = typeof post.coverImageUrl === "string" && post.coverImageUrl.trim().length > 5;
 
   if (variant === "featured") {
     return (
@@ -69,10 +70,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             </span>
           </div>
         </div>
-        {post.coverImageUrl && (
+        {hasValidCoverImage && (
           <div className="lg:col-span-5 relative h-64 sm:h-80 w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
             <Image
-              src={post.coverImageUrl}
+              src={post.coverImageUrl!}
               alt={post.title}
               fill
               className="object-cover group-hover:scale-102 transition-transform duration-200"
@@ -148,10 +149,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   if (variant === "horizontal") {
     return (
       <article className={cn("group relative flex flex-col sm:flex-row gap-6 bg-card rounded-xl p-5 border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
-        {post.coverImageUrl && (
+        {hasValidCoverImage && (
           <div className="relative h-48 sm:h-auto sm:w-48 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
             <Image
-              src={post.coverImageUrl}
+              src={post.coverImageUrl!}
               alt={post.title}
               fill
               className="object-cover group-hover:scale-102 transition-transform duration-200"
@@ -191,10 +192,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   // Standard vertical card
   return (
     <article className={cn("group relative flex flex-col bg-card rounded-xl overflow-hidden border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 shadow-xs active:scale-[0.995]", className)}>
-      {post.coverImageUrl && (
+      {hasValidCoverImage && (
         <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
           <Image
-            src={post.coverImageUrl}
+            src={post.coverImageUrl!}
             alt={post.title}
             fill
             className="object-cover group-hover:scale-102 transition-transform duration-200"
