@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #fcfbf9;
+    --foreground: #1c1b1a;
+    --card: #ffffff;
+    --card-foreground: #1c1b1a;
+    --popover: #ffffff;
+    --popover-foreground: #1c1b1a;
+    --primary: #18181b;
+    --primary-foreground: #fafafa;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+    --radius: 0.5rem;
+    --editorial-accent: #2563eb;
+  }
+
+  .dark {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --card: #121215;
+    --card-foreground: #f4f4f5;
+    --popover: #121215;
+    --popover-foreground: #f4f4f5;
+    --primary: #fafafa;
+    --primary-foreground: #18181b;
+    --secondary: #27272a;
+    --secondary-foreground: #fafafa;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #fafafa;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #d4d4d8;
+    --editorial-accent: #3b82f6;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Editorial & Creative Typography Classes */
+.font-serif-editorial {
+  font-family: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.font-mono-code {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.font-devanagari {
+  font-family: "Noto Serif Devanagari", "Rozha One", "Tiro Devanagari Hindi", serif;
+  line-height: 1.8;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  opacity: 0.3;
+  border-radius: 4px;
+}
+
+/* Article Prose Styling */
+.prose-editorial {
+  max-width: 68ch;
+  line-height: 1.8;
+  font-size: 1.125rem;
+}
+
+.prose-editorial h1,
+.prose-editorial h2,
+.prose-editorial h3,
+.prose-editorial h4 {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2.25em;
+  margin-bottom: 0.75em;
+}
+
+.prose-editorial p {
+  margin-bottom: 1.5em;
+}
+
+.prose-editorial blockquote {
+  border-left: 3px solid var(--editorial-accent);
+  padding-left: 1.25rem;
+  font-style: italic;
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
+  color: var(--muted-foreground);
+}
+
+.prose-editorial pre {
+  background-color: #1e1e2e;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  overflow-x: auto;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+  font-size: 0.9em;
+}

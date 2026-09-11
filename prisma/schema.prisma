@@ -1,0 +1,303 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  REVIEW
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentType {
+  ARTICLE
+  ESSAY
+  TUTORIAL
+  GUIDE
+  NOTE
+  POEM
+  SHAYARI
+  SHORT_STORY
+  MICROFICTION
+  SHORT_PROSE
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SPAM
+  DELETED
+}
+
+// ----------------------------------------------------
+// AUTH.JS MODELS
+// ----------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  profile       Profile?
+  posts         Post[]           @relation("AuthorPosts")
+  likes         Like[]
+  bookmarks     Bookmark[]
+  history       ReadingHistory[]
+  comments      Comment[]
+  views         PostView[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ----------------------------------------------------
+// APPLICATION DOMAIN MODELS
+// ----------------------------------------------------
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  username    String   @unique
+  displayName String
+  bio         String?
+  avatarUrl   String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  parentId    String?
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  posts       Post[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("categories")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  posts     PostTag[]
+  createdAt DateTime  @default(now())
+
+  @@map("tags")
+}
+
+model Post {
+  id             String      @id @default(cuid())
+  authorId       String
+  author         User        @relation("AuthorPosts", fields: [authorId], references: [id])
+  title          String
+  slug           String      @unique
+  subtitle       String?
+  excerpt        String?
+  content        String      @db.Text
+  contentFormat  String      @default("mdx")
+  section        String      // 'technology' | 'science' | 'coding' | 'ideas' | 'creative' | 'notes'
+  categoryId     String?
+  category       Category?   @relation(fields: [categoryId], references: [id])
+  subcategory    String?
+  contentType    ContentType @default(ARTICLE)
+  status         PostStatus  @default(DRAFT)
+  coverImageUrl  String?
+  coverImageAlt  String?
+  readingTime    Int         @default(1)
+  featured       Boolean     @default(false)
+  publishedAt    DateTime?
+  scheduledAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+
+  tags           PostTag[]
+  likes          Like[]
+  bookmarks      Bookmark[]
+  history        ReadingHistory[]
+  comments       Comment[]
+  views          PostView[]
+  revisions      PostRevision[]
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([slug])
+  @@index([status, publishedAt])
+  @@index([section])
+  @@map("posts")
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model PostRevision {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+  version   Int
+  createdAt DateTime @default(now())
+
+  @@map("post_revisions")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@map("likes")
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@map("bookmarks")
+}
+
+model ReadingHistory {
+  id           String    @id @default(cuid())
+  userId       String
+  postId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post         Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  startedAt    DateTime  @default(now())
+  lastReadAt   DateTime  @updatedAt
+  completedAt  DateTime?
+  progress     Float     @default(0)
+  lastPosition String?
+
+  @@unique([userId, postId])
+  @@map("reading_histories")
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  parentId  String?
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  content   String        @db.Text
+  status    CommentStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([postId])
+  @@map("comments")
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  filename  String
+  mimeType  String
+  size      Int
+  altText   String?
+  caption   String?
+  createdAt DateTime @default(now())
+
+  @@map("media")
+}
+
+model PostView {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String?
+  sessionId String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([postId, sessionId])
+  @@map("post_views")
+}

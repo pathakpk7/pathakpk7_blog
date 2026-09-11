@@ -1,0 +1,31 @@
+# dependencies
+/node_modules
+/.pnpm
+/.yarn
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env files
+.env*.local
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# SQLite / dev DBs
+prisma/*.db
+prisma/*.db-journal
