@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
+import { validateUsername } from "@/lib/validation/username";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(data: {
@@ -16,18 +17,26 @@ export async function updateProfile(data: {
   }
 
   const userId = session.user.id;
-  const username = data.username.trim().toLowerCase();
+  const usernameValidation = validateUsername(data.username);
+  if (!usernameValidation.valid || !usernameValidation.cleanUsername) {
+    throw new Error(usernameValidation.error || "Invalid username format.");
+  }
 
-  // Check username uniqueness
+  const username = usernameValidation.cleanUsername;
+
+  // Check username uniqueness (case-insensitive handle collision check)
   const existing = await db.profile.findFirst({
     where: {
-      username,
+      username: {
+        equals: username,
+        mode: "insensitive",
+      },
       NOT: { userId },
     },
   });
 
   if (existing) {
-    throw new Error("Username is already taken by another user.");
+    throw new Error("Username is already taken by another account.");
   }
 
   const updatedProfile = await db.profile.upsert({
@@ -49,7 +58,9 @@ export async function updateProfile(data: {
 
   revalidatePath("/settings");
   revalidatePath("/library");
+  revalidatePath(`/${username}`);
   revalidatePath("/");
 
   return { success: true, profile: updatedProfile };
 }
+

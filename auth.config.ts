@@ -33,11 +33,15 @@ export const authConfig = {
 
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         const userEmail = (user.email || "").toLowerCase();
         token.role = userEmail === ADMIN_EMAIL ? "ADMIN" : (user as any).role || "USER";
+        token.username = (user as any).username;
+      }
+      if (trigger === "update" && session?.username) {
+        token.username = session.username;
       }
       if (token.email?.toLowerCase() === ADMIN_EMAIL) {
         token.role = "ADMIN";
@@ -48,10 +52,12 @@ export const authConfig = {
       if (session.user) {
         session.user.id = token.id as string;
         const userEmail = (session.user.email || token.email || "").toLowerCase();
-        (session.user as any).role = userEmail === ADMIN_EMAIL ? "ADMIN" : (token.role as "USER" | "ADMIN" || "USER");
+        (session.user as any).role = userEmail === ADMIN_EMAIL ? "ADMIN" : ((token.role as "USER" | "ADMIN") || "USER");
+        (session.user as any).username = (token.username as string) || (session.user.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : "reader");
       }
       return session;
     },
   },
   providers: [], // Configured with Prisma in auth.ts
 } satisfies NextAuthConfig;
+

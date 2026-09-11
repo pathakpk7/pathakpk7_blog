@@ -29,7 +29,7 @@ export async function addComment(postId: string, content: string, parentId?: str
         select: {
           name: true,
           image: true,
-          profile: { select: { displayName: true, avatarUrl: true } },
+          profile: { select: { displayName: true, avatarUrl: true, username: true } },
         },
       },
     },

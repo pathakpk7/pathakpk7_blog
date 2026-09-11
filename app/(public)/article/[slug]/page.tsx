@@ -153,12 +153,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-4 border-t border-b border-border py-4 text-xs text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              {authorAvatar && (
-                <Image src={authorAvatar} alt={authorName} width={28} height={28} className="rounded-full" />
-              )}
+            <Link
+              href={`/${post.author?.profile?.username || "pathak"}`}
+              className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                <Image
+                  src={authorAvatar || `https://api.dicebear.com/9.x/shapes/svg?seed=${post.author?.profile?.username || "pathak"}`}
+                  alt={authorName}
+                  fill
+                  className="object-contain p-0.5"
+                  unoptimized
+                />
+              </div>
               <span className="font-semibold text-foreground">{authorName}</span>
-            </div>
+              {post.author?.profile?.username && (
+                <span className="font-mono text-zinc-400 text-[11px]">@{post.author.profile.username}</span>
+              )}
+            </Link>
             <span>•</span>
             <div className="flex items-center space-x-1">
               <Calendar className="w-3.5 h-3.5" />
@@ -205,11 +217,26 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Author Bio Box */}
         <div className="p-6 rounded-2xl bg-card border border-border max-w-3xl mx-auto flex items-start space-x-4">
-          {authorAvatar && (
-            <Image src={authorAvatar} alt={authorName} width={48} height={48} className="rounded-full shrink-0" />
-          )}
+          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0">
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-zinc-800 border border-border p-0.5 hover:scale-105 transition-transform">
+              <Image
+                src={authorAvatar || `https://api.dicebear.com/9.x/shapes/svg?seed=${post.author?.profile?.username || "pathak"}`}
+                alt={authorName}
+                fill
+                className="object-contain p-0.5"
+                unoptimized
+              />
+            </div>
+          </Link>
           <div className="space-y-1">
-            <h4 className="font-semibold text-foreground text-base">{authorName}</h4>
+            <div className="flex items-center space-x-2">
+              <Link href={`/${post.author?.profile?.username || "pathak"}`} className="font-semibold text-foreground text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                {authorName}
+              </Link>
+              {post.author?.profile?.username && (
+                <span className="font-mono text-zinc-400 text-xs">@{post.author.profile.username}</span>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground leading-relaxed">{authorBio}</p>
           </div>
         </div>

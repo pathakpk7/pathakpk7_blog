@@ -47,15 +47,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!isValid) return null;
 
         const role = cleanEmail === ADMIN_EMAIL ? "ADMIN" : user.role;
+        const username = user.profile?.username || cleanEmail.split("@")[0].replace(/[^a-z0-9_.]/g, "");
 
         return {
           id: user.id,
           email: user.email,
-          name: user.name ?? user.profile?.displayName ?? "User",
-          image: user.image ?? user.profile?.avatarUrl,
+          name: user.profile?.displayName ?? user.name ?? "User",
+          image: user.profile?.avatarUrl ?? user.image,
           role,
+          username,
         };
       },
     }),
   ],
 });
+

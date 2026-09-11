@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { updateProfile } from "@/app/actions/profile";
-import { User, Check, Sun, Moon, Laptop, Shield, Sparkles, AlertCircle } from "lucide-react";
+import { validateUsername } from "@/lib/validation/username";
+import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalLink, Globe } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-const PRESET_AVATARS = [
-  { id: "avatar-1", url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80", title: "Minimalist Author" },
-  { id: "avatar-2", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80", title: "Developer Classic" },
-  { id: "avatar-3", url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80", title: "Editorial Writer" },
-  { id: "avatar-4", url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80", title: "Creative Scholar" },
-  { id: "avatar-5", url: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80", title: "Systems Architect" },
-  { id: "avatar-6", url: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80", title: "Astrophysicist" },
+export const PRESET_AVATARS = [
+  { id: "avatar-shapes-cosmos", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Cosmos&backgroundColor=0284c7,2563eb,4f46e5", title: "Cosmic Shapes" },
+  { id: "avatar-shapes-quantum", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Quantum&backgroundColor=059669,10b981,14b8a6", title: "Quantum Emerald" },
+  { id: "avatar-shapes-horizon", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Horizon&backgroundColor=d97706,f59e0b,ea580c", title: "Solar Amber" },
+  { id: "avatar-shapes-nebula", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Nebula&backgroundColor=7c3aed,8b5cf6,6366f1", title: "Deep Nebula" },
+  { id: "avatar-identicon-arch", url: "https://api.dicebear.com/9.x/identicon/svg?seed=Arch&backgroundColor=1e293b,334155", title: "Geometric Cipher" },
+  { id: "avatar-bottts-matrix", url: "https://api.dicebear.com/9.x/bottts/svg?seed=Matrix&backgroundColor=0f172a,1e293b", title: "Cyber Automaton" },
+  { id: "avatar-shapes-crimson", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Cyber&backgroundColor=dc2626,ef4444", title: "Crimson Core" },
+  { id: "avatar-shapes-zenith", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Zenith&backgroundColor=0f766e,0d9488", title: "Zenith Teal" },
 ];
 
 interface SettingsFormProps {
@@ -30,6 +35,7 @@ interface SettingsFormProps {
 }
 
 export function SettingsForm({ user }: SettingsFormProps) {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<"profile" | "appearance" | "account">("profile");
@@ -41,28 +47,80 @@ export function SettingsForm({ user }: SettingsFormProps) {
     user.profile?.avatarUrl || PRESET_AVATARS[0].url
   );
 
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checking: boolean;
+    available?: boolean;
+    error?: string;
+  }>({ checking: false });
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Debounced live username availability check
+  useEffect(() => {
+    if (!username.trim()) {
+      setUsernameStatus({ checking: false, error: "Username is required." });
+      return;
+    }
+
+    const val = validateUsername(username);
+    if (!val.valid) {
+      setUsernameStatus({ checking: false, available: false, error: val.error });
+      return;
+    }
+
+    if (val.cleanUsername === user.profile?.username?.toLowerCase()) {
+      setUsernameStatus({ checking: false, available: true });
+      return;
+    }
+
+    setUsernameStatus({ checking: true });
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/profile/check-username?username=${encodeURIComponent(val.cleanUsername || "")}`);
+        const data = await res.json();
+        if (data.available) {
+          setUsernameStatus({ checking: false, available: true });
+        } else {
+          setUsernameStatus({ checking: false, available: false, error: data.error || "Username is unavailable." });
+        }
+      } catch (err) {
+        setUsernameStatus({ checking: false });
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [username, user.profile?.username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
 
+    const val = validateUsername(username);
+    if (!val.valid) {
+      setMessage({ type: "error", text: val.error || "Invalid username." });
+      setSaving(false);
+      return;
+    }
+
     try {
       await updateProfile({
-        username,
+        username: val.cleanUsername || username,
         displayName,
         bio,
         avatarUrl: selectedAvatar,
       });
       setMessage({ type: "success", text: "Profile settings updated successfully!" });
+      router.refresh();
     } catch (err: any) {
       setMessage({ type: "error", text: err.message || "Failed to update profile." });
     } finally {
       setSaving(false);
     }
   };
+
+  const cleanHandle = username.trim().toLowerCase().replace(/[^a-z0-9_.]/g, "");
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -124,13 +182,13 @@ export function SettingsForm({ user }: SettingsFormProps) {
             {/* Avatar Gallery Selector */}
             <div className="space-y-3">
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
-                Select Profile Avatar (Preset Gallery)
+                Select Stylized Avatar (Vector / Non-Face)
               </label>
               <p className="text-xs text-muted-foreground">
-                Choose an official preset avatar from the platform gallery.
+                Choose an abstract geometric avatar from our vector presets.
               </p>
 
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 pt-2">
+              <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 pt-2">
                 {PRESET_AVATARS.map((avatar) => {
                   const isSelected = selectedAvatar === avatar.url;
                   return (
@@ -138,17 +196,17 @@ export function SettingsForm({ user }: SettingsFormProps) {
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.url)}
-                      className={`relative h-20 w-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                      className={`relative h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-900 ${
                         isSelected
                           ? "border-blue-600 dark:border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30"
                           : "border-border hover:border-zinc-400 dark:hover:border-zinc-600"
                       }`}
                       title={avatar.title}
                     >
-                      <Image src={avatar.url} alt={avatar.title} fill className="object-cover" />
+                      <Image src={avatar.url} alt={avatar.title} fill className="object-contain p-1" unoptimized />
                       {isSelected && (
                         <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
-                          <Check className="w-6 h-6 text-white drop-shadow-md" />
+                          <Check className="w-5 h-5 text-white drop-shadow-md" />
                         </div>
                       )}
                     </button>
@@ -169,16 +227,68 @@ export function SettingsForm({ user }: SettingsFormProps) {
               />
             </div>
 
-            {/* Username */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Username</label>
-              <input
-                type="text"
-                required
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full p-3 rounded-xl bg-card border border-border text-sm focus:outline-none focus:border-blue-500 font-mono"
-              />
+            {/* Username with Live Validation & Constraints */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                  Unique Username Handle
+                </label>
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  {username.length}/30 chars
+                </span>
+              </div>
+              <div className="relative">
+                <span className="absolute left-3.5 top-3 text-sm text-muted-foreground font-mono">@</span>
+                <input
+                  type="text"
+                  required
+                  maxLength={30}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
+                  placeholder="handle_name"
+                  className="w-full pl-8 pr-10 py-2.5 rounded-xl bg-card border border-border text-sm focus:outline-none focus:border-blue-500 font-mono"
+                />
+                <div className="absolute right-3 top-3">
+                  {usernameStatus.checking && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+                  {!usernameStatus.checking && usernameStatus.available && (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  )}
+                  {!usernameStatus.checking && usernameStatus.error && (
+                    <AlertCircle className="w-4 h-4 text-rose-500" />
+                  )}
+                </div>
+              </div>
+
+              {/* Live Status or Error */}
+              {usernameStatus.error && (
+                <p className="text-xs text-rose-500 dark:text-rose-400 flex items-center space-x-1">
+                  <span>{usernameStatus.error}</span>
+                </p>
+              )}
+
+              {/* Profile URL Preview */}
+              {cleanHandle && (
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground bg-muted/50 p-2.5 rounded-lg border border-border/60">
+                  <Globe className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  <span>Public Profile URL:</span>
+                  <Link
+                    href={`/${cleanHandle}`}
+                    target="_blank"
+                    className="text-blue-600 dark:text-blue-400 hover:underline font-mono font-medium inline-flex items-center space-x-1"
+                  >
+                    <span>thepathak.tech/{cleanHandle}</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
+              )}
+
+              {/* Rule Summary */}
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground bg-card p-3 rounded-lg border border-border">
+                <div>• Letters a-z, numbers 0-9, _, . only</div>
+                <div>• 3 to 30 characters max</div>
+                <div>• No spaces or emojis</div>
+                <div>• Cannot start/end with dot or have consecutive dots</div>
+              </div>
             </div>
 
             {/* Bio */}
@@ -194,7 +304,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
 
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || usernameStatus.checking || (usernameStatus.error ? true : false)}
               className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition-colors shadow-md disabled:opacity-50"
             >
               {saving ? "Saving Changes..." : "Save Profile"}
@@ -273,6 +383,11 @@ export function SettingsForm({ user }: SettingsFormProps) {
                 <span className="text-sm font-semibold text-foreground font-mono">{user.email}</span>
               </div>
 
+              <div className="flex items-center justify-between border-b border-border pb-4">
+                <span className="text-xs font-semibold text-muted-foreground uppercase font-mono">Handle</span>
+                <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 font-mono">@{user.profile?.username || "unassigned"}</span>
+              </div>
+
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase font-mono">Account Role</span>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-semibold uppercase ${
@@ -290,3 +405,4 @@ export function SettingsForm({ user }: SettingsFormProps) {
     </div>
   );
 }
+

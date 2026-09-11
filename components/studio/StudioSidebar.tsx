@@ -138,12 +138,13 @@ export function StudioSidebar() {
       <div className="p-4 border-t border-zinc-800">
         <Link
           href="/"
-          className="flex items-center justify-center space-x-2 w-full py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-colors border border-zinc-700"
+          className="flex items-center justify-center space-x-2 w-full py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-colors border border-zinc-700 active:scale-95"
         >
           <ArrowLeft className="w-4 h-4 text-blue-400" />
-          <span>Exit Studio</span>
+          <span>Exit this Mode</span>
         </Link>
       </div>
     </aside>
   );
 }
+

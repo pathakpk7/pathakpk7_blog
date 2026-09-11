@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { addComment } from "@/app/actions/comment";
 import { formatDate } from "@/lib/utils";
 import { Send, MessageSquare, CornerDownRight } from "lucide-react";
@@ -13,7 +15,7 @@ interface CommentItem {
   user: {
     name?: string | null;
     image?: string | null;
-    profile?: { displayName?: string | null; avatarUrl?: string | null } | null;
+    profile?: { displayName?: string | null; avatarUrl?: string | null; username?: string | null } | null;
   };
   replies?: CommentItem[];
 }
@@ -81,7 +83,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
             <button
               type="submit"
               disabled={submitting || !content.trim()}
-              className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition-colors disabled:opacity-50"
+              className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition-colors disabled:opacity-50 active:scale-95"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{submitting ? "Posting..." : "Post Comment"}</span>
@@ -93,7 +95,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
           <p className="text-sm text-muted-foreground">Sign in to join the discussion and share your thoughts.</p>
           <button
             onClick={() => router.push("/login")}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors active:scale-95"
           >
             Sign In
           </button>
@@ -101,7 +103,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
       )}
 
       {/* Comments List */}
-      <div className="space-y-6 pt-4">
+      <div className="space-y-4 pt-4">
         {comments.length === 0 ? (
           <p className="text-sm text-muted-foreground italic text-center py-6">
             No comments yet. Be the first to start the discussion!
@@ -109,28 +111,46 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
         ) : (
           comments.map((comment) => {
             const author = comment.user.profile?.displayName || comment.user.name || "Reader";
+            const username = comment.user.profile?.username;
+            const avatar = comment.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/shapes/svg?seed=${username || author}`;
+
             return (
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-foreground">{author}</span>
-                  <span className="text-muted-foreground">{formatDate(comment.createdAt)}</span>
+                  <div className="flex items-center space-x-2.5">
+                    <div className="relative w-6 h-6 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                      <Image src={avatar} alt={author} fill className="object-contain p-0.5" unoptimized />
+                    </div>
+                    <div>
+                      {username ? (
+                        <Link href={`/${username}`} className="font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          {author} <span className="font-mono text-zinc-400 font-normal">@{username}</span>
+                        </Link>
+                      ) : (
+                        <span className="font-semibold text-foreground">{author}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-muted-foreground text-[11px]">{formatDate(comment.createdAt)}</span>
                 </div>
-                <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">{comment.content}</p>
+                <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line pl-8.5">{comment.content}</p>
 
                 {/* Reply button */}
                 {isLoggedIn && (
-                  <button
-                    onClick={() => setReplyParentId(replyParentId === comment.id ? null : comment.id)}
-                    className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
-                  >
-                    <CornerDownRight className="w-3 h-3" />
-                    <span>Reply</span>
-                  </button>
+                  <div className="pl-8.5">
+                    <button
+                      onClick={() => setReplyParentId(replyParentId === comment.id ? null : comment.id)}
+                      className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
+                    >
+                      <CornerDownRight className="w-3 h-3" />
+                      <span>Reply</span>
+                    </button>
+                  </div>
                 )}
 
                 {/* Reply Input Form */}
                 {replyParentId === comment.id && (
-                  <form onSubmit={(e) => handleSubmit(e, comment.id)} className="pl-4 pt-2 space-y-2 border-l-2 border-blue-500">
+                  <form onSubmit={(e) => handleSubmit(e, comment.id)} className="pl-8.5 pt-2 space-y-2">
                     <textarea
                       value={replyContent}
                       onChange={(e) => setReplyContent(e.target.value)}
@@ -148,7 +168,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                       <button
                         type="submit"
                         disabled={submitting || !replyContent.trim()}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-semibold"
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-xs font-semibold active:scale-95"
                       >
                         Send
                       </button>
@@ -158,16 +178,33 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
 
                 {/* Nested Replies */}
                 {comment.replies && comment.replies.length > 0 && (
-                  <div className="pl-6 pt-3 space-y-3 border-l-2 border-zinc-200 dark:border-zinc-800 mt-2">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="space-y-1">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-semibold text-foreground">{reply.user.profile?.displayName || reply.user.name || "Reader"}</span>
-                          <span className="text-muted-foreground">{formatDate(reply.createdAt)}</span>
+                  <div className="pl-8.5 pt-3 space-y-3 border-l-2 border-zinc-200 dark:border-zinc-800 ml-3">
+                    {comment.replies.map((reply) => {
+                      const repAuthor = reply.user.profile?.displayName || reply.user.name || "Reader";
+                      const repUsername = reply.user.profile?.username;
+                      const repAvatar = reply.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/shapes/svg?seed=${repUsername || repAuthor}`;
+
+                      return (
+                        <div key={reply.id} className="space-y-1 bg-muted/40 p-3 rounded-lg">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center space-x-2">
+                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                                <Image src={repAvatar} alt={repAuthor} fill className="object-contain p-0.5" unoptimized />
+                              </div>
+                              {repUsername ? (
+                                <Link href={`/${repUsername}`} className="font-semibold text-foreground hover:underline">
+                                  {repAuthor} <span className="font-mono text-zinc-400 font-normal">@{repUsername}</span>
+                                </Link>
+                              ) : (
+                                <span className="font-semibold text-foreground">{repAuthor}</span>
+                              )}
+                            </div>
+                            <span className="text-muted-foreground">{formatDate(reply.createdAt)}</span>
+                          </div>
+                          <p className="text-xs text-foreground/80 leading-relaxed pl-7">{reply.content}</p>
                         </div>
-                        <p className="text-xs text-foreground/80 leading-relaxed">{reply.content}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -178,3 +215,4 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
     </section>
   );
 }
+

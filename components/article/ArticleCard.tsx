@@ -35,14 +35,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "featured") {
     return (
-      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card rounded-2xl p-6 lg:p-8 border border-border shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all", className)}>
+      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card rounded-2xl p-6 lg:p-8 border border-border shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center space-x-3 text-xs font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">
             <span>{sectionUpper}</span>
             <span>•</span>
             <span className="text-zinc-500 font-normal">{post.contentType}</span>
           </div>
-          <h2 className="font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+          <h2 className="font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-tight">
             <Link href={`/article/${post.slug}`} className="focus:outline-none">
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
@@ -75,7 +75,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               src={post.coverImageUrl}
               alt={post.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover group-hover:scale-102 transition-transform duration-200"
               sizes="(max-width: 1024px) 100vw, 45vw"
               priority
             />
@@ -87,14 +87,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "creative") {
     return (
-      <article className={cn("group relative bg-card rounded-2xl p-8 border border-border/70 hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all flex flex-col justify-between space-y-6", className)}>
+      <article className={cn("group relative bg-card rounded-2xl p-8 border border-border/70 hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-6", className)}>
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
             <span className="uppercase tracking-widest">{post.contentType}</span>
             <span>{formatDate(post.publishedAt)}</span>
           </div>
           <h3 className={cn(
-            "text-2xl font-bold tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors",
+            "text-2xl font-bold tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150",
             isHindi ? "font-devanagari text-3xl" : "font-serif-editorial"
           )}>
             <Link href={`/article/${post.slug}`}>
@@ -124,12 +124,12 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "compact") {
     return (
-      <article className={cn("group relative flex items-start justify-between space-x-4 py-3 border-b border-border/60 last:border-0", className)}>
+      <article className={cn("group relative flex items-start justify-between space-x-4 py-3 border-b border-border/60 last:border-0 hover:bg-muted/30 px-2 rounded-lg transition-colors duration-150 active:scale-[0.995]", className)}>
         <div className="space-y-1">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-blue-600 dark:text-blue-400">
             {sectionUpper}
           </span>
-          <h4 className="font-serif-editorial text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+          <h4 className="font-serif-editorial text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 line-clamp-2">
             <Link href={`/article/${post.slug}`}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
@@ -147,14 +147,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "horizontal") {
     return (
-      <article className={cn("group relative flex flex-col sm:flex-row gap-6 bg-card rounded-xl p-5 border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all", className)}>
+      <article className={cn("group relative flex flex-col sm:flex-row gap-6 bg-card rounded-xl p-5 border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
         {post.coverImageUrl && (
           <div className="relative h-48 sm:h-auto sm:w-48 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
             <Image
               src={post.coverImageUrl}
               alt={post.title}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              className="object-cover group-hover:scale-102 transition-transform duration-200"
               sizes="(max-width: 640px) 100vw, 200px"
             />
           </div>
@@ -166,7 +166,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               <span>•</span>
               <span className="text-zinc-500 font-normal">{post.contentType}</span>
             </div>
-            <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150">
               <Link href={`/article/${post.slug}`}>
                 <span className="absolute inset-0" aria-hidden="true" />
                 {post.title}
@@ -190,14 +190,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   // Standard vertical card
   return (
-    <article className={cn("group relative flex flex-col bg-card rounded-xl overflow-hidden border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all shadow-xs", className)}>
+    <article className={cn("group relative flex flex-col bg-card rounded-xl overflow-hidden border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 shadow-xs active:scale-[0.995]", className)}>
       {post.coverImageUrl && (
         <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
           <Image
             src={post.coverImageUrl}
             alt={post.title}
             fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover group-hover:scale-102 transition-transform duration-200"
             sizes="(max-width: 768px) 100vw, 33vw"
           />
         </div>
@@ -209,7 +209,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             <span>•</span>
             <span className="text-zinc-500 font-normal">{post.contentType}</span>
           </div>
-          <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+          <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-snug">
             <Link href={`/article/${post.slug}`}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
@@ -229,3 +229,4 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     </article>
   );
 }
+
