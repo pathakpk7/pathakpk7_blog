@@ -3,7 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "@/lib/db/prisma";
 import { verifyPassword } from "@/lib/auth/password";
+import { authConfig } from "./auth.config";
 import { z } from "zod";
+
+const ADMIN_EMAIL = "prasoon7pathak@gmail.com";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -11,12 +14,9 @@ const loginSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
   providers: [
     Credentials({
       name: "Credentials",
@@ -29,9 +29,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
+        const cleanEmail = email.toLowerCase().trim();
 
-        const user = await db.user.findUnique({
-          where: { email },
+        const user = await db.user.findFirst({
+          where: {
+            email: {
+              equals: cleanEmail,
+              mode: "insensitive",
+            },
+          },
           include: { profile: true },
         });
 
@@ -40,30 +46,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const isValid = await verifyPassword(password, user.passwordHash);
         if (!isValid) return null;
 
+        const role = cleanEmail === ADMIN_EMAIL ? "ADMIN" : user.role;
+
         return {
           id: user.id,
           email: user.email,
           name: user.name ?? user.profile?.displayName ?? "User",
           image: user.image ?? user.profile?.avatarUrl,
-          role: user.role,
+          role,
         };
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = (user as any).role || "USER";
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        (session.user as any).role = token.role as "USER" | "ADMIN";
-      }
-      return session;
-    },
-  },
 });

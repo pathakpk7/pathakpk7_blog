@@ -26,7 +26,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { MDXRemote } from "next-mdx-remote/rsc";
 
 interface PostEditorProps {
   initialPost?: {

@@ -24,7 +24,8 @@ interface PostInput {
 
 export async function savePost(input: PostInput) {
   const session = await auth();
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
 
   if (!session?.user?.id || !isAdmin) {
     throw new Error("Unauthorized: Only author admin can save posts.");
@@ -98,7 +99,8 @@ export async function savePost(input: PostInput) {
 
 export async function deletePost(postId: string) {
   const session = await auth();
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
 
   if (!session?.user?.id || !isAdmin) {
     throw new Error("Unauthorized");

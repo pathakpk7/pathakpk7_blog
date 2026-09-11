@@ -17,35 +17,35 @@ export default async function LibraryPage() {
 
   const userId = session.user.id;
 
-  const likes = await db.like.findMany({
-    where: { userId },
-    include: {
-      post: {
-        include: { author: { include: { profile: true } } },
+  const [likes, bookmarks, history] = await Promise.all([
+    db.like.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: { author: { include: { profile: true } } },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const bookmarks = await db.bookmark.findMany({
-    where: { userId },
-    include: {
-      post: {
-        include: { author: { include: { profile: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.bookmark.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: { author: { include: { profile: true } } },
+        },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const history = await db.readingHistory.findMany({
-    where: { userId },
-    include: {
-      post: {
-        include: { author: { include: { profile: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.readingHistory.findMany({
+      where: { userId },
+      include: {
+        post: {
+          include: { author: { include: { profile: true } } },
+        },
       },
-    },
-    orderBy: { lastReadAt: "desc" },
-  });
+      orderBy: { lastReadAt: "desc" },
+    }),
+  ]);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 min-h-screen">

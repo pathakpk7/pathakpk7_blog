@@ -3,31 +3,31 @@ import { Eye, Heart, Bookmark, BarChart3, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default async function StudioAnalyticsPage() {
-  const totalViews = await db.postView.count();
-  const totalLikes = await db.like.count();
-  const totalBookmarks = await db.bookmark.count();
-
-  // Fetch top posts by view count
-  const postsWithViews = await db.post.findMany({
-    where: { status: "PUBLISHED" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      section: true,
-      publishedAt: true,
-      _count: {
-        select: {
-          views: true,
-          likes: true,
-          bookmarks: true,
-          comments: true,
+  const [totalViews, totalLikes, totalBookmarks, postsWithViews] = await Promise.all([
+    db.postView.count(),
+    db.like.count(),
+    db.bookmark.count(),
+    db.post.findMany({
+      where: { status: "PUBLISHED" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        section: true,
+        publishedAt: true,
+        _count: {
+          select: {
+            views: true,
+            likes: true,
+            bookmarks: true,
+            comments: true,
+          },
         },
       },
-    },
-    orderBy: { views: { _count: "desc" } },
-    take: 10,
-  });
+      orderBy: { views: { _count: "desc" } },
+      take: 10,
+    }),
+  ]);
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">

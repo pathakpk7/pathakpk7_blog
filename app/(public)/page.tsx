@@ -3,7 +3,7 @@ import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ArrowRight, Sparkles, Code2, Rocket, Feather, BookOpen, Layers } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function HomePage() {
   let featuredPosts: any[] = [];
@@ -14,47 +14,51 @@ export default async function HomePage() {
   let notesPosts: any[] = [];
 
   try {
-    featuredPosts = await db.post.findMany({
-      where: { status: "PUBLISHED", featured: true },
-      take: 2,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } } },
-    });
+    const [featured, tech, science, coding, creative, notes] = await Promise.all([
+      db.post.findMany({
+        where: { status: "PUBLISHED", featured: true },
+        take: 2,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } } },
+      }),
+      db.post.findMany({
+        where: { status: "PUBLISHED", section: "technology" },
+        take: 3,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } } },
+      }),
+      db.post.findMany({
+        where: { status: "PUBLISHED", section: "science" },
+        take: 2,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } } },
+      }),
+      db.post.findMany({
+        where: { status: "PUBLISHED", section: "coding" },
+        take: 3,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } } },
+      }),
+      db.post.findMany({
+        where: { status: "PUBLISHED", section: "creative" },
+        take: 2,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } }, tags: { include: { tag: true } } },
+      }),
+      db.post.findMany({
+        where: { status: "PUBLISHED", section: "notes" },
+        take: 4,
+        orderBy: { publishedAt: "desc" },
+        include: { author: { include: { profile: true } } },
+      }),
+    ]);
 
-    techPosts = await db.post.findMany({
-      where: { status: "PUBLISHED", section: "technology" },
-      take: 3,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } } },
-    });
-
-    sciencePosts = await db.post.findMany({
-      where: { status: "PUBLISHED", section: "science" },
-      take: 2,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } } },
-    });
-
-    codingPosts = await db.post.findMany({
-      where: { status: "PUBLISHED", section: "coding" },
-      take: 3,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } } },
-    });
-
-    creativePosts = await db.post.findMany({
-      where: { status: "PUBLISHED", section: "creative" },
-      take: 2,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } }, tags: { include: { tag: true } } },
-    });
-
-    notesPosts = await db.post.findMany({
-      where: { status: "PUBLISHED", section: "notes" },
-      take: 4,
-      orderBy: { publishedAt: "desc" },
-      include: { author: { include: { profile: true } } },
-    });
+    featuredPosts = featured;
+    techPosts = tech;
+    sciencePosts = science;
+    codingPosts = coding;
+    creativePosts = creative;
+    notesPosts = notes;
   } catch (err) {
     console.warn("HomePage DB queries fallback:", err);
   }

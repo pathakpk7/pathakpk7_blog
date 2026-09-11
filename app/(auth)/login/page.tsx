@@ -9,7 +9,7 @@ import { Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const explicitCallback = searchParams.get("callbackUrl");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,19 +21,25 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Determine target redirect: if Admin logs in without explicit callback, open Writer Studio directly!
+    const targetUrl = explicitCallback || (cleanEmail === "prasoon7pathak@gmail.com" ? "/studio" : "/");
+
     try {
       const res = await signIn("credentials", {
-        email,
+        email: cleanEmail,
         password,
         redirect: false,
-        callbackUrl,
+        callbackUrl: targetUrl,
       });
 
       if (res?.error) {
         setError("Invalid email or password credentials.");
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        // Full navigation ensures the cookie is committed and picked up cleanly by middleware and server components
+        window.location.href = targetUrl;
+        return;
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
@@ -97,7 +103,7 @@ function LoginForm() {
           disabled={loading}
           className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
         >
-          <span>{loading ? "Signing in..." : "Sign In"}</span>
+          <span>{loading ? "Signing in to Writer Studio..." : "Sign In"}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </form>

@@ -4,19 +4,29 @@ import { formatDate } from "@/lib/utils";
 import { FileText, Eye, Heart, Bookmark, MessageSquare, Clock, PlusCircle, Edit3 } from "lucide-react";
 
 export default async function StudioDashboardPage() {
-  const draftsCount = await db.post.count({ where: { status: "DRAFT" } });
-  const publishedCount = await db.post.count({ where: { status: "PUBLISHED" } });
-  const scheduledCount = await db.post.count({ where: { status: "SCHEDULED" } });
-  const totalViews = await db.postView.count();
-  const totalLikes = await db.like.count();
-  const totalBookmarks = await db.bookmark.count();
-  const pendingCommentsCount = await db.comment.count({ where: { status: "PENDING" } });
-
-  const recentDrafts = await db.post.findMany({
-    where: { status: { in: ["DRAFT", "REVIEW", "SCHEDULED"] } },
-    take: 5,
-    orderBy: { updatedAt: "desc" },
-  });
+  const [
+    draftsCount,
+    publishedCount,
+    scheduledCount,
+    totalViews,
+    totalLikes,
+    totalBookmarks,
+    pendingCommentsCount,
+    recentDrafts,
+  ] = await Promise.all([
+    db.post.count({ where: { status: "DRAFT" } }),
+    db.post.count({ where: { status: "PUBLISHED" } }),
+    db.post.count({ where: { status: "SCHEDULED" } }),
+    db.postView.count(),
+    db.like.count(),
+    db.bookmark.count(),
+    db.comment.count({ where: { status: "PENDING" } }),
+    db.post.findMany({
+      where: { status: { in: ["DRAFT", "REVIEW", "SCHEDULED"] } },
+      take: 5,
+      orderBy: { updatedAt: "desc" },
+    }),
+  ]);
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
