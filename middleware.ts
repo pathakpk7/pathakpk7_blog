@@ -4,26 +4,16 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
   const secret = process.env.AUTH_SECRET;
 
-  // Retrieve token using next-auth/jwt (lightweight Edge execution)
+  // Read JWT token (works across development and production Vercel cookies)
   const token = await getToken({
     req,
     secret,
-    salt: process.env.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token",
-  }).catch(() => null);
+  });
 
-  // Fallback lookup with standard salt
-  const activeToken =
-    token ||
-    (await getToken({
-      req,
-      secret,
-    }).catch(() => null));
-
-  const isLoggedIn = !!activeToken;
-  const isAdmin = activeToken?.role === "ADMIN";
+  const isLoggedIn = !!token;
+  const isAdmin = token?.role === "ADMIN";
 
   // Protect /studio routes -> Admin only
   if (pathname.startsWith("/studio")) {
