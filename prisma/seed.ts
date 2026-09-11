@@ -42,7 +42,7 @@ async function main() {
             username: "pathak",
             displayName: "The Pathak",
             bio: "Lead Software Architect, Writer & Thinker exploring Technology, Science, Code, Ideas, and Words.",
-            avatarUrl: "https://api.dicebear.com/9.x/shapes/svg?seed=Cosmos&backgroundColor=0284c7,2563eb,4f46e5",
+            avatarUrl: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria",
             website: "https://thepathak.tech",
           },
         },

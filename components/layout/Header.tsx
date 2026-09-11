@@ -19,8 +19,6 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
   const userEmail = session?.user?.email?.toLowerCase();
   const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
-  const rawUsername = (session?.user as any)?.username || (session?.user?.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : "reader");
-  const userAvatar = session?.user?.image || `https://api.dicebear.com/9.x/shapes/svg?seed=${rawUsername}`;
 
   // Close mobile menu on Escape key
   useEffect(() => {
@@ -62,7 +60,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
               </button>
 
               {/* Brand Logo & Editorial Subtitle */}
-              <Link href="/" className="group flex items-center space-x-2.5">
+              <Link href="/" className="group flex items-center space-x-2.5 shrink-0">
                 <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/60 dark:border-zinc-800 shrink-0 bg-zinc-950">
                   <Image
                     src="/emblem.png"
@@ -89,7 +87,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
             <Navigation />
 
             {/* Actions & Controls */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
               {/* Search Trigger */}
               <button
                 onClick={onOpenSearch}
@@ -107,9 +105,9 @@ export function Header({ onOpenSearch }: HeaderProps) {
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              {/* Admin / User State */}
+              {/* User State */}
               {session?.user ? (
-                <div className="flex items-center space-x-1.5 sm:space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-1.5">
                   {isAdmin && (
                     <Link
                       href="/studio"
@@ -121,24 +119,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     </Link>
                   )}
 
-                  {/* Top-Right Username Handle Badge */}
                   <Link
                     href="/settings"
-                    className="flex items-center space-x-2 px-2.5 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors"
-                    title={`Logged in as @${rawUsername} (Settings)`}
+                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                    title="Account Settings"
                   >
-                    <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                      <Image
-                        src={userAvatar}
-                        alt={rawUsername}
-                        fill
-                        className="object-contain p-0.5"
-                        unoptimized
-                      />
-                    </div>
-                    <span className="text-xs font-mono font-medium text-zinc-800 dark:text-zinc-200 max-w-[100px] truncate">
-                      @{rawUsername}
-                    </span>
+                    <Settings className="w-4 h-4" />
                   </Link>
 
                   <Link
@@ -238,30 +224,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
                 className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
               >
                 <Settings className="w-4 h-4 text-zinc-500" />
-                <span>Settings</span>
+                <span>Account Settings</span>
               </Link>
             </div>
             <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col space-y-2">
               {session?.user ? (
                 <>
-                  <div className="flex items-center space-x-2 px-3 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
-                    <div className="relative w-6 h-6 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                      <Image
-                        src={userAvatar}
-                        alt={rawUsername}
-                        fill
-                        className="object-contain p-0.5"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                        {session.user.name || "Reader"}
-                      </span>
-                      <span className="text-[10px] font-mono text-zinc-500">@{rawUsername}</span>
-                    </div>
-                  </div>
-
                   {isAdmin && (
                     <Link
                       href="/studio"
@@ -316,4 +284,5 @@ export function Header({ onOpenSearch }: HeaderProps) {
     </>
   );
 }
+
 

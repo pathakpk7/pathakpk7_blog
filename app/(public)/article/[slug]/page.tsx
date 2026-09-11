@@ -159,7 +159,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             >
               <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0">
                 <Image
-                  src={authorAvatar || `https://api.dicebear.com/9.x/shapes/svg?seed=${post.author?.profile?.username || "pathak"}`}
+                  src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
                   alt={authorName}
                   fill
                   className="object-contain p-0.5"
@@ -220,7 +220,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0">
             <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-zinc-800 border border-border p-0.5 hover:scale-105 transition-transform">
               <Image
-                src={authorAvatar || `https://api.dicebear.com/9.x/shapes/svg?seed=${post.author?.profile?.username || "pathak"}`}
+                src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
                 alt={authorName}
                 fill
                 className="object-contain p-0.5"

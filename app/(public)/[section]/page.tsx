@@ -186,7 +186,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     notFound();
   }
 
-  const avatarUrl = profile.avatarUrl || `https://api.dicebear.com/9.x/shapes/svg?seed=${profile.username}`;
+  const avatarUrl = profile.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${profile.username}`;
   const isAdmin = profile.user?.role === "ADMIN" || profile.user?.email === "prasoon7pathak@gmail.com";
 
   return (

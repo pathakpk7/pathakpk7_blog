@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const defaultAvatarUrl = `https://api.dicebear.com/9.x/shapes/svg?seed=${cleanUsername}`;
+    const defaultAvatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${cleanUsername}`;
 
     const user = await db.user.create({
       data: {

@@ -10,14 +10,22 @@ import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalL
 import { useRouter } from "next/navigation";
 
 export const PRESET_AVATARS = [
-  { id: "avatar-shapes-cosmos", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Cosmos&backgroundColor=0284c7,2563eb,4f46e5", title: "Cosmic Shapes" },
-  { id: "avatar-shapes-quantum", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Quantum&backgroundColor=059669,10b981,14b8a6", title: "Quantum Emerald" },
-  { id: "avatar-shapes-horizon", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Horizon&backgroundColor=d97706,f59e0b,ea580c", title: "Solar Amber" },
-  { id: "avatar-shapes-nebula", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Nebula&backgroundColor=7c3aed,8b5cf6,6366f1", title: "Deep Nebula" },
-  { id: "avatar-identicon-arch", url: "https://api.dicebear.com/9.x/identicon/svg?seed=Arch&backgroundColor=1e293b,334155", title: "Geometric Cipher" },
-  { id: "avatar-bottts-matrix", url: "https://api.dicebear.com/9.x/bottts/svg?seed=Matrix&backgroundColor=0f172a,1e293b", title: "Cyber Automaton" },
-  { id: "avatar-shapes-crimson", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Cyber&backgroundColor=dc2626,ef4444", title: "Crimson Core" },
-  { id: "avatar-shapes-zenith", url: "https://api.dicebear.com/9.x/shapes/svg?seed=Zenith&backgroundColor=0f766e,0d9488", title: "Zenith Teal" },
+  { id: "avatar-anime-aria", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Aria", title: "Anime Adventurer (Aria)" },
+  { id: "avatar-anime-kai", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Kai", title: "Anime Adventurer (Kai)" },
+  { id: "avatar-anime-ren", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Ren", title: "Anime Blade (Ren)" },
+  { id: "avatar-anime-sora", url: "https://api.dicebear.com/9.x/adventurer/svg?seed=Sora", title: "Anime Mage (Sora)" },
+  { id: "avatar-lorelei-maya", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Maya", title: "Artistic Illustrated (Maya)" },
+  { id: "avatar-lorelei-leo", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Leo", title: "Artistic Illustrated (Leo)" },
+  { id: "avatar-lorelei-zoe", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Zoe", title: "Artistic Illustrated (Zoe)" },
+  { id: "avatar-avataaars-alex", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Alex", title: "Cartoon Modern (Alex)" },
+  { id: "avatar-avataaars-jordan", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Jordan", title: "Cartoon Modern (Jordan)" },
+  { id: "avatar-avataaars-taylor", url: "https://api.dicebear.com/9.x/avataaars/svg?seed=Taylor", title: "Cartoon Modern (Taylor)" },
+  { id: "avatar-notionists-felix", url: "https://api.dicebear.com/9.x/notionists/svg?seed=Felix", title: "Editorial Sketch (Felix)" },
+  { id: "avatar-notionists-oliver", url: "https://api.dicebear.com/9.x/notionists/svg?seed=Oliver", title: "Editorial Sketch (Oliver)" },
+  { id: "avatar-micah-elena", url: "https://api.dicebear.com/9.x/micah/svg?seed=Elena", title: "Graphic Portrait (Elena)" },
+  { id: "avatar-micah-marcus", url: "https://api.dicebear.com/9.x/micah/svg?seed=Marcus", title: "Graphic Portrait (Marcus)" },
+  { id: "avatar-micah-chloe", url: "https://api.dicebear.com/9.x/micah/svg?seed=Chloe", title: "Graphic Portrait (Chloe)" },
+  { id: "avatar-lorelei-sam", url: "https://api.dicebear.com/9.x/lorelei/svg?seed=Sam", title: "Artistic Illustrated (Sam)" },
 ];
 
 interface SettingsFormProps {
@@ -182,10 +190,10 @@ export function SettingsForm({ user }: SettingsFormProps) {
             {/* Avatar Gallery Selector */}
             <div className="space-y-3">
               <label className="text-xs font-semibold text-foreground uppercase tracking-wider font-mono">
-                Select Stylized Avatar (Vector / Non-Face)
+                Select Character Portrait (Anime, Cartoon & Illustrated Art)
               </label>
               <p className="text-xs text-muted-foreground">
-                Choose an abstract geometric avatar from our vector presets.
+                Choose an illustrated character avatar across Anime, Cartoon, Editorial sketch, and Modern art styles.
               </p>
 
               <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 pt-2">
@@ -196,7 +204,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.url)}
-                      className={`relative h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-900 ${
+                      className={`relative h-16 w-16 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-zinc-100 dark:bg-zinc-900 ${
                         isSelected
                           ? "border-blue-600 dark:border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30"
                           : "border-border hover:border-zinc-400 dark:hover:border-zinc-600"

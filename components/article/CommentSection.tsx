@@ -112,7 +112,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
           comments.map((comment) => {
             const author = comment.user.profile?.displayName || comment.user.name || "Reader";
             const username = comment.user.profile?.username;
-            const avatar = comment.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/shapes/svg?seed=${username || author}`;
+            const avatar = comment.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${username || author}`;
 
             return (
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
@@ -182,7 +182,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                     {comment.replies.map((reply) => {
                       const repAuthor = reply.user.profile?.displayName || reply.user.name || "Reader";
                       const repUsername = reply.user.profile?.username;
-                      const repAvatar = reply.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/shapes/svg?seed=${repUsername || repAuthor}`;
+                      const repAvatar = reply.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${repUsername || repAuthor}`;
 
                       return (
                         <div key={reply.id} className="space-y-1 bg-muted/40 p-3 rounded-lg">
