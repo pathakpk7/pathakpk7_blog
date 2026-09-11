@@ -5,29 +5,9 @@
 
 **ThePathak.tech** is an independent, database-backed editorial publishing platform built with **Next.js App Router**, **TypeScript**, **Tailwind CSS v4**, **Prisma ORM**, **Neon PostgreSQL**, and **Auth.js (NextAuth.js v5)**.
 
-It provides a polished public reading experience, native Hindi/Devanagari creative writing support, instant site-wide search (`Cmd+K`), a user library for bookmarks and reading history, and a private Writer Studio CMS (`/studio`) for authoring, editing, previewing, scheduling, moderating, and analyzing publications.
-
 ---
 
 ## 🛠 Tech Stack & Architecture
-
-```text
-                       THEPATHAK.TECH
-                              │
-                           Next.js
-                              │
-               ┌──────────────┴──────────────┐
-               │                             │
-            Auth.js                       Prisma
-               │                             │
-        Authentication                PostgreSQL
-               │                             │
-               │                           Neon
-               │                             │
-               └──────────────┬──────────────┘
-                              │
-                         Application
-```
 
 - **Framework**: Next.js 15 (App Router, Server Components default)
 - **Language**: TypeScript (Strict Mode)
@@ -39,75 +19,89 @@ It provides a polished public reading experience, native Hindi/Devanagari creati
 
 ---
 
-## 🚀 Getting Started
+## 🔑 Environment Variables (.env / .env.local)
 
-### Prerequisites
-
-Ensure you have the following installed on your machine:
-- **Node.js**: v18.17.0 or higher (v20+ or v24+ recommended)
-- **npm**: v9+ (or `pnpm` / `yarn`)
-
----
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/thepathak-tech.git
-cd thepathak-tech
-```
-
----
-
-### 2. Environment Variables Setup
-
-Create a `.env.local` and `.env` file in the root directory:
+Make sure your environment variables are configured before running locally or deploying to production:
 
 ```env
-# Neon PostgreSQL Connection Strings
+# 1. Neon PostgreSQL Database Connection Strings
 DATABASE_URL="postgresql://neondb_owner:npg_4jEXpR6wSmyL@ep-steep-art-azco3ot1-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 DIRECT_URL="postgresql://neondb_owner:npg_4jEXpR6wSmyL@ep-steep-art-azco3ot1.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
 
-# Auth.js / NextAuth.js Configuration
+# 2. Auth.js / NextAuth.js Security & Domain Config
 AUTH_SECRET="a8f3b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0"
-AUTH_URL="http://localhost:3000"
+AUTH_URL="https://thepathak.tech"
+AUTH_TRUST_HOST="true"
 ```
 
 ---
 
-### 3. Install Dependencies
+## 🚀 Local Development Setup
 
 ```bash
+# 1. Install dependencies
 npm install
-```
 
----
-
-### 4. Database Setup & Seeding
-
-Sync the Prisma schema with your Neon PostgreSQL database and generate the Prisma Client:
-
-```bash
-# Push schema tables to Neon PostgreSQL
+# 2. Sync database schema & generate Prisma client
 npx prisma db push
-
-# Generate Prisma Client
 npx prisma generate
 
-# Seed initial categories, tags, sample articles, and Admin Author account
+# 3. Seed initial categories, tags, sample articles, and Admin user
 npx tsx prisma/seed.ts
-```
 
----
-
-### 5. Run Development Server
-
-Start the local development server:
-
-```bash
+# 4. Start local development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+---
+
+## 🌐 Deploying to Vercel (Recommended)
+
+### Option A: Via GitHub & Vercel Web Dashboard
+
+1. **Push your code to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Prepare production build for deployment"
+   git push origin main
+   ```
+
+2. **Import repository in Vercel**:
+   - Go to [vercel.com/new](https://vercel.com/new).
+   - Select your `thepathak-tech` repository.
+   - Framework Preset: **Next.js**.
+
+3. **Add Environment Variables in Vercel Project Settings**:
+   Add the following 5 variables under **Settings -> Environment Variables**:
+
+   | Key | Value |
+   | :--- | :--- |
+   | `DATABASE_URL` | `postgresql://neondb_owner:npg_4jEXpR6wSmyL@ep-steep-art-azco3ot1-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
+   | `DIRECT_URL` | `postgresql://neondb_owner:npg_4jEXpR6wSmyL@ep-steep-art-azco3ot1.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
+   | `AUTH_SECRET` | `a8f3b2c9d1e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0` |
+   | `AUTH_URL` | `https://thepathak.tech` *(or your Vercel URL)* |
+   | `AUTH_TRUST_HOST` | `true` |
+
+4. **Deploy**:
+   Click **Deploy**. Vercel will run `npm run build` (`prisma generate && next build`), and your site will be live!
+
+---
+
+### Option B: Via Vercel CLI
+
+Run the following command in your terminal:
+
+```bash
+npx vercel
+```
+
+Follow the prompts to link your Vercel project, then deploy to production:
+
+```bash
+npx vercel --prod
+```
 
 ---
 
@@ -121,45 +115,6 @@ To access the private Writer Studio CMS (`/studio`):
 
 ---
 
-## 📚 Features & Routes
-
-### Public Reading Experience
-- `/` — Editorial Homepage (Hero manifesto, Featured spotlight, Technology, Science, Coding, Creative, Notes)
-- `/technology` — Tech analysis, AI, Web Dev, Dev Tools, Cybersecurity
-- `/science` — Science & Space missions, Physics, Astronomy, Discoveries
-- `/coding` — Tutorials, Walkthroughs, LeetCode, React 19, Next.js, Roadmaps
-- `/ideas` — Personal essays, Focus, Developer Life, Productivity
-- `/creative` — Poems, Shayari, Microfiction, Prose (Devanagari Hindi typography support)
-- `/notes` — Short-form observations & quick technical thoughts
-- `/article/[slug]` — Reading experience with floating action bar (Like, Bookmark, Share), code highlighting, and discussion comments
-- `/search` — Multi-field search modal (`Cmd+K` / `Ctrl+K`)
-- `/library` — User dashboard for saved Bookmarks, Liked articles, and Reading History
-- `/about` — Platform mission and editorial manifesto
-
-### Writer Studio CMS (`/studio`)
-- `/studio` — Dashboard metrics (Drafts, Published, Views, Likes, Bookmarks, Comments)
-- `/studio/posts` — Article management table with status filtering
-- `/studio/posts/new` — Tiptap rich-text editor with live split-screen preview and autosave
-- `/studio/posts/[id]/edit` — Edit existing articles
-- `/studio/comments` — Comment moderation queue (Approve, Reject, Spam, Delete)
-- `/studio/analytics` — Reader pageviews, engagement, and top-performing articles
-
----
-
-## 📦 Production Build Verification
-
-To test the production build locally:
-
-```bash
-# Create optimized production build
-npm run build
-
-# Start production server
-npm run start
-```
-
----
-
 ## 📄 License
 
-© 2026 **ThePathak.tech**. All rights reserved. Made by [The Pathak](https://thepathak.tech).
+© 2026 **ThePathak.tech**. All rights reserved. Made by [The Pathak](https://www.prasoonpathak7.me/).
