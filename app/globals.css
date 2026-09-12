@@ -50,13 +50,24 @@
 
   * {
     border-color: var(--border);
+    box-sizing: border-box;
   }
 
+  html,
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -94,7 +105,15 @@
 .prose-editorial {
   max-width: 68ch;
   line-height: 1.8;
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (min-width: 640px) {
+  .prose-editorial {
+    font-size: 1.125rem;
+  }
 }
 
 .prose-editorial h1,

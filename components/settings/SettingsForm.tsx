@@ -6,8 +6,23 @@ import Link from "next/link";
 import { useTheme } from "next-themes";
 import { updateProfile } from "@/app/actions/profile";
 import { validateUsername } from "@/lib/validation/username";
-import { User, Check, Sun, Moon, Laptop, Shield, AlertCircle, Loader2, ExternalLink, Globe, Heart, Bookmark as BookmarkIcon, MessageSquare, ArrowRight } from "lucide-react";
+import {
+  User,
+  Check,
+  Sun,
+  Moon,
+  Laptop,
+  Shield,
+  AlertCircle,
+  Loader2,
+  ExternalLink,
+  Globe,
+  Heart,
+  Menu,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ProfileTabs } from "@/components/profile/ProfileTabs";
 
 export const PRESET_AVATARS = [
   // Female Anime Characters (High Fidelity)
@@ -41,13 +56,20 @@ interface SettingsFormProps {
       avatarUrl?: string | null;
     } | null;
   };
+  activity?: {
+    likedPosts: any[];
+    bookmarkedPosts: any[];
+    comments: any[];
+    publishedPosts: any[];
+  };
 }
 
-export function SettingsForm({ user }: SettingsFormProps) {
+export function SettingsForm({ user, activity }: SettingsFormProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<"profile" | "appearance" | "activity" | "account">("profile");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [username, setUsername] = useState(user.profile?.username || "");
   const [displayName, setDisplayName] = useState(user.profile?.displayName || "");
@@ -64,6 +86,30 @@ export function SettingsForm({ user }: SettingsFormProps) {
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const tabs = [
+    {
+      id: "profile" as const,
+      label: "Profile & Avatar",
+      icon: User,
+    },
+    {
+      id: "appearance" as const,
+      label: "Appearance & Theme",
+      icon: Sun,
+    },
+    {
+      id: "activity" as const,
+      label: "Activity & History",
+      icon: Heart,
+      iconColor: "text-rose-500",
+    },
+    {
+      id: "account" as const,
+      label: "Account Overview",
+      icon: Shield,
+    },
+  ];
 
   // Debounced live username availability check
   useEffect(() => {
@@ -132,58 +178,107 @@ export function SettingsForm({ user }: SettingsFormProps) {
   const cleanHandle = username.trim().toLowerCase().replace(/[^a-z0-9_.]/g, "");
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-      {/* Sidebar Tabs */}
-      <div className="flex md:flex-col gap-2 border-b md:border-b-0 md:border-r border-border pb-4 md:pb-0 md:pr-4">
-        <button
-          onClick={() => setActiveTab("profile")}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
-            activeTab === "profile"
-              ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <User className="w-4 h-4" />
-          <span>Profile & Avatar</span>
-        </button>
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-8">
+      {/* Mobile Hamburger Navigation Header */}
+      <div className="md:hidden col-span-1">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border shadow-xs">
+          <div className="flex items-center space-x-2.5">
+            {activeTab === "profile" && <User className="w-4 h-4 text-blue-500" />}
+            {activeTab === "appearance" && <Sun className="w-4 h-4 text-amber-500" />}
+            {activeTab === "activity" && <Heart className="w-4 h-4 text-rose-500" />}
+            {activeTab === "account" && <Shield className="w-4 h-4 text-emerald-500" />}
+            <span className="text-sm font-semibold text-foreground">
+              {tabs.find((t) => t.id === activeTab)?.label}
+            </span>
+          </div>
 
-        <button
-          onClick={() => setActiveTab("appearance")}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
-            activeTab === "appearance"
-              ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <Sun className="w-4 h-4" />
-          <span>Appearance & Theme</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-xl bg-muted/70 text-foreground hover:bg-muted transition-colors flex items-center space-x-1.5 text-xs font-semibold border border-border"
+            aria-label="Toggle settings menu"
+          >
+            {mobileMenuOpen ? (
+              <>
+                <X className="w-4 h-4 text-rose-500" />
+                <span>Close</span>
+              </>
+            ) : (
+              <>
+                <Menu className="w-4 h-4 text-blue-500" />
+                <span>Options</span>
+              </>
+            )}
+          </button>
+        </div>
 
-        <button
-          onClick={() => setActiveTab("activity")}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
-            activeTab === "activity"
-              ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <Heart className="w-4 h-4 text-rose-500" />
-          <span>Activity & History</span>
-        </button>
+        {/* Mobile Expanded Menu */}
+        {mobileMenuOpen && (
+          <div className="mt-2.5 p-2 rounded-2xl bg-card border border-border shadow-lg space-y-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
+                    isActive
+                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <span className="flex items-center space-x-2.5">
+                    <Icon className={`w-4 h-4 ${tab.iconColor || ""}`} />
+                    <span>{tab.label}</span>
+                  </span>
+                  {isActive && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                </button>
+              );
+            })}
 
-        <button
-          onClick={() => setActiveTab("account")}
-          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
-            activeTab === "account"
-              ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-              : "text-muted-foreground hover:bg-muted hover:text-foreground"
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-          <span>Account Overview</span>
-        </button>
+            <div className="pt-2 border-t border-border/80">
+              <Link
+                href={`/${user.profile?.username || cleanHandle}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+              >
+                <span className="flex items-center space-x-2.5">
+                  <User className="w-3.5 h-3.5" />
+                  <span>Public Profile</span>
+                </span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
 
-        <div className="pt-2 border-t border-border/80 hidden md:block">
+      {/* Desktop Sidebar Navigation */}
+      <div className="hidden md:flex md:flex-col gap-2 border-r border-border pr-4">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
+                isActive
+                  ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${tab.iconColor || ""}`} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+
+        <div className="pt-2 border-t border-border/80">
           <Link
             href={`/${user.profile?.username || cleanHandle}`}
             className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
@@ -197,7 +292,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
         </div>
       </div>
 
-      {/* Main Content Form */}
+      {/* Main Content Area */}
       <div className="md:col-span-3 space-y-6">
         {message && (
           <div className={`p-4 rounded-xl text-xs flex items-center space-x-2 ${
@@ -220,11 +315,11 @@ export function SettingsForm({ user }: SettingsFormProps) {
                   Select Avatar
                 </label>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Choose your personalized profile portrait.
+                  Choose your personalized anime avatar portrait ({PRESET_AVATARS.length} styles available).
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-7 gap-3 pt-1">
+              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2.5 sm:gap-3 pt-1">
                 {PRESET_AVATARS.map((avatar) => {
                   const isSelected = selectedAvatar === avatar.url;
                   return (
@@ -232,7 +327,7 @@ export function SettingsForm({ user }: SettingsFormProps) {
                       key={avatar.id}
                       type="button"
                       onClick={() => setSelectedAvatar(avatar.url)}
-                      className={`relative group h-20 w-20 rounded-2xl overflow-hidden border-2 transition-all bg-zinc-900 ${
+                      className={`relative group aspect-square w-full rounded-2xl overflow-hidden border-2 transition-all bg-zinc-900 ${
                         isSelected
                           ? "border-blue-600 dark:border-blue-500 scale-105 shadow-md ring-2 ring-blue-500/30"
                           : "border-border hover:border-zinc-400 dark:hover:border-zinc-600"
@@ -405,66 +500,28 @@ export function SettingsForm({ user }: SettingsFormProps) {
           </div>
         )}
 
-        {/* Activity Tab */}
+        {/* Activity Tab - Interactive Profile History */}
         {activeTab === "activity" && (
           <div className="space-y-6">
             <div className="space-y-1">
               <h3 className="text-lg font-bold font-serif-editorial text-foreground">
-                My Activity, Likes, & Library
+                My Activity & History
               </h3>
               <p className="text-xs text-muted-foreground">
-                View your complete interaction timeline: liked essays, bookmarked publications, and discussion comments.
+                View and manage your real-time likes, bookmarks library, and comment discussions.
               </p>
             </div>
 
-            <div className="p-6 sm:p-8 rounded-2xl bg-card border border-border space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 space-y-1.5">
-                  <div className="flex items-center space-x-2 text-rose-600 dark:text-rose-400">
-                    <Heart className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase font-mono">Liked Articles</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    All technical deep-dives and poems you favorited across the platform.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 space-y-1.5">
-                  <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
-                    <BookmarkIcon className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase font-mono">Saved in Library</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Your bookmarked reading list for future reference and study.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 space-y-1.5">
-                  <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-xs font-semibold uppercase font-mono">Comments</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Your feedback, thoughts, and replies in article comment threads.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-border/60">
-                <div className="space-y-0.5">
-                  <p className="text-sm font-semibold text-foreground">Interactive Hub</p>
-                  <p className="text-xs text-muted-foreground">
-                    Explore all your interactions organized with filters on your profile.
-                  </p>
-                </div>
-                <Link
-                  href={`/${user.profile?.username || cleanHandle}`}
-                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-xs shrink-0"
-                >
-                  <span>Open My Profile & Activity</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+            <div className="pt-2">
+              <ProfileTabs
+                displayName={user.profile?.displayName || user.profile?.username || "User"}
+                username={user.profile?.username || cleanHandle || "user"}
+                isAdmin={user.role === "ADMIN"}
+                publishedPosts={activity?.publishedPosts || []}
+                likedPosts={activity?.likedPosts || []}
+                bookmarkedPosts={activity?.bookmarkedPosts || []}
+                comments={activity?.comments || []}
+              />
             </div>
           </div>
         )}

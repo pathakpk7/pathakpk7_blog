@@ -24,8 +24,8 @@ function LoginForm() {
 
     const cleanEmail = email.trim().toLowerCase();
 
-    // Determine target redirect: if Admin logs in without explicit callback, open Writer Studio directly!
-    const targetUrl = explicitCallback || (cleanEmail === "prasoon7pathak@gmail.com" ? "/studio" : "/");
+    // Determine target redirect: defaults to homepage for all users (including admin) unless an explicit callback is requested
+    const targetUrl = explicitCallback || "/";
 
     try {
       const res = await signIn("credentials", {

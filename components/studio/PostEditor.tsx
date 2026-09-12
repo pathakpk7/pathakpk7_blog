@@ -143,30 +143,30 @@ export function PostEditor({ initialPost }: PostEditorProps) {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-20">
+    <div className="space-y-6 sm:space-y-8 max-w-5xl mx-auto pb-20">
       {/* Top Action Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800 pb-4 sticky top-0 bg-zinc-950/90 backdrop-blur-md z-30 pt-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 border-b border-zinc-800 pb-4 sticky top-0 bg-zinc-950/95 backdrop-blur-md z-30 pt-2">
         <div className="flex items-center space-x-3">
-          <Link href="/studio/posts" className="p-2 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white">
+          <Link href="/studio/posts" className="p-2 rounded-lg bg-zinc-900 text-zinc-400 hover:text-white shrink-0">
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div>
-            <h1 className="text-xl font-bold font-serif-editorial text-white">
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold font-serif-editorial text-white truncate">
               {initialPost?.id ? "Edit Article" : "Create New Publication"}
             </h1>
-            <div className="flex items-center space-x-2 text-xs text-zinc-400 font-mono">
+            <div className="flex items-center space-x-2 text-[11px] sm:text-xs text-zinc-400 font-mono">
               <span>Status: {saveState === "saving" ? "Saving..." : saveState === "saved" ? "Saved" : "Unsaved changes"}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 justify-between sm:justify-end">
           {/* Mode Switcher */}
-          <div className="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-xl">
+          <div className="flex items-center bg-zinc-900 border border-zinc-800 p-0.5 sm:p-1 rounded-xl">
             <button
               type="button"
               onClick={() => handleModeChange("visual")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 editorMode === "visual"
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-zinc-400 hover:text-white"
@@ -179,7 +179,7 @@ export function PostEditor({ initialPost }: PostEditorProps) {
             <button
               type="button"
               onClick={() => handleModeChange("html")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 editorMode === "html"
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-zinc-400 hover:text-white"
@@ -187,12 +187,12 @@ export function PostEditor({ initialPost }: PostEditorProps) {
               title="Paste or edit raw HTML source code"
             >
               <FileCode className="w-3.5 h-3.5" />
-              <span>HTML Code</span>
+              <span>HTML</span>
             </button>
             <button
               type="button"
               onClick={() => handleModeChange("preview")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 editorMode === "preview"
                   ? "bg-blue-600 text-white shadow-xs"
                   : "text-zinc-400 hover:text-white"
@@ -204,22 +204,24 @@ export function PostEditor({ initialPost }: PostEditorProps) {
             </button>
           </div>
 
-          <button
-            onClick={() => handleSave("DRAFT")}
-            disabled={saving || !title}
-            className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold disabled:opacity-50 transition-colors"
-            title="Save as draft (will not appear on public site)"
-          >
-            Save Draft
-          </button>
-          <button
-            onClick={() => handleSave("PUBLISHED")}
-            disabled={saving || !title}
-            className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md disabled:opacity-50 transition-colors active:scale-95"
-            title="Publish article live immediately"
-          >
-            {saving ? "Publishing..." : "Publish Article"}
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleSave("DRAFT")}
+              disabled={saving || !title}
+              className="px-3 sm:px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold disabled:opacity-50 transition-colors"
+              title="Save as draft (will not appear on public site)"
+            >
+              Draft
+            </button>
+            <button
+              onClick={() => handleSave("PUBLISHED")}
+              disabled={saving || !title}
+              className="px-4 sm:px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md disabled:opacity-50 transition-colors active:scale-95"
+              title="Publish article live immediately"
+            >
+              {saving ? "Publishing..." : "Publish"}
+            </button>
+          </div>
         </div>
       </div>
 

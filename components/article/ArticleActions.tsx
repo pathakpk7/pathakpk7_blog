@@ -78,7 +78,7 @@ export function ArticleActions({
   };
 
   return (
-    <div className="flex items-center space-x-2 bg-card border border-border px-4 py-2 rounded-full shadow-lg backdrop-blur-md">
+    <div className="flex items-center space-x-1.5 sm:space-x-2 bg-card/95 dark:bg-zinc-900/95 border border-border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xl backdrop-blur-md max-w-[calc(100vw-32px)]">
       {/* Like Button */}
       <button
         onClick={handleLike}

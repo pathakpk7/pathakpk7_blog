@@ -267,10 +267,10 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
       </div>
 
       {/* User Profile Card */}
-      <section className="bg-card p-6 sm:p-8 rounded-2xl border border-border shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-border bg-zinc-950 shrink-0 shadow-sm">
+      <section className="bg-card p-5 sm:p-8 rounded-2xl border border-border shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6">
+          <div className="flex items-center space-x-3.5 sm:space-x-4 min-w-0">
+            <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-border bg-zinc-950 shrink-0 shadow-sm">
               <Image
                 src={avatarUrl}
                 alt={profile.displayName}
@@ -278,38 +278,38 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
                 className="object-cover"
               />
             </div>
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="font-serif-editorial text-2xl sm:text-3xl font-bold text-foreground">
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 className="font-serif-editorial text-xl sm:text-3xl font-bold text-foreground truncate">
                   {profile.displayName}
                 </h1>
                 {isAdmin ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-bold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 uppercase tracking-wider shrink-0">
                     Admin / Author
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-muted text-muted-foreground uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-mono font-semibold bg-muted text-muted-foreground uppercase tracking-wider shrink-0">
                     Community Member
                   </span>
                 )}
               </div>
-              <p className="font-mono text-sm text-blue-600 dark:text-blue-400 font-semibold">
+              <p className="font-mono text-xs sm:text-sm text-blue-600 dark:text-blue-400 font-semibold truncate">
                 @{profile.username}
               </p>
-              <div className="flex items-center space-x-3 text-xs text-muted-foreground pt-1">
+              <div className="flex items-center space-x-3 text-xs text-muted-foreground pt-0.5 sm:pt-1">
                 <div className="flex items-center space-x-1">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>Joined {formatDate(profile.createdAt)}</span>
+                  <span className="text-[11px] sm:text-xs">Joined {formatDate(profile.createdAt)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-center">
+          <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-center justify-end sm:justify-start">
             {isOwnProfile && (
               <Link
                 href="/settings"
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all duration-150 shadow-xs active:scale-95"
+                className="inline-flex items-center space-x-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all duration-150 shadow-xs active:scale-95"
                 title="Manage profile, avatar, username, and appearance"
               >
                 <Settings className="w-3.5 h-3.5" />
@@ -322,7 +322,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
                 href={profile.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition-colors"
+                className="inline-flex items-center space-x-1.5 px-3.5 sm:px-4 py-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-xs font-semibold transition-colors"
               >
                 <span>Website</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -333,44 +333,44 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
 
         {/* Bio */}
         {profile.bio && (
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed pt-2 border-t border-border/60">
+          <p className="text-xs sm:text-base text-muted-foreground leading-relaxed pt-2 border-t border-border/60">
             {profile.bio}
           </p>
         )}
 
         {/* Community Stats */}
-        <div className={`grid ${isAdmin || hasPublishedPosts ? "grid-cols-4" : "grid-cols-3"} gap-4 pt-4 border-t border-border/60 text-center`}>
+        <div className={`grid ${isAdmin || hasPublishedPosts ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"} gap-3 sm:gap-4 pt-4 border-t border-border/60 text-center`}>
           {(isAdmin || hasPublishedPosts) && (
-            <div className="space-y-1">
-              <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
+            <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+              <span className="text-lg sm:text-2xl font-bold font-mono text-foreground">
                 {userPosts.length}
               </span>
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Published
               </p>
             </div>
           )}
-          <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
+          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+            <span className="text-lg sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
               {likedPosts.length}
             </span>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Liked Posts
             </p>
           </div>
-          <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
+          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+            <span className="text-lg sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
               {bookmarkedPosts.length}
             </span>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Saved in Library
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Saved Library
             </p>
           </div>
-          <div className="space-y-1">
-            <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+            <span className="text-lg sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {userComments.length}
             </span>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Comments
             </p>
           </div>

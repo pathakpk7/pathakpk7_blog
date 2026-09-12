@@ -167,7 +167,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const contentElement = await renderArticleContent(post.content, isCreative);
 
   return (
-    <main className="min-h-screen pb-20 pt-8">
+    <main className="min-h-screen pb-32 pt-6 sm:pt-8">
       {/* Back button */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-6">
         <Link
