@@ -26,6 +26,7 @@ export const PRESET_AVATARS = [
   { id: "avatar-anime-haruto", url: "/avatars/anime-haruto.jpg", title: "Haruto (Glasses • Studio Architect)", gender: "male" },
   { id: "avatar-anime-kenji", url: "/avatars/anime-kenji.jpg", title: "Kenji (Cyber Undercut • Neon ARC)", gender: "male" },
   { id: "avatar-anime-shin", url: "/avatars/anime-shin.jpg", title: "Shin (Blond • Radiant Sky)", gender: "male" },
+  { id: "avatar-anime-daiki", url: "/avatars/anime-daiki.jpg", title: "Daiki (Slate Hair • Twilight City)", gender: "male" },
 ];
 
 interface SettingsFormProps {

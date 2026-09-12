@@ -43,6 +43,7 @@ export const ANIME_AVATARS = [
   "/avatars/anime-rin.jpg",
   "/avatars/anime-shin.jpg",
   "/avatars/anime-akari.jpg",
+  "/avatars/anime-daiki.jpg",
 ];
 
 export function getSafeAvatarUrl(avatarUrl: string | null | undefined, seed?: string | null): string {

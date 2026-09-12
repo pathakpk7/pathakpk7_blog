@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -30,6 +30,7 @@ interface PostItem {
 interface CommentItem {
   id: string;
   content: string;
+  status?: string;
   createdAt: Date | string;
   post: {
     id: string;
@@ -289,6 +290,23 @@ export function ProfileTabs({
                       </div>
 
                       <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        {comment.status && (
+                          <span
+                            className={`px-2 py-0.5 rounded-md font-mono text-[10px] font-semibold uppercase tracking-wider ${
+                              comment.status === "APPROVED"
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                : comment.status === "PENDING"
+                                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                                : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30"
+                            }`}
+                          >
+                            {comment.status === "APPROVED"
+                              ? "Live"
+                              : comment.status === "PENDING"
+                              ? "Pending Review"
+                              : "Rejected / Hidden"}
+                          </span>
+                        )}
                         <span className="px-2 py-0.5 rounded-md bg-muted font-mono uppercase text-[10px]">
                           {comment.post.section}
                         </span>
@@ -297,9 +315,28 @@ export function ProfileTabs({
                       </div>
                     </div>
 
-                    <div className="text-sm text-foreground leading-relaxed pl-3 border-l-2 border-emerald-500/50 italic bg-muted/20 py-2 pr-3 rounded-r-xl">
+                    <div
+                      className={`text-sm leading-relaxed pl-3 border-l-2 italic py-2 pr-3 rounded-r-xl ${
+                        comment.status === "REJECTED"
+                          ? "border-rose-500/50 bg-rose-500/5 text-muted-foreground"
+                          : comment.status === "PENDING"
+                          ? "border-amber-500/50 bg-amber-500/5 text-foreground"
+                          : "border-emerald-500/50 bg-muted/20 text-foreground"
+                      }`}
+                    >
                       &ldquo;{comment.content}&rdquo;
                     </div>
+
+                    {comment.status === "REJECTED" && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
+                        Note: This comment was reviewed by the moderator and is not publicly visible to other readers.
+                      </p>
+                    )}
+                    {comment.status === "PENDING" && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400 italic">
+                        Note: This comment is awaiting moderator review before appearing publicly on the article.
+                      </p>
+                    )}
 
                     <div className="pt-1 flex justify-end">
                       <Link

@@ -11,15 +11,17 @@ export default async function StudioDashboardPage() {
     totalViews,
     totalLikes,
     totalBookmarks,
+    totalApprovedComments,
     pendingCommentsCount,
     recentDrafts,
   ] = await Promise.all([
     db.post.count({ where: { status: "DRAFT" } }),
     db.post.count({ where: { status: "PUBLISHED" } }),
     db.post.count({ where: { status: "SCHEDULED" } }),
-    db.postView.count(),
-    db.like.count(),
-    db.bookmark.count(),
+    db.postView.count({ where: { post: { status: "PUBLISHED" } } }),
+    db.like.count({ where: { post: { status: "PUBLISHED" } } }),
+    db.bookmark.count({ where: { post: { status: "PUBLISHED" } } }),
+    db.comment.count({ where: { status: "APPROVED", post: { status: "PUBLISHED" } } }),
     db.comment.count({ where: { status: "PENDING" } }),
     db.post.findMany({
       where: { status: { in: ["DRAFT", "REVIEW", "SCHEDULED"] } },
@@ -141,18 +143,26 @@ export default async function StudioDashboardPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-sm text-zinc-300">
                 <MessageSquare className="w-4 h-4 text-emerald-400" />
-                <span>Pending Comments</span>
+                <span>Approved Comments</span>
               </div>
-              <span className="font-mono text-lg font-bold text-white">{pendingCommentsCount}</span>
+              <span className="font-mono text-lg font-bold text-white">{totalApprovedComments}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 text-sm text-zinc-300">
+                <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <span>Pending Moderation</span>
+              </div>
+              <span className="font-mono text-lg font-bold text-amber-400">{pendingCommentsCount}</span>
             </div>
 
             {pendingCommentsCount > 0 && (
               <div className="pt-2 border-t border-zinc-800">
                 <Link
                   href="/studio/comments"
-                  className="block text-center py-2 px-4 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 text-xs font-semibold transition-colors"
+                  className="block text-center py-2 px-4 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-xs font-semibold border border-amber-500/30 transition-colors"
                 >
-                  Review Pending Comments
+                  Review {pendingCommentsCount} Pending {pendingCommentsCount === 1 ? "Comment" : "Comments"}
                 </Link>
               </div>
             )}

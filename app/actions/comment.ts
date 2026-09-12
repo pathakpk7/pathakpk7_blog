@@ -25,6 +25,7 @@ export async function addComment(postId: string, content: string, parentId?: str
       status: "APPROVED", // Auto-approved for authenticated users in initial setup
     },
     include: {
+      post: { select: { slug: true } },
       user: {
         select: {
           name: true,
@@ -35,6 +36,13 @@ export async function addComment(postId: string, content: string, parentId?: str
     },
   });
 
-  revalidatePath(`/article/[slug]`, "page");
+  if (comment.post?.slug) {
+    revalidatePath(`/article/${comment.post.slug}`);
+  }
+  if (comment.user?.profile?.username) {
+    revalidatePath(`/${comment.user.profile.username}`);
+  }
+  revalidatePath("/studio/comments");
+  revalidatePath("/(public)/[section]", "page");
   return { success: true, comment };
 }

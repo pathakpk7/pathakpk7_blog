@@ -57,6 +57,19 @@ export const authConfig = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs (e.g. / or /settings)
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const urlObj = new URL(url);
+        const baseUrlObj = new URL(baseUrl);
+        // Allows same origin or vercel deployment domains
+        if (urlObj.origin === baseUrlObj.origin || urlObj.host.includes("vercel.app") || urlObj.host.includes("localhost")) {
+          return url;
+        }
+      } catch {}
+      return baseUrl;
+    },
   },
   providers: [], // Configured with Prisma in auth.ts
 } satisfies NextAuthConfig;

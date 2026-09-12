@@ -143,6 +143,12 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
   }
 
   // Otherwise, check if this matches a unique User Profile handle
+  const session = await auth();
+  const currentUserId = session?.user?.id;
+  const currentUserEmail = session?.user?.email?.toLowerCase();
+  const currentUsername = (session?.user as any)?.username;
+  const isCurrentAdmin = (session?.user as any)?.role === "ADMIN" || currentUserEmail === "prasoon7pathak@gmail.com";
+
   let profile: any = null;
   let userPosts: any[] = [];
   let likedPosts: any[] = [];
@@ -191,9 +197,6 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
               },
             },
             comments: {
-              where: {
-                status: { in: ["APPROVED", "PENDING"] },
-              },
               orderBy: { createdAt: "desc" },
               include: {
                 post: {
@@ -202,16 +205,9 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
                     title: true,
                     slug: true,
                     section: true,
+                    status: true,
                   },
                 },
-              },
-            },
-            _count: {
-              select: {
-                posts: { where: { status: "PUBLISHED" } },
-                likes: true,
-                bookmarks: true,
-                comments: true,
               },
             },
           },
@@ -220,6 +216,12 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     });
 
     if (profile) {
+      const isViewerOwner =
+        currentUserId === profile.userId ||
+        currentUserEmail === profile.user?.email?.toLowerCase() ||
+        currentUsername === profile.username ||
+        isCurrentAdmin;
+
       userPosts = profile.user?.posts || [];
       likedPosts = (profile.user?.likes || [])
         .map((l: any) => l.post)
@@ -227,7 +229,13 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
       bookmarkedPosts = (profile.user?.bookmarks || [])
         .map((b: any) => b.post)
         .filter((p: any) => p && p.status === "PUBLISHED");
-      userComments = (profile.user?.comments || []).filter((c: any) => c && c.post);
+
+      // For owner or admin, include all comments with status badges; for public visitors, show approved comments on published posts
+      userComments = (profile.user?.comments || []).filter((c: any) => {
+        if (!c || !c.post) return false;
+        if (isViewerOwner) return true;
+        return c.status === "APPROVED" && c.post.status === "PUBLISHED";
+      });
     }
   } catch (err) {
     console.warn("Profile lookup fallback:", err);
@@ -237,14 +245,13 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     notFound();
   }
 
-  const session = await auth();
   const avatarUrl = getSafeAvatarUrl(profile.avatarUrl, profile.username);
   const isAdmin = profile.user?.role === "ADMIN" || profile.user?.email === "prasoon7pathak@gmail.com";
   const hasPublishedPosts = userPosts.length > 0;
   const isOwnProfile =
-    session?.user?.id === profile.userId ||
-    session?.user?.email === profile.user?.email ||
-    (session?.user as any)?.username === profile.username;
+    currentUserId === profile.userId ||
+    currentUserEmail === profile.user?.email?.toLowerCase() ||
+    currentUsername === profile.username;
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 min-h-screen">
@@ -336,7 +343,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
           {(isAdmin || hasPublishedPosts) && (
             <div className="space-y-1">
               <span className="text-xl sm:text-2xl font-bold font-mono text-foreground">
-                {profile.user?._count?.posts || 0}
+                {userPosts.length}
               </span>
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Published
@@ -345,7 +352,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
           )}
           <div className="space-y-1">
             <span className="text-xl sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
-              {profile.user?._count?.likes || 0}
+              {likedPosts.length}
             </span>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Liked Posts
@@ -353,7 +360,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
           </div>
           <div className="space-y-1">
             <span className="text-xl sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
-              {profile.user?._count?.bookmarks || 0}
+              {bookmarkedPosts.length}
             </span>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Saved in Library
@@ -361,7 +368,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
           </div>
           <div className="space-y-1">
             <span className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-              {profile.user?._count?.comments || 0}
+              {userComments.length}
             </span>
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Comments
