@@ -153,7 +153,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
                   {/* Log Out */}
                   <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                    onClick={async () => {
+                      await signOut({ redirect: false });
+                      window.location.href = "/";
+                    }}
                     className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
                     title="Log out"
                   >
@@ -303,9 +306,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     <span>Account Settings</span>
                   </Link>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setMobileMenuOpen(false);
-                      signOut({ callbackUrl: "/" });
+                      await signOut({ redirect: false });
+                      window.location.href = "/";
                     }}
                     className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 w-full text-left"
                   >

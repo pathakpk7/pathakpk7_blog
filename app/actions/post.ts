@@ -5,6 +5,16 @@ import { db } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 import { calculateReadingTime } from "@/lib/utils";
 
+function slugifyTag(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 interface PostInput {
   id?: string;
   title: string;
@@ -20,6 +30,7 @@ interface PostInput {
   seoDescription?: string;
   featured?: boolean;
   scheduledAt?: string | null;
+  tags?: string[];
 }
 
 export async function savePost(input: PostInput) {
@@ -90,10 +101,45 @@ export async function savePost(input: PostInput) {
     });
   }
 
+  // Handle Tags linking
+  if (Array.isArray(input.tags)) {
+    const tagIds: string[] = [];
+    for (const rawTag of input.tags) {
+      const cleanName = rawTag.trim();
+      const tagSlug = slugifyTag(cleanName);
+      if (!cleanName || !tagSlug) continue;
+
+      const tagRecord = await db.tag.upsert({
+        where: { slug: tagSlug },
+        update: { name: cleanName },
+        create: { name: cleanName, slug: tagSlug },
+      });
+      if (tagRecord?.id && !tagIds.includes(tagRecord.id)) {
+        tagIds.push(tagRecord.id);
+      }
+    }
+
+    // Replace post tags
+    await db.postTag.deleteMany({
+      where: { postId: post.id },
+    });
+
+    if (tagIds.length > 0) {
+      await db.postTag.createMany({
+        data: tagIds.map((tagId) => ({
+          postId: post.id,
+          tagId,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  }
+
   // Thoroughly revalidate all affected public and studio paths
   revalidatePath("/");
   revalidatePath("/studio");
   revalidatePath("/studio/posts");
+  revalidatePath("/studio/tags");
   revalidatePath(`/${input.section}`);
   revalidatePath(`/${post.section}`);
   revalidatePath(`/article/${post.slug}`);

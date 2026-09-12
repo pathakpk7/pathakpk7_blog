@@ -8,13 +8,24 @@ interface EditPostPageProps {
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params;
-  const post = await db.post.findUnique({
-    where: { id },
-  });
+  const [post, availableTags] = await Promise.all([
+    db.post.findUnique({
+      where: { id },
+      include: {
+        tags: {
+          include: { tag: true },
+        },
+      },
+    }),
+    db.tag.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true },
+    }),
+  ]);
 
   if (!post) {
     notFound();
   }
 
-  return <PostEditor initialPost={post as any} />;
+  return <PostEditor initialPost={post as any} availableTags={availableTags} />;
 }

@@ -13,12 +13,14 @@ import {
   ArrowLeft,
   Globe,
   BookOpen,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STUDIO_NAV = [
   { name: "Dashboard", href: "/studio", icon: LayoutDashboard },
   { name: "All Posts", href: "/studio/posts", icon: FileText },
+  { name: "Tags", href: "/studio/tags", icon: Tag },
   { name: "Scheduled", href: "/studio/scheduled", icon: Clock },
   { name: "Comments", href: "/studio/comments", icon: MessageSquare },
   { name: "Analytics", href: "/studio/analytics", icon: BarChart3 },

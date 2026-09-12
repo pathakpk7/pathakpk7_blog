@@ -29,6 +29,9 @@ import {
   Redo,
   Minus,
   Edit3,
+  Tag as TagIcon,
+  X,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -48,10 +51,12 @@ interface PostEditorProps {
     seoDescription?: string | null;
     featured?: boolean;
     scheduledAt?: Date | string | null;
+    tags?: any[];
   };
+  availableTags?: Array<{ id: string; name: string; slug: string }>;
 }
 
-export function PostEditor({ initialPost }: PostEditorProps) {
+export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps) {
   const router = useRouter();
 
   const [title, setTitle] = useState(initialPost?.title || "");
@@ -66,6 +71,13 @@ export function PostEditor({ initialPost }: PostEditorProps) {
   const [seoDescription, setSeoDescription] = useState(initialPost?.seoDescription || "");
   const [featured, setFeatured] = useState(initialPost?.featured || false);
   const [content, setContent] = useState(initialPost?.content || "");
+
+  // Tags state
+  const initialTagsList = initialPost?.tags
+    ? initialPost.tags.map((t: any) => (t.tag?.name || t.name || t)).filter(Boolean)
+    : [];
+  const [tags, setTags] = useState<string[]>(initialTagsList);
+  const [tagInput, setTagInput] = useState("");
 
   const [editorMode, setEditorMode] = useState<"visual" | "html" | "preview">("visual");
   const [saving, setSaving] = useState(false);
@@ -83,6 +95,39 @@ export function PostEditor({ initialPost }: PostEditorProps) {
       );
     }
   }, [title, initialPost?.slug]);
+
+  const addTag = () => {
+    const trimmed = tagInput.trim().replace(/^#/, "");
+    if (!trimmed) return;
+    if (!tags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
+      setTags([...tags, trimmed]);
+      setSaveState("unsaved");
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+    setSaveState("unsaved");
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
+  const handleAddSuggested = (tagName: string) => {
+    if (!tags.some((t) => t.toLowerCase() === tagName.toLowerCase())) {
+      setTags([...tags, tagName]);
+      setSaveState("unsaved");
+    }
+  };
+
+  const unselectedSuggestions = availableTags.filter(
+    (at) => !tags.some((t) => t.toLowerCase() === at.name.toLowerCase())
+  );
 
   const editor = useEditor({
     extensions: [
@@ -126,6 +171,7 @@ export function PostEditor({ initialPost }: PostEditorProps) {
         seoTitle,
         seoDescription,
         featured,
+        tags,
       });
 
       if (res.success) {
@@ -294,6 +340,81 @@ export function PostEditor({ initialPost }: PostEditorProps) {
               className="w-full p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none font-mono text-xs"
             />
           </div>
+        </div>
+
+        {/* Tags Section */}
+        <div className="space-y-2.5 p-4 rounded-xl bg-zinc-900 border border-zinc-800">
+          <div className="flex items-center justify-between">
+            <label className="text-xs text-zinc-300 font-semibold font-mono uppercase flex items-center space-x-1.5">
+              <TagIcon className="w-3.5 h-3.5 text-blue-400" />
+              <span>Article Tags</span>
+            </label>
+            <span className="text-[11px] text-zinc-500 font-mono">Press Enter or comma to add</span>
+          </div>
+
+          {/* Active Tags Chips */}
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[30px]">
+            {tags.length === 0 ? (
+              <span className="text-xs text-zinc-500 italic">No tags added yet. Add tags to categorize your article.</span>
+            ) : (
+              tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-blue-500/15 text-blue-300 border border-blue-500/30 text-xs font-medium"
+                >
+                  <span>#{tag}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeTag(tag)}
+                    className="p-0.5 hover:bg-blue-500/30 rounded text-blue-300 hover:text-white transition-colors"
+                    title={`Remove ${tag}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))
+            )}
+          </div>
+
+          {/* Tag Input */}
+          <div className="flex items-center space-x-2 pt-1">
+            <div className="relative flex-1">
+              <span className="absolute left-3 top-2.5 text-zinc-500 text-xs font-mono">#</span>
+              <input
+                type="text"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder="Type tag (e.g. Next.js, AI, Space, Poetry)..."
+                className="w-full pl-7 pr-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={addTag}
+              disabled={!tagInput.trim()}
+              className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold disabled:opacity-40 transition-colors"
+            >
+              Add Tag
+            </button>
+          </div>
+
+          {/* Tag suggestions */}
+          {unselectedSuggestions.length > 0 && (
+            <div className="pt-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="text-zinc-500 font-mono">Quick Add:</span>
+              {unselectedSuggestions.slice(0, 8).map((st) => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => handleAddSuggested(st.name)}
+                  className="px-2 py-0.5 rounded-md bg-zinc-800/90 hover:bg-blue-600/30 hover:text-blue-300 text-zinc-400 text-[11px] transition-colors border border-zinc-700/50 font-mono"
+                >
+                  +{st.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Cover Image URL */}

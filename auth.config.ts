@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 const ADMIN_EMAIL = "prasoon7pathak@gmail.com";
 
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: "/login",
     error: "/login",
@@ -58,17 +59,19 @@ export const authConfig = {
       return session;
     },
     async redirect({ url, baseUrl }) {
+      // If baseUrl is pointing to the old unconfigured domain, override with current vercel app
+      const cleanBase = baseUrl.includes("thepathak.tech") ? "https://pathakpk7blog.vercel.app" : baseUrl;
       // Allows relative callback URLs (e.g. / or /settings)
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (url.startsWith("/")) return `${cleanBase}${url}`;
       try {
         const urlObj = new URL(url);
-        const baseUrlObj = new URL(baseUrl);
+        const baseUrlObj = new URL(cleanBase);
         // Allows same origin or vercel deployment domains
         if (urlObj.origin === baseUrlObj.origin || urlObj.host.includes("vercel.app") || urlObj.host.includes("localhost")) {
           return url;
         }
       } catch {}
-      return baseUrl;
+      return cleanBase;
     },
   },
   providers: [], // Configured with Prisma in auth.ts

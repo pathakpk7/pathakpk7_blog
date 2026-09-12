@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils";
-import { FileText, Eye, Heart, Bookmark, MessageSquare, Clock, PlusCircle, Edit3 } from "lucide-react";
+import { FileText, Eye, Heart, Bookmark, MessageSquare, Clock, PlusCircle, Edit3, Tag as TagIcon } from "lucide-react";
 
 export default async function StudioDashboardPage() {
   const [
@@ -13,6 +13,7 @@ export default async function StudioDashboardPage() {
     totalBookmarks,
     totalApprovedComments,
     pendingCommentsCount,
+    totalTagsCount,
     recentDrafts,
   ] = await Promise.all([
     db.post.count({ where: { status: "DRAFT" } }),
@@ -23,6 +24,7 @@ export default async function StudioDashboardPage() {
     db.bookmark.count({ where: { post: { status: "PUBLISHED" } } }),
     db.comment.count({ where: { status: "APPROVED", post: { status: "PUBLISHED" } } }),
     db.comment.count({ where: { status: "PENDING" } }),
+    db.tag.count(),
     db.post.findMany({
       where: { status: { in: ["DRAFT", "REVIEW", "SCHEDULED"] } },
       take: 5,
@@ -150,22 +152,38 @@ export default async function StudioDashboardPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 text-sm text-zinc-300">
+                <TagIcon className="w-4 h-4 text-blue-400" />
+                <span>Taxonomy Tags</span>
+              </div>
+              <Link href="/studio/tags" className="font-mono text-lg font-bold text-blue-400 hover:underline">
+                {totalTagsCount}
+              </Link>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 text-sm text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-amber-400" />
                 <span>Pending Moderation</span>
               </div>
               <span className="font-mono text-lg font-bold text-amber-400">{pendingCommentsCount}</span>
             </div>
 
-            {pendingCommentsCount > 0 && (
-              <div className="pt-2 border-t border-zinc-800">
+            <div className="pt-2 border-t border-zinc-800 space-y-2">
+              <Link
+                href="/studio/tags"
+                className="block text-center py-2 px-4 rounded-xl bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 text-xs font-semibold border border-blue-500/20 transition-colors"
+              >
+                Manage Tags & Taxonomy →
+              </Link>
+              {pendingCommentsCount > 0 && (
                 <Link
                   href="/studio/comments"
                   className="block text-center py-2 px-4 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-xs font-semibold border border-amber-500/30 transition-colors"
                 >
                   Review {pendingCommentsCount} Pending {pendingCommentsCount === 1 ? "Comment" : "Comments"}
                 </Link>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
