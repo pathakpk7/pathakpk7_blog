@@ -325,9 +325,14 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
               <option value="ARTICLE">ARTICLE</option>
               <option value="ESSAY">ESSAY</option>
               <option value="TUTORIAL">TUTORIAL</option>
+              <option value="GUIDE">GUIDE</option>
               <option value="NOTE">NOTE</option>
+              <option value="QUOTE">QUOTE</option>
               <option value="POEM">POEM</option>
               <option value="SHAYARI">SHAYARI</option>
+              <option value="SHORT_STORY">SHORT STORY</option>
+              <option value="MICROFICTION">MICROFICTION</option>
+              <option value="SHORT_PROSE">SHORT PROSE</option>
             </select>
           </div>
 
