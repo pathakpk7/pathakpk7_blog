@@ -204,7 +204,7 @@ export default async function HomePage() {
                   <span>The Other Side</span>
                 </div>
                 <h2 className="font-serif-editorial text-3xl font-bold text-foreground">
-                  Creative Writing & Poems
+                  Creative Writing, Poetry & Quotes
                 </h2>
               </div>
               <Link href="/creative" className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline flex items-center space-x-1">
@@ -215,7 +215,7 @@ export default async function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {creativePosts.map((post) => (
-                <ArticleCard key={post.id} post={post as any} variant="creative" />
+                <ArticleCard key={post.id} post={post as any} variant={post.contentType === "QUOTE" ? "quote" : "creative"} />
               ))}
             </div>
           </div>

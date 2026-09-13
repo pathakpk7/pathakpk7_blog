@@ -4,11 +4,11 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { db } from "@/lib/db/prisma";
 import { auth } from "@/auth";
-import { formatDate, calculateReadingTime, getSafeAvatarUrl } from "@/lib/utils";
+import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn } from "@/lib/utils";
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { Clock, Calendar, Tag as TagIcon, ArrowLeft } from "lucide-react";
+import { Clock, Calendar, Tag as TagIcon, ArrowLeft, Quote } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 
@@ -18,10 +18,12 @@ interface ArticlePageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function renderArticleContent(content: string, isCreative: boolean) {
+async function renderArticleContent(content: string, isCreative: boolean, isQuote: boolean = false) {
   if (!content) return null;
 
-  const containerClass = isCreative
+  const containerClass = isQuote
+    ? "max-w-3xl mx-auto space-y-6 text-xl sm:text-2xl leading-relaxed font-serif-editorial italic text-center py-6 px-4 whitespace-pre-line"
+    : isCreative
     ? "max-w-2xl mx-auto space-y-6 text-lg leading-relaxed font-serif whitespace-pre-line py-4"
     : "prose prose-zinc dark:prose-invert prose-editorial mx-auto max-w-3xl";
 
@@ -163,8 +165,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const authorBio = post.author?.profile?.bio || "Lead Software Architect, Writer & Thinker.";
   const authorAvatar = post.author?.profile?.avatarUrl;
   const isCreative = post.section === "creative";
-  const isHindi = post.tags?.some((t: any) => t.tag.slug === "hindi");
-  const contentElement = await renderArticleContent(post.content, isCreative);
+  const isQuote = post.contentType?.toUpperCase() === "QUOTE";
+  const isHindi = post.tags?.some((t: any) => t.tag?.slug === "hindi" || t.slug === "hindi");
+  const contentElement = await renderArticleContent(post.content, isCreative, isQuote);
 
   return (
     <main className="min-h-screen pb-32 pt-6 sm:pt-8">
@@ -185,17 +188,39 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="flex items-center justify-center sm:justify-start space-x-3 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
             <span>{post.section}</span>
             <span>•</span>
-            <span className="text-muted-foreground font-normal">{post.contentType}</span>
+            <span className="inline-flex items-center space-x-1 text-muted-foreground font-normal">
+              {isQuote && <Quote className="w-3 h-3 text-amber-500" />}
+              <span>{post.contentType}</span>
+            </span>
           </div>
 
-          <h1 className={isCreative && isHindi ? "font-devanagari text-4xl sm:text-5xl font-bold leading-snug" : "font-serif-editorial text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"}>
-            {post.title}
-          </h1>
+          {isQuote ? (
+            <div className="p-8 sm:p-12 rounded-3xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-center my-6 relative shadow-xs">
+              <Quote className="w-10 h-10 text-amber-500/30 mx-auto mb-4" />
+              <blockquote className={cn(
+                "text-2xl sm:text-4xl lg:text-5xl font-serif-editorial italic font-medium tracking-tight text-foreground leading-snug",
+                isHindi && "font-devanagari not-italic text-3xl sm:text-4xl"
+              )}>
+                &ldquo;{post.title}&rdquo;
+              </blockquote>
+              {post.subtitle && (
+                <cite className="block text-base sm:text-lg text-amber-800/80 dark:text-amber-300/80 font-serif mt-6 not-italic font-medium">
+                  — {post.subtitle}
+                </cite>
+              )}
+            </div>
+          ) : (
+            <>
+              <h1 className={isCreative && isHindi ? "font-devanagari text-4xl sm:text-5xl font-bold leading-snug" : "font-serif-editorial text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"}>
+                {post.title}
+              </h1>
 
-          {post.subtitle && (
-            <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
-              {post.subtitle}
-            </p>
+              {post.subtitle && (
+                <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
+                  {post.subtitle}
+                </p>
+              )}
+            </>
           )}
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-4 border-t border-b border-border py-4 text-xs text-muted-foreground">

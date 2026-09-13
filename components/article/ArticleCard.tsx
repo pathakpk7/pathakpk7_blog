@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Tag as TagIcon } from "lucide-react";
+import { Clock, Tag as TagIcon, Quote } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 
 export interface ArticleCardProps {
@@ -24,7 +24,7 @@ export interface ArticleCardProps {
     } | null;
     tags?: Array<{ tag: { name: string; slug: string } }> | Array<{ name: string; slug: string }>;
   };
-  variant?: "featured" | "standard" | "compact" | "horizontal" | "creative";
+  variant?: "featured" | "standard" | "compact" | "horizontal" | "creative" | "quote";
   className?: string;
 }
 
@@ -33,6 +33,55 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   const sectionUpper = (post.section || "technology").toUpperCase();
   const isHindi = post.tags?.some((t: any) => (t.tag?.slug || t.slug) === "hindi");
   const hasValidCoverImage = typeof post.coverImageUrl === "string" && post.coverImageUrl.trim().length > 5;
+  const isQuote = post.contentType?.toUpperCase() === "QUOTE" || variant === "quote";
+
+  if (isQuote) {
+    return (
+      <article className={cn("group relative bg-card rounded-2xl p-7 border border-amber-500/30 hover:border-amber-500/60 dark:bg-amber-950/10 dark:border-amber-500/30 dark:hover:border-amber-500/50 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-5 shadow-xs", className)}>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
+            <span className="inline-flex items-center space-x-1.5 uppercase tracking-widest font-semibold">
+              <Quote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>QUOTE</span>
+            </span>
+            <span>{formatDate(post.publishedAt)}</span>
+          </div>
+
+          <div className="relative pl-4 border-l-2 border-amber-500/60 dark:border-amber-400/60 py-1 my-1">
+            <h3 className={cn(
+              "text-xl sm:text-2xl font-serif-editorial italic font-medium tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 leading-snug",
+              isHindi && "font-devanagari text-2xl not-italic"
+            )}>
+              <Link href={`/article/${post.slug}`}>
+                <span className="absolute inset-0" aria-hidden="true" />
+                &ldquo;{post.title}&rdquo;
+              </Link>
+            </h3>
+          </div>
+
+          {post.subtitle && (
+            <p className="text-sm font-medium text-amber-800/80 dark:text-amber-300/80 pl-4 font-serif">
+              — {post.subtitle}
+            </p>
+          )}
+
+          {post.excerpt && (
+            <p className={cn(
+              "text-xs sm:text-sm text-muted-foreground leading-relaxed pl-4 line-clamp-3 pt-1",
+              isHindi && "font-devanagari"
+            )}>
+              {post.excerpt}
+            </p>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between pt-3 border-t border-amber-500/20 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">{authorName}</span>
+          <span className="font-mono text-[11px] uppercase tracking-wider">{post.section}</span>
+        </div>
+      </article>
+    );
+  }
 
   if (variant === "featured") {
     return (

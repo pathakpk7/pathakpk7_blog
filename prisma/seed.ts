@@ -347,6 +347,28 @@ export const CreatePostSchema = z.object({
       seoDescription: "Short note on Zod, Valibot, and TypeBox for runtime boundary validation.",
       coverImageUrl: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
       tags: ["web-development"],
+    },
+    {
+      title: "The only way to do great work is to love what you do.",
+      slug: "great-work-steve-jobs-quote",
+      subtitle: "Steve Jobs, Stanford Commencement Address (2005)",
+      excerpt: "If you haven't found it yet, keep looking. Don't settle. As with all matters of the heart, you'll know when you find it.",
+      content: `> The only way to do great work is to love what you do. If you haven't found it yet, keep looking. Don't settle. As with all matters of the heart, you'll know when you find it.
+> 
+> — **Steve Jobs**, *Stanford Commencement Address (2005)*
+
+A timeless reminder on craft, passion, and relentless curiosity in software engineering and life.`,
+      section: "creative",
+      categoryId: categories["creative"].id,
+      contentType: ContentType.QUOTE,
+      status: PostStatus.PUBLISHED,
+      readingTime: 1,
+      featured: false,
+      publishedAt: new Date(Date.now() - 86400000 * 2),
+      seoTitle: "Steve Jobs on Great Work | ThePathak.tech",
+      seoDescription: "A timeless quote on craft, passion, and relentless pursuit in software and creative life.",
+      coverImageUrl: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80",
+      tags: ["focus", "developer-life"],
     }
   ];
 

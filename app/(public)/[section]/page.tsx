@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 interface SectionPageProps {
   params: Promise<{ section: string }>;
+  searchParams?: Promise<{ type?: string }>;
 }
 
 const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName: string }> = {
@@ -32,17 +33,17 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName
   },
   ideas: {
     title: "Ideas & Essays",
-    subtitle: "Personal observations on deep work, focus, discipline, and developer life.",
+    subtitle: "Personal observations on deep work, focus, discipline, quotes, and developer life.",
     iconName: "Lightbulb",
   },
   creative: {
     title: "Creative & Poems",
-    subtitle: "Original poetry, Hindi Shayari, microfiction, short prose, and literary thoughts.",
+    subtitle: "Original poetry, Hindi Shayari, memorable quotes, microfiction, short prose, and literary thoughts.",
     iconName: "Feather",
   },
   notes: {
     title: "Notes & Musings",
-    subtitle: "Short-form observations, quick tools, micro-tips, and technical thoughts.",
+    subtitle: "Short-form observations, quick tools, micro-tips, quotes, and technical thoughts.",
     iconName: "BookOpen",
   },
 };
@@ -81,19 +82,38 @@ export async function generateMetadata({ params }: SectionPageProps) {
   return { title: "Page Not Found | ThePathak.tech" };
 }
 
-export default async function SectionOrProfilePage({ params }: SectionPageProps) {
+export default async function SectionOrProfilePage({ params, searchParams }: SectionPageProps) {
   const { section } = await params;
+  const resolvedSearchParams = await searchParams;
+  const typeFilter = resolvedSearchParams?.type?.toUpperCase();
   const sectionConfig = VALID_SECTIONS[section];
 
   // If this is a valid section route, render the section archive
   if (sectionConfig) {
     let posts: any[] = [];
+    let allSectionPostTypes: string[] = [];
+
     try {
-      posts = await db.post.findMany({
+      const allPosts = await db.post.findMany({
         where: {
           status: "PUBLISHED",
           section: section,
         },
+        select: { contentType: true },
+      });
+      allSectionPostTypes = Array.from(new Set(allPosts.map((p) => p.contentType)));
+
+      const whereClause: any = {
+        status: "PUBLISHED",
+        section: section,
+      };
+
+      if (typeFilter && typeFilter !== "ALL") {
+        whereClause.contentType = typeFilter;
+      }
+
+      posts = await db.post.findMany({
+        where: whereClause,
         include: {
           author: { include: { profile: true } },
           tags: { include: { tag: true } },
@@ -105,11 +125,14 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
     }
 
     const isCreative = section === "creative";
+    const defaultTypes = isCreative ? ["POEM", "SHAYARI", "QUOTE"] : ["ARTICLE", "ESSAY", "NOTE"];
+    const combinedTypes = Array.from(new Set([...allSectionPostTypes, ...defaultTypes]));
+    const availableTypes = ["ALL", ...combinedTypes];
 
     return (
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 min-h-screen">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 min-h-screen">
         {/* Section Header */}
-        <header className="space-y-3 border-b border-border pb-8">
+        <header className="space-y-4 border-b border-border pb-8">
           <span className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">
             Section Archive
           </span>
@@ -119,13 +142,44 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
           <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
             {sectionConfig.subtitle}
           </p>
+
+          {/* Content Type Filter Pills */}
+          <div className="flex flex-wrap items-center gap-2 pt-3">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground mr-1">Filter Type:</span>
+            {availableTypes.map((t) => {
+              const isActive = (!typeFilter && t === "ALL") || typeFilter === t;
+              return (
+                <Link
+                  key={t}
+                  href={t === "ALL" ? `/${section}` : `/${section}?type=${t.toLowerCase()}`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-foreground text-background font-semibold shadow-xs"
+                      : "bg-muted text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-foreground"
+                  }`}
+                >
+                  {t === "ALL" ? "All Content" : t.replace(/_/g, " ")}
+                </Link>
+              );
+            })}
+          </div>
         </header>
 
         {/* Posts Grid */}
         {posts.length === 0 ? (
           <div className="py-20 text-center space-y-3 rounded-2xl bg-card border border-border">
-            <p className="text-lg font-semibold text-foreground">No articles published in this section yet.</p>
-            <p className="text-sm text-muted-foreground">Check back soon for new publications from The Pathak.</p>
+            <p className="text-lg font-semibold text-foreground">
+              {typeFilter ? `No ${typeFilter.toLowerCase()}s found in this section.` : "No articles published in this section yet."}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {typeFilter ? (
+                <Link href={`/${section}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                  View all {sectionConfig.title} publications
+                </Link>
+              ) : (
+                "Check back soon for new publications from The Pathak."
+              )}
+            </p>
           </div>
         ) : (
           <div className={isCreative ? "grid grid-cols-1 md:grid-cols-2 gap-8" : "grid grid-cols-1 md:grid-cols-3 gap-6"}>
@@ -133,7 +187,7 @@ export default async function SectionOrProfilePage({ params }: SectionPageProps)
               <ArticleCard
                 key={post.id}
                 post={post as any}
-                variant={isCreative ? "creative" : "standard"}
+                variant={post.contentType === "QUOTE" ? "quote" : isCreative ? "creative" : "standard"}
               />
             ))}
           </div>

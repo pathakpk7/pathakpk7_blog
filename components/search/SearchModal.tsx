@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, X, ArrowRight, FileText, Tag, Folder } from "lucide-react";
+import { Search, X, ArrowRight, FileText, Tag, Folder, Quote } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SearchModalProps {
@@ -66,7 +66,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search articles, code, science, poems, tags..."
+            placeholder="Search articles, quotes, code, science, poems, tags..."
             className="w-full bg-transparent text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
             autoFocus
           />
@@ -91,7 +91,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           {!loading && query && results.length === 0 && (
             <div className="py-12 text-center space-y-2">
               <p className="text-sm font-semibold text-foreground">No matches found for &quot;{query}&quot;</p>
-              <p className="text-xs text-muted-foreground">Try searching with broader terms or section names like Technology, Coding, or Science.</p>
+              <p className="text-xs text-muted-foreground">Try searching with broader terms or section names like Technology, Coding, Quotes, or Science.</p>
             </div>
           )}
 
@@ -99,7 +99,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             <div className="py-8 px-2 space-y-4 text-xs text-muted-foreground">
               <p className="font-semibold uppercase tracking-wider text-[10px] text-foreground">Suggested Topics</p>
               <div className="flex flex-wrap gap-2">
-                {["AI Agents", "React 19", "JWST", "Hindi Poetry", "Focus", "LeetCode"].map((topic) => (
+                {["AI Agents", "Quotes", "React 19", "JWST", "Hindi Poetry", "Focus", "LeetCode"].map((topic) => (
                   <button
                     key={topic}
                     onClick={() => setQuery(topic)}
@@ -128,10 +128,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <div className="flex items-center space-x-2 text-[10px] font-semibold uppercase text-blue-600 dark:text-blue-400">
                       <span>{item.section}</span>
                       <span>•</span>
-                      <span className="text-muted-foreground">{item.contentType}</span>
+                      <span className="inline-flex items-center space-x-1 text-muted-foreground">
+                        {item.contentType === "QUOTE" && <Quote className="w-2.5 h-2.5 text-amber-500" />}
+                        <span>{item.contentType}</span>
+                      </span>
                     </div>
                     <h4 className="font-serif-editorial text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {item.title}
+                      {item.contentType === "QUOTE" ? `“${item.title}”` : item.title}
                     </h4>
                     {item.excerpt && (
                       <p className="text-xs text-muted-foreground line-clamp-1">{item.excerpt}</p>
