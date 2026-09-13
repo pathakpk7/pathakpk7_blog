@@ -34,6 +34,7 @@ import {
   Plus,
 } from "lucide-react";
 import Link from "next/link";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 interface PostEditorProps {
   initialPost?: {
@@ -251,6 +252,14 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
           </div>
 
           <div className="flex items-center space-x-2">
+            {initialPost?.id && (
+              <DeletePostButton
+                postId={initialPost.id}
+                postTitle={title || initialPost.title}
+                redirectTo="/studio/posts"
+                variant="button"
+              />
+            )}
             <button
               onClick={() => handleSave("DRAFT")}
               disabled={saving || !title}

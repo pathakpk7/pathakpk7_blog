@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils";
-import { PlusCircle, Edit3, Trash2, ExternalLink, Clock } from "lucide-react";
-import { deletePost } from "@/app/actions/post";
+import { PlusCircle, Edit3, ExternalLink } from "lucide-react";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 interface StudioPostsPageProps {
   searchParams?: Promise<{ type?: string; status?: string }>;
@@ -135,6 +135,11 @@ export default async function StudioPostsPage({ searchParams }: StudioPostsPageP
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </Link>
+                        <DeletePostButton
+                          postId={post.id}
+                          postTitle={post.title}
+                          variant="icon"
+                        />
                       </div>
                     </td>
                   </tr>

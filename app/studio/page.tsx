@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils";
 import { FileText, Eye, Heart, Bookmark, MessageSquare, Clock, PlusCircle, Edit3, Tag as TagIcon } from "lucide-react";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 export default async function StudioDashboardPage() {
   const [
@@ -109,13 +110,20 @@ export default async function StudioDashboardPage() {
                     <h4 className="text-base font-bold text-white font-serif-editorial">{post.title}</h4>
                     <p className="text-xs text-zinc-400">Last saved {formatDate(post.updatedAt)}</p>
                   </div>
-                  <Link
-                    href={`/studio/posts/${post.id}/edit`}
-                    className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs flex items-center space-x-1 shrink-0"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Edit</span>
-                  </Link>
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <Link
+                      href={`/studio/posts/${post.id}/edit`}
+                      className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs flex items-center space-x-1"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </Link>
+                    <DeletePostButton
+                      postId={post.id}
+                      postTitle={post.title}
+                      variant="icon"
+                    />
+                  </div>
                 </div>
               ))
             )}

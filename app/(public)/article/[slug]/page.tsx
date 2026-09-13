@@ -8,9 +8,10 @@ import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn } from "@/lib/ut
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { Clock, Calendar, Tag as TagIcon, ArrowLeft, Quote } from "lucide-react";
+import { Clock, Calendar, Tag as TagIcon, ArrowLeft, Quote, Edit3 } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +103,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const session = await auth();
   const userId = session?.user?.id;
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
 
   let post: any = null;
   let relatedPosts: any[] = [];
@@ -171,8 +174,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <main className="min-h-screen pb-32 pt-6 sm:pt-8">
-      {/* Back button */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-6">
+      {/* Back button and Admin controls */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-6 flex flex-wrap items-center justify-between gap-3">
         <Link
           href={`/${post.section}`}
           className="inline-flex items-center space-x-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -180,6 +183,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to {post.section.toUpperCase()}</span>
         </Link>
+
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Link
+              href={`/studio/posts/${post.id}/edit`}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-semibold transition-colors"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Article</span>
+            </Link>
+            <DeletePostButton
+              postId={post.id}
+              postTitle={post.title}
+              redirectTo={`/${post.section}`}
+              variant="button"
+            />
+          </div>
+        )}
       </div>
 
       <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
@@ -320,6 +341,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             slug={post.slug}
             title={post.title}
             isLoggedIn={!!userId}
+            isAdmin={isAdmin}
+            section={post.section}
           />
         </div>
 

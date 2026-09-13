@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, X, ArrowRight, FileText, Tag, Folder, Quote } from "lucide-react";
+import { Search, X, ArrowRight, FileText, Tag, Folder, Quote, Edit3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -11,6 +13,10 @@ interface SearchModalProps {
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -118,13 +124,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 Found {results.length} results
               </p>
               {results.map((item) => (
-                <Link
+                <div
                   key={item.id}
-                  href={`/article/${item.slug}`}
-                  onClick={onClose}
-                  className="group flex items-start justify-between p-3 rounded-xl hover:bg-muted/70 transition-colors"
+                  className="group flex items-start justify-between p-3 rounded-xl hover:bg-muted/70 transition-colors relative"
                 >
-                  <div className="space-y-1 pr-4">
+                  <Link
+                    href={`/article/${item.slug}`}
+                    onClick={onClose}
+                    className="flex-1 space-y-1 pr-4"
+                  >
                     <div className="flex items-center space-x-2 text-[10px] font-semibold uppercase text-blue-600 dark:text-blue-400">
                       <span>{item.section}</span>
                       <span>•</span>
@@ -139,9 +147,33 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     {item.excerpt && (
                       <p className="text-xs text-muted-foreground line-clamp-1">{item.excerpt}</p>
                     )}
+                  </Link>
+                  <div className="flex items-center space-x-1 shrink-0 mt-2">
+                    {isAdmin && (
+                      <div className="flex items-center space-x-1 mr-1" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                        <Link
+                          href={`/studio/posts/${item.id}/edit`}
+                          onClick={onClose}
+                          title="Edit in Studio"
+                          className="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </Link>
+                        <DeletePostButton
+                          postId={item.id}
+                          postTitle={item.title}
+                          variant="icon"
+                          onDeleted={() => {
+                            setResults((prev) => prev.filter((r) => r.id !== item.id));
+                          }}
+                        />
+                      </div>
+                    )}
+                    <Link href={`/article/${item.slug}`} onClick={onClose}>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-600 group-hover:translate-x-0.5 transition-transform" />
+                    </Link>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-blue-600 group-hover:translate-x-0.5 transition-transform shrink-0 mt-2" />
-                </Link>
+                </div>
               ))}
             </div>
           )}

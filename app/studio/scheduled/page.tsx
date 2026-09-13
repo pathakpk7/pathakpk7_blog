@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { formatDate } from "@/lib/utils";
 import { Clock, Edit3, PlusCircle, Calendar } from "lucide-react";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 export default async function StudioScheduledPage() {
   const scheduledPosts = await db.post.findMany({
@@ -77,14 +78,21 @@ export default async function StudioScheduledPage() {
                     </td>
                     <td className="px-4 py-4 text-zinc-400">{formatDate(post.updatedAt)}</td>
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/studio/posts/${post.id}/edit`}
-                        className="inline-flex items-center space-x-1 p-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white"
-                        title="Edit scheduled article"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span className="text-[11px] font-semibold">Edit</span>
-                      </Link>
+                      <div className="flex items-center justify-end space-x-2">
+                        <Link
+                          href={`/studio/posts/${post.id}/edit`}
+                          className="inline-flex items-center space-x-1 p-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white"
+                          title="Edit scheduled article"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span className="text-[11px] font-semibold">Edit</span>
+                        </Link>
+                        <DeletePostButton
+                          postId={post.id}
+                          postTitle={post.title}
+                          variant="icon"
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

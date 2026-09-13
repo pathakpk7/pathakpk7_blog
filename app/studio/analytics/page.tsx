@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/prisma";
-import { Eye, Heart, Bookmark, MessageSquare, TrendingUp, AlertCircle, ArrowUpRight } from "lucide-react";
+import { Eye, Heart, Bookmark, MessageSquare, TrendingUp, AlertCircle, ArrowUpRight, Edit3 } from "lucide-react";
 import Link from "next/link";
+import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 export default async function StudioAnalyticsPage() {
   const [
@@ -131,14 +132,28 @@ export default async function StudioAnalyticsPage() {
                     <td className="px-4 py-4 text-center font-mono font-bold text-blue-400">{post._count.bookmarks}</td>
                     <td className="px-4 py-4 text-center font-mono font-bold text-emerald-400">{post._count.comments}</td>
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        href={`/article/${post.slug}`}
-                        target="_blank"
-                        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 inline-flex items-center space-x-1"
-                        title="Open live article"
-                      >
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </Link>
+                      <div className="flex items-center justify-end space-x-2">
+                        <Link
+                          href={`/studio/posts/${post.id}/edit`}
+                          className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 inline-flex items-center space-x-1"
+                          title="Edit in Studio"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </Link>
+                        <Link
+                          href={`/article/${post.slug}`}
+                          target="_blank"
+                          className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 inline-flex items-center space-x-1"
+                          title="Open live article"
+                        >
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </Link>
+                        <DeletePostButton
+                          postId={post.id}
+                          postTitle={post.title}
+                          variant="icon"
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Bookmark, Share2, MessageSquare, Check } from "lucide-react";
+import { Heart, Bookmark, Share2, MessageSquare, Check, Edit3 } from "lucide-react";
+import Link from "next/link";
 import { toggleLike } from "@/app/actions/like";
 import { toggleBookmark } from "@/app/actions/bookmark";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { DeletePostButton } from "./DeletePostButton";
 
 interface ArticleActionsProps {
   postId: string;
@@ -16,6 +18,8 @@ interface ArticleActionsProps {
   slug: string;
   title: string;
   isLoggedIn: boolean;
+  isAdmin?: boolean;
+  section?: string;
 }
 
 export function ArticleActions({
@@ -27,6 +31,8 @@ export function ArticleActions({
   slug,
   title,
   isLoggedIn,
+  isAdmin = false,
+  section = "technology",
 }: ArticleActionsProps) {
   const router = useRouter();
   const [liked, setLiked] = useState(initialLiked);
@@ -124,6 +130,26 @@ export function ArticleActions({
       >
         {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
       </button>
+
+      {/* Admin Quick Actions */}
+      {isAdmin && (
+        <>
+          <span className="w-px h-4 bg-border mx-1" />
+          <Link
+            href={`/studio/posts/${postId}/edit`}
+            className="p-2 text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-full transition-colors"
+            title="Edit article in Studio"
+          >
+            <Edit3 className="w-4 h-4" />
+          </Link>
+          <DeletePostButton
+            postId={postId}
+            postTitle={title}
+            redirectTo={`/${section}`}
+            variant="floating"
+          />
+        </>
+      )}
     </div>
   );
 }

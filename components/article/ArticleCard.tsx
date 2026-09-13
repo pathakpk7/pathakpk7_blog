@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Tag as TagIcon, Quote } from "lucide-react";
+import { Clock, Tag as TagIcon, Quote, Edit3 } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import { DeletePostButton } from "./DeletePostButton";
 
 export interface ArticleCardProps {
   post: {
@@ -29,15 +33,40 @@ export interface ArticleCardProps {
 }
 
 export function ArticleCard({ post, variant = "standard", className }: ArticleCardProps) {
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
+
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
   const sectionUpper = (post.section || "technology").toUpperCase();
   const isHindi = post.tags?.some((t: any) => (t.tag?.slug || t.slug) === "hindi");
   const hasValidCoverImage = typeof post.coverImageUrl === "string" && post.coverImageUrl.trim().length > 5;
   const isQuote = post.contentType?.toUpperCase() === "QUOTE" || variant === "quote";
 
+  const AdminOverlay = isAdmin ? (
+    <div className="absolute top-3 right-3 z-30 flex items-center space-x-1.5 p-1 rounded-xl bg-zinc-950/85 backdrop-blur-md border border-zinc-700/80 shadow-xl opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-150">
+      <Link
+        href={`/studio/posts/${post.id}/edit`}
+        onClick={(e) => e.stopPropagation()}
+        className="p-1.5 rounded-lg bg-zinc-800 hover:bg-blue-600 text-zinc-300 hover:text-white transition-colors"
+        title="Edit article"
+      >
+        <Edit3 className="w-3.5 h-3.5" />
+      </Link>
+      <div onClick={(e) => e.stopPropagation()}>
+        <DeletePostButton
+          postId={post.id}
+          postTitle={post.title}
+          variant="icon"
+        />
+      </div>
+    </div>
+  ) : null;
+
   if (isQuote) {
     return (
       <article className={cn("group relative bg-card rounded-2xl p-7 border border-amber-500/30 hover:border-amber-500/60 dark:bg-amber-950/10 dark:border-amber-500/30 dark:hover:border-amber-500/50 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-5 shadow-xs", className)}>
+        {AdminOverlay}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
             <span className="inline-flex items-center space-x-1.5 uppercase tracking-widest font-semibold">
@@ -86,6 +115,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   if (variant === "featured") {
     return (
       <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card rounded-2xl p-6 lg:p-8 border border-border shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
+        {AdminOverlay}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center space-x-3 text-xs font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">
             <span>{sectionUpper}</span>
@@ -138,6 +168,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   if (variant === "creative") {
     return (
       <article className={cn("group relative bg-card rounded-2xl p-8 border border-border/70 hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-6", className)}>
+        {AdminOverlay}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
             <span className="uppercase tracking-widest">{post.contentType}</span>
@@ -175,7 +206,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   if (variant === "compact") {
     return (
       <article className={cn("group relative flex items-start justify-between space-x-4 py-3 border-b border-border/60 last:border-0 hover:bg-muted/30 px-2 rounded-lg transition-colors duration-150 active:scale-[0.995]", className)}>
-        <div className="space-y-1">
+        <div className="space-y-1 pr-14">
           <span className="text-[10px] uppercase tracking-wider font-semibold text-blue-600 dark:text-blue-400">
             {sectionUpper}
           </span>
@@ -191,6 +222,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             <span>{post.readingTime} min</span>
           </div>
         </div>
+        {AdminOverlay}
       </article>
     );
   }
@@ -198,6 +230,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   if (variant === "horizontal") {
     return (
       <article className={cn("group relative flex flex-col sm:flex-row gap-6 bg-card rounded-xl p-5 border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
+        {AdminOverlay}
         {hasValidCoverImage && (
           <div className="relative h-48 sm:h-auto sm:w-48 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
             <Image
@@ -241,6 +274,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   // Standard vertical card
   return (
     <article className={cn("group relative flex flex-col bg-card rounded-xl overflow-hidden border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 shadow-xs active:scale-[0.995]", className)}>
+      {AdminOverlay}
       {hasValidCoverImage && (
         <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
           <Image
