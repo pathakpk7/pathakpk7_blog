@@ -123,6 +123,15 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     </Link>
                   )}
 
+                  {/* My Library Button */}
+                  <Link
+                    href="/library"
+                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                    title="My Library (Bookmarks & History)"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                  </Link>
+
                   {/* Profile Avatar Button -> Leads directly to interactions, likes, bookmarks, and comments */}
                   <Link
                     href={`/${username}`}
@@ -289,6 +298,14 @@ export function Header({ onOpenSearch }: HeaderProps) {
                       <span>Writer Studio CMS</span>
                     </Link>
                   )}
+                  <Link
+                    href="/library"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  >
+                    <BookOpen className="w-4 h-4 text-blue-500" />
+                    <span>My Library & Reading List</span>
+                  </Link>
                   <Link
                     href={`/${username}`}
                     onClick={() => setMobileMenuOpen(false)}

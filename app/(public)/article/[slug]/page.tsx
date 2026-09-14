@@ -144,6 +144,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         },
       }).catch(() => {});
 
+      if (userId) {
+        db.readingHistory.upsert({
+          where: {
+            userId_postId: { userId, postId: post.id },
+          },
+          update: {
+            lastReadAt: new Date(),
+          },
+          create: {
+            userId,
+            postId: post.id,
+            progress: 0.1,
+          },
+        }).catch(() => {});
+      }
+
       relatedPosts = await db.post.findMany({
         where: {
           status: "PUBLISHED",

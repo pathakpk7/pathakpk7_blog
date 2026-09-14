@@ -20,6 +20,9 @@ import {
   Heart,
   Menu,
   X,
+  BookOpen,
+  Bookmark as BookmarkIcon,
+  ArrowRight,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
@@ -503,13 +506,23 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
         {/* Activity Tab - Interactive Profile History */}
         {activeTab === "activity" && (
           <div className="space-y-6">
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold font-serif-editorial text-foreground">
-                My Activity & History
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                View and manage your real-time likes, bookmarks library, and comment discussions.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold font-serif-editorial text-foreground">
+                  My Activity & Library
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  View and manage your real-time likes, bookmarks library, and comment discussions.
+                </p>
+              </div>
+              <Link
+                href="/library"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors shadow-xs shrink-0 self-start sm:self-auto"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Open Full Library</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
 
             <div className="pt-2">
@@ -531,7 +544,7 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
           <div className="space-y-6">
             <div className="space-y-1">
               <h3 className="text-lg font-bold font-serif-editorial text-foreground">Account Summary</h3>
-              <p className="text-xs text-muted-foreground">Your account authentication identity details.</p>
+              <p className="text-xs text-muted-foreground">Your account authentication identity details and library access.</p>
             </div>
 
             <div className="p-6 rounded-2xl bg-card border border-border space-y-4">
@@ -554,6 +567,52 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
                 }`}>
                   {user.role}
                 </span>
+              </div>
+            </div>
+
+            {/* Quick Access to My Library */}
+            <div className="p-6 rounded-2xl bg-card border border-border space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground">Personal Library</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Access all your saved bookmarks, favorited articles, and reading history.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/library"
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors shadow-xs"
+                >
+                  <span>Go to Library</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 pt-2 text-center border-t border-border/70">
+                <div className="p-3 rounded-xl bg-muted/40">
+                  <span className="text-lg font-bold font-mono text-blue-600 dark:text-blue-400">
+                    {activity?.bookmarkedPosts?.length || 0}
+                  </span>
+                  <p className="text-[10px] uppercase font-semibold text-muted-foreground">Bookmarked</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/40">
+                  <span className="text-lg font-bold font-mono text-rose-600 dark:text-rose-400">
+                    {activity?.likedPosts?.length || 0}
+                  </span>
+                  <p className="text-[10px] uppercase font-semibold text-muted-foreground">Liked</p>
+                </div>
+                <div className="p-3 rounded-xl bg-muted/40">
+                  <span className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                    {activity?.comments?.length || 0}
+                  </span>
+                  <p className="text-[10px] uppercase font-semibold text-muted-foreground">Comments</p>
+                </div>
               </div>
             </div>
           </div>

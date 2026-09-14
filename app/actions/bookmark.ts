@@ -30,6 +30,8 @@ export async function toggleBookmark(postId: string) {
 
   revalidatePath(`/article/[slug]`, "page");
   revalidatePath("/library");
+  revalidatePath("/settings");
+  revalidatePath("/(public)/[section]", "page");
 
   return { bookmarked: !existingBookmark };
 }

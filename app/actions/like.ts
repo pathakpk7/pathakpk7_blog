@@ -31,6 +31,8 @@ export async function toggleLike(postId: string) {
   const count = await db.like.count({ where: { postId } });
   revalidatePath(`/article/[slug]`, "page");
   revalidatePath("/library");
+  revalidatePath("/settings");
+  revalidatePath("/(public)/[section]", "page");
 
   return { liked: !existingLike, count };
 }

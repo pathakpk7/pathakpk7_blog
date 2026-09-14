@@ -48,6 +48,7 @@ interface ProfileTabsProps {
   likedPosts: PostItem[];
   bookmarkedPosts: PostItem[];
   comments: CommentItem[];
+  defaultTab?: "publications" | "liked" | "bookmarks" | "comments";
 }
 
 export function ProfileTabs({
@@ -58,11 +59,13 @@ export function ProfileTabs({
   likedPosts,
   bookmarkedPosts,
   comments,
+  defaultTab,
 }: ProfileTabsProps) {
   // Determine initial active tab: if author has published articles, start there; otherwise start on Liked or Bookmarks
   const hasPublished = publishedPosts.length > 0 || isAdmin;
   const initialTab: "publications" | "liked" | "bookmarks" | "comments" =
-    hasPublished && publishedPosts.length > 0
+    defaultTab ||
+    (hasPublished && publishedPosts.length > 0
       ? "publications"
       : likedPosts.length > 0
       ? "liked"
@@ -72,7 +75,7 @@ export function ProfileTabs({
       ? "comments"
       : hasPublished
       ? "publications"
-      : "liked";
+      : "liked");
 
   const [activeTab, setActiveTab] = useState<"publications" | "liked" | "bookmarks" | "comments">(initialTab);
 
@@ -187,14 +190,24 @@ export function ProfileTabs({
             </div>
 
             {likedPosts.length === 0 ? (
-              <div className="py-16 text-center space-y-3 rounded-2xl bg-card border border-border">
-                <div className="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto">
-                  <Heart className="w-5 h-5" />
+              <div className="py-16 text-center space-y-4 rounded-2xl bg-card border border-border">
+                <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center mx-auto border border-rose-500/20">
+                  <Heart className="w-6 h-6" />
                 </div>
-                <p className="text-base font-semibold text-foreground">No liked articles yet</p>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Articles liked while reading on ThePathak.tech will be curated here.
-                </p>
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-foreground">No liked articles yet</p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Articles liked while reading on ThePathak.tech will be curated here.
+                  </p>
+                </div>
+                <div>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors"
+                  >
+                    <span>Discover Articles</span>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -224,14 +237,24 @@ export function ProfileTabs({
             </div>
 
             {bookmarkedPosts.length === 0 ? (
-              <div className="py-16 text-center space-y-3 rounded-2xl bg-card border border-border">
-                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-500 flex items-center justify-center mx-auto">
-                  <BookmarkIcon className="w-5 h-5" />
+              <div className="py-16 text-center space-y-4 rounded-2xl bg-card border border-border">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 flex items-center justify-center mx-auto border border-blue-500/20">
+                  <BookmarkIcon className="w-6 h-6" />
                 </div>
-                <p className="text-base font-semibold text-foreground">No saved articles yet</p>
-                <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                  Bookmark insightful essays and technical breakdowns to read them anytime.
-                </p>
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-foreground">No saved articles yet</p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Bookmark insightful essays and technical breakdowns to read them anytime.
+                  </p>
+                </div>
+                <div>
+                  <Link
+                    href="/"
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-colors"
+                  >
+                    <span>Browse Articles</span>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

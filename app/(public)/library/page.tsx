@@ -1,12 +1,14 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db/prisma";
-import { ArticleCard } from "@/components/article/ArticleCard";
-import { BookOpen, Heart, Bookmark as BookmarkIcon, History } from "lucide-react";
+import { LibraryView } from "@/components/library/LibraryView";
+import { BookOpen } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "My Library | ThePathak.tech",
-  description: "Your saved articles, bookmarks, and reading history.",
+  description: "Your saved articles, bookmarks, reading history, and discussions.",
 };
 
 export default async function LibraryPage() {
@@ -15,22 +17,17 @@ export default async function LibraryPage() {
     redirect("/login?callbackUrl=/library");
   }
 
-  const username =
-    (session.user as any)?.username ||
-    (session.user?.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : null);
-
-  if (username) {
-    redirect(`/${username}`);
-  }
-
   const userId = session.user.id;
 
-  const [likes, bookmarks, history] = await Promise.all([
+  const [likes, bookmarks, history, comments] = await Promise.all([
     db.like.findMany({
       where: { userId },
       include: {
         post: {
-          include: { author: { include: { profile: true } } },
+          include: {
+            author: { include: { profile: true } },
+            tags: { include: { tag: true } },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -39,7 +36,10 @@ export default async function LibraryPage() {
       where: { userId },
       include: {
         post: {
-          include: { author: { include: { profile: true } } },
+          include: {
+            author: { include: { profile: true } },
+            tags: { include: { tag: true } },
+          },
         },
       },
       orderBy: { createdAt: "desc" },
@@ -48,87 +48,78 @@ export default async function LibraryPage() {
       where: { userId },
       include: {
         post: {
-          include: { author: { include: { profile: true } } },
+          include: {
+            author: { include: { profile: true } },
+            tags: { include: { tag: true } },
+          },
         },
       },
       orderBy: { lastReadAt: "desc" },
     }),
+    db.comment.findMany({
+      where: { userId },
+      include: {
+        post: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            section: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
+  const publishedBookmarks = bookmarks
+    .map((b) => b.post)
+    .filter((p): p is any => Boolean(p && p.status === "PUBLISHED"));
+
+  const publishedLikes = likes
+    .map((l) => l.post)
+    .filter((p): p is any => Boolean(p && p.status === "PUBLISHED"));
+
+  const publishedHistory = history
+    .filter((h) => Boolean(h.post && h.post.status === "PUBLISHED"))
+    .map((h) => ({
+      id: h.id,
+      progress: h.progress,
+      lastReadAt: h.lastReadAt,
+      post: h.post as any,
+    }));
+
+  const validComments = comments.filter((c) => Boolean(c && c.post));
+
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 min-h-screen">
-      <header className="space-y-2 border-b border-border pb-6">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 min-h-screen">
+      <header className="space-y-3 border-b border-border pb-6">
         <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400">
           <BookOpen className="w-5 h-5" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Personal Dashboard</span>
+          <span className="text-xs font-semibold uppercase tracking-wider font-mono">
+            Personal Reading Dashboard
+          </span>
         </div>
-        <h1 className="font-serif-editorial text-4xl font-bold tracking-tight text-foreground">
+        <h1 className="font-serif-editorial text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
           My Library
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Revisit saved publications, bookmarked essays, and continue reading where you left off.
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
+          Revisit saved publications, bookmarked technical breakdowns, track your reading history, and review discussion threads.
         </p>
       </header>
 
-      {/* Bookmarked Section */}
-      <section className="space-y-6">
-        <div className="flex items-center space-x-2 border-b border-border pb-3">
-          <BookmarkIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <h2 className="font-serif-editorial text-2xl font-bold text-foreground">
-            Bookmarked ({bookmarks.length})
-          </h2>
-        </div>
-
-        {bookmarks.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic py-4">No bookmarked articles yet.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {bookmarks.map((b) => (
-              <ArticleCard key={b.id} post={b.post as any} variant="standard" />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Liked Articles Section */}
-      <section className="space-y-6 pt-6">
-        <div className="flex items-center space-x-2 border-b border-border pb-3">
-          <Heart className="w-4 h-4 text-rose-500" />
-          <h2 className="font-serif-editorial text-2xl font-bold text-foreground">
-            Liked Articles ({likes.length})
-          </h2>
-        </div>
-
-        {likes.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic py-4">No liked articles yet.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {likes.map((l) => (
-              <ArticleCard key={l.id} post={l.post as any} variant="standard" />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Reading History Section */}
-      <section className="space-y-6 pt-6">
-        <div className="flex items-center space-x-2 border-b border-border pb-3">
-          <History className="w-4 h-4 text-muted-foreground" />
-          <h2 className="font-serif-editorial text-2xl font-bold text-foreground">
-            Reading History ({history.length})
-          </h2>
-        </div>
-
-        {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground italic py-4">No reading history recorded yet.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {history.map((h) => (
-              <ArticleCard key={h.id} post={h.post as any} variant="horizontal" />
-            ))}
-          </div>
-        )}
-      </section>
+      <LibraryView
+        user={{
+          name: session.user.name,
+          email: session.user.email,
+          username: (session.user as any).username,
+        }}
+        bookmarks={publishedBookmarks}
+        likes={publishedLikes}
+        history={publishedHistory}
+        comments={validComments as any}
+      />
     </main>
   );
 }
