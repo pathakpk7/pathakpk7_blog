@@ -17,13 +17,16 @@ import {
   BarChart3,
   BookOpen,
   Tag,
+  Bell,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
 
 const STUDIO_NAV = [
   { name: "Dashboard", href: "/studio", icon: LayoutDashboard },
   { name: "All Posts", href: "/studio/posts", icon: FileText },
+  { name: "Notifications", href: "/studio/notifications", icon: Bell },
   { name: "Tags", href: "/studio/tags", icon: Tag },
   { name: "Scheduled", href: "/studio/scheduled", icon: Clock },
   { name: "Comments", href: "/studio/comments", icon: MessageSquare },
@@ -86,8 +89,10 @@ export function StudioHeader() {
           </div>
         </div>
 
-        {/* Right: Quick Actions & Admin Badge */}
+        {/* Right: Quick Actions, Notification Bell & Admin Badge */}
         <div className="flex items-center space-x-2 sm:space-x-2.5">
+          <NotificationBell variant="studio" />
+
           <Link
             href="/studio/posts/new"
             className="inline-flex items-center space-x-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-xs transition-colors active:scale-95"
@@ -232,4 +237,3 @@ export function StudioHeader() {
     </>
   );
 }
-

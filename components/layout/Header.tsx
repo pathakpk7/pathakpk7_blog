@@ -6,8 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import { Search, Menu, X, BookOpen, PenTool, LogOut, Home, Settings, User } from "lucide-react";
 import { Navigation } from "./Navigation";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useSession, signOut } from "next-auth/react";
-
 import { getSafeAvatarUrl } from "@/lib/utils";
 
 interface HeaderProps {
@@ -51,9 +51,9 @@ export function Header({ onOpenSearch }: HeaderProps) {
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Top-Left: Hamburger Icon for Mobile & Tablet */}
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-16 gap-2 sm:gap-4 lg:gap-6">
+            {/* Top-Left: Hamburger Icon for Mobile & Tablet + Brand Logo */}
+            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0 mr-2 sm:mr-4 lg:mr-8 xl:mr-10">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 -ml-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
@@ -65,7 +65,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
               {/* Brand Logo & Editorial Subtitle */}
               <Link href="/" className="group flex items-center space-x-2.5 shrink-0">
-                <div className="relative w-9 h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/60 dark:border-zinc-800 shrink-0 bg-zinc-950">
+                <div className="relative w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/60 dark:border-zinc-800 shrink-0 bg-zinc-950">
                   <Image
                     src="/emblem.png"
                     alt="ThePathak.tech Logo"
@@ -77,10 +77,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-serif-editorial text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <span className="font-serif-editorial text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors whitespace-nowrap">
                     ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
                   </span>
-                  <span className="hidden sm:inline-block text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 -mt-1 font-medium">
+                  <span className="hidden sm:inline-block text-[9.5px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 -mt-1 font-medium whitespace-nowrap">
                     Tech • Science • Code • Words
                   </span>
                 </div>
@@ -91,17 +91,17 @@ export function Header({ onOpenSearch }: HeaderProps) {
             <Navigation />
 
             {/* Actions & Controls */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2.5 shrink-0">
+            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-2.5 shrink-0 ml-auto lg:ml-0">
               {/* Search Trigger */}
               <button
                 onClick={onOpenSearch}
-                className="flex items-center space-x-2 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                className="flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
                 title="Search articles (Cmd+K)"
                 aria-label="Search articles"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Search...</span>
-                <kbd className="hidden sm:inline text-[10px] bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 dark:text-zinc-400 font-mono">
+                <span className="hidden md:inline">Search...</span>
+                <kbd className="hidden lg:inline text-[10px] bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 dark:text-zinc-400 font-mono">
                   ⌘K
                 </kbd>
               </button>
@@ -109,17 +109,21 @@ export function Header({ onOpenSearch }: HeaderProps) {
               {/* Theme Toggle */}
               <ThemeToggle />
 
+              {/* Admin Notification Bell */}
+              {isAdmin && <NotificationBell variant="header" />}
+
               {/* User State */}
               {session?.user ? (
-                <div className="flex items-center space-x-1.5 sm:space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-1.5 lg:space-x-2">
+                  {/* Studio Button - Desktop/Tablet Only to keep mobile header clean */}
                   {isAdmin && (
                     <Link
                       href="/studio"
-                      className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-xs active:scale-95"
+                      className="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-xs active:scale-95"
                       title="Writer Studio CMS"
                     >
                       <PenTool className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Studio</span>
+                      <span className="hidden lg:inline">Studio</span>
                     </Link>
                   )}
 
@@ -132,10 +136,10 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     <BookOpen className="w-4 h-4" />
                   </Link>
 
-                  {/* Profile Avatar Button -> Leads directly to interactions, likes, bookmarks, and comments */}
+                  {/* Profile Avatar Button */}
                   <Link
                     href={`/${username}`}
-                    className="group flex items-center space-x-2 p-1 pr-2.5 rounded-full border border-border hover:border-blue-500/60 bg-card hover:bg-muted/40 transition-all duration-150 active:scale-95 shadow-xs"
+                    className="group flex items-center space-x-2 p-1 pr-1.5 sm:pr-2.5 rounded-full border border-border hover:border-blue-500/60 bg-card hover:bg-muted/40 transition-all duration-150 active:scale-95 shadow-xs"
                     title={`View Profile & Activity (@${username})`}
                   >
                     <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 border border-border/60 shrink-0">
@@ -146,7 +150,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         className="object-cover"
                       />
                     </div>
-                    <span className="hidden md:inline-block text-xs font-semibold text-foreground max-w-[90px] truncate">
+                    <span className="hidden xl:inline-block text-xs font-semibold text-foreground max-w-[85px] truncate">
                       {session.user.name || username}
                     </span>
                   </Link>
@@ -154,7 +158,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                   {/* Account Settings */}
                   <Link
                     href="/settings"
-                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                    className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
                     title="Account Settings"
                   >
                     <Settings className="w-4 h-4" />
@@ -166,7 +170,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                       await signOut({ redirect: false });
                       window.location.href = "/";
                     }}
-                    className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                    className="hidden lg:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
                     title="Log out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -348,6 +352,19 @@ export function Header({ onOpenSearch }: HeaderProps) {
         )}
       </header>
 
+      {/* Admin Mobile Floating Action Button (Lower & Separate for Mobile View Only) */}
+      {isAdmin && (
+        <Link
+          href="/studio"
+          className="fixed bottom-6 right-5 z-40 lg:hidden flex items-center space-x-2 px-4 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xl shadow-blue-500/30 border border-blue-400/40 backdrop-blur-md active:scale-95 transition-all group"
+          title="Open Writer Studio CMS"
+          aria-label="Open Writer Studio"
+        >
+          <PenTool className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
+          <span className="font-sans font-semibold tracking-wide">Studio</span>
+        </Link>
+      )}
+
       {/* Backdrop overlay for closing mobile menu on click anywhere outside */}
       {mobileMenuOpen && (
         <div
@@ -359,5 +376,3 @@ export function Header({ onOpenSearch }: HeaderProps) {
     </>
   );
 }
-
-

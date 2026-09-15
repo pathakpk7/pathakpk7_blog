@@ -18,7 +18,7 @@ export function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden lg:flex items-center space-x-6 text-sm font-medium">
+    <nav className="hidden lg:flex items-center space-x-3.5 xl:space-x-6 text-sm font-medium">
       {SECTIONS.map((item) => {
         const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return (
@@ -26,7 +26,7 @@ export function Navigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              "transition-colors hover:text-zinc-900 dark:hover:text-zinc-100 whitespace-nowrap text-[13px] py-1",
+              "transition-colors hover:text-zinc-900 dark:hover:text-zinc-100 whitespace-nowrap text-xs xl:text-[13px] py-1 font-medium",
               isActive
                 ? "text-zinc-900 dark:text-zinc-100 font-semibold border-b-2 border-blue-600 dark:border-blue-500 pb-0.5"
                 : "text-zinc-600 dark:text-zinc-400"
@@ -39,4 +39,3 @@ export function Navigation() {
     </nav>
   );
 }
-

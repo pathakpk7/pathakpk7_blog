@@ -14,12 +14,14 @@ import {
   Globe,
   BookOpen,
   Tag,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STUDIO_NAV = [
   { name: "Dashboard", href: "/studio", icon: LayoutDashboard },
   { name: "All Posts", href: "/studio/posts", icon: FileText },
+  { name: "Notifications", href: "/studio/notifications", icon: Bell },
   { name: "Tags", href: "/studio/tags", icon: Tag },
   { name: "Scheduled", href: "/studio/scheduled", icon: Clock },
   { name: "Comments", href: "/studio/comments", icon: MessageSquare },
@@ -86,7 +88,7 @@ export function StudioSidebar() {
                       : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
                   )}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4 text-blue-400" />
                   <span>{item.name}</span>
                 </Link>
               );
@@ -149,4 +151,3 @@ export function StudioSidebar() {
     </aside>
   );
 }
-
