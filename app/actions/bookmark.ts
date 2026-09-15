@@ -2,7 +2,6 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
-import { revalidatePath } from "next/cache";
 
 export async function toggleBookmark(postId: string) {
   const session = await auth();
@@ -16,6 +15,7 @@ export async function toggleBookmark(postId: string) {
     where: {
       userId_postId: { userId, postId },
     },
+    select: { id: true },
   });
 
   if (existingBookmark) {
@@ -27,11 +27,6 @@ export async function toggleBookmark(postId: string) {
       data: { userId, postId },
     });
   }
-
-  revalidatePath(`/article/[slug]`, "page");
-  revalidatePath("/library");
-  revalidatePath("/settings");
-  revalidatePath("/(public)/[section]", "page");
 
   return { bookmarked: !existingBookmark };
 }

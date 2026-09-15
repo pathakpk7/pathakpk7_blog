@@ -13,7 +13,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 import { DeletePostButton } from "@/components/article/DeletePostButton";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -136,30 +136,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     });
 
     if (post) {
-      db.postView.create({
-        data: {
-          postId: post.id,
-          userId: userId || null,
-          sessionId: userId || "anon-" + Math.random().toString(36).slice(2),
-        },
-      }).catch(() => {});
-
-      if (userId) {
-        db.readingHistory.upsert({
-          where: {
-            userId_postId: { userId, postId: post.id },
-          },
-          update: {
-            lastReadAt: new Date(),
-          },
-          create: {
-            userId,
-            postId: post.id,
-            progress: 0.1,
-          },
-        }).catch(() => {});
-      }
-
       relatedPosts = await db.post.findMany({
         where: {
           status: "PUBLISHED",
@@ -362,8 +338,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
         </div>
 
-        {/* Comment Section */}
-        <CommentSection postId={post.id} comments={(post.comments as any) || []} isLoggedIn={!!userId} />
+        {/* Comment Section with edit permissions and instant response */}
+        <CommentSection
+          postId={post.id}
+          comments={(post.comments as any) || []}
+          isLoggedIn={!!userId}
+          currentUserId={userId}
+          isAdmin={isAdmin}
+        />
 
         {/* Related Articles */}
         {relatedPosts.length > 0 && (

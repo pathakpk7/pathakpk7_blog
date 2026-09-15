@@ -13,7 +13,7 @@ export interface Interactor {
 }
 
 export interface AggregatedPostNotification {
-  id: string; // unique batch key e.g. postId + latestDate
+  id: string;
   postId: string;
   postTitle: string;
   postSlug: string;
@@ -40,10 +40,12 @@ export async function getAggregatedNotifications(): Promise<{
     return { notifications: [], totalUnreadCount: 0, totalInteractionsCount: 0 };
   }
 
-  // Fetch recent likes, bookmarks, and comments across all published/existing posts
+  // Fetch recent likes, bookmarks, and comments with selective fields
   const [likes, bookmarks, comments] = await Promise.all([
     db.like.findMany({
-      include: {
+      select: {
+        postId: true,
+        createdAt: true,
         post: { select: { id: true, title: true, slug: true } },
         user: {
           select: {
@@ -54,10 +56,12 @@ export async function getAggregatedNotifications(): Promise<{
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 150,
+      take: 40,
     }),
     db.bookmark.findMany({
-      include: {
+      select: {
+        postId: true,
+        createdAt: true,
         post: { select: { id: true, title: true, slug: true } },
         user: {
           select: {
@@ -68,13 +72,17 @@ export async function getAggregatedNotifications(): Promise<{
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 150,
+      take: 40,
     }),
     db.comment.findMany({
       where: {
         status: { notIn: ["DELETED", "SPAM"] },
       },
-      include: {
+      select: {
+        id: true,
+        postId: true,
+        content: true,
+        createdAt: true,
         post: { select: { id: true, title: true, slug: true } },
         user: {
           select: {
@@ -85,7 +93,7 @@ export async function getAggregatedNotifications(): Promise<{
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 150,
+      take: 40,
     }),
   ]);
 
@@ -163,16 +171,12 @@ export async function getAggregatedNotifications(): Promise<{
     });
   }
 
-  // Sort all events by date descending
   rawEvents.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-  // Group events by Post and Activity Session
-  // If an interaction on the same post is separated by > 48 hours, it creates a new notification batch
   const BATCH_GAP_MS = 48 * 60 * 60 * 1000;
   const aggregatedMap = new Map<string, AggregatedPostNotification>();
 
   for (const event of rawEvents) {
-    // Find if there's an existing batch for this post within BATCH_GAP_MS
     let matchingKey: string | null = null;
     for (const [key, batch] of aggregatedMap.entries()) {
       if (batch.postId === event.postId) {
@@ -233,11 +237,10 @@ export async function getAggregatedNotifications(): Promise<{
         batch.earliestTimestamp = event.createdAt;
       }
 
-      // Add interactor if not already present with same type
       const exists = batch.interactors.some(
         (i) => i.username === event.user.username && i.type === event.type
       );
-      if (!exists && batch.interactors.length < 15) {
+      if (!exists && batch.interactors.length < 10) {
         batch.interactors.push({
           name: event.user.name,
           username: event.user.username,
@@ -252,7 +255,7 @@ export async function getAggregatedNotifications(): Promise<{
         event.type === "comment" &&
         event.commentSnippet &&
         event.commentId &&
-        batch.sampleComments.length < 5
+        batch.sampleComments.length < 4
       ) {
         batch.sampleComments.push({
           id: event.commentId,
@@ -268,11 +271,9 @@ export async function getAggregatedNotifications(): Promise<{
     (a, b) => b.latestTimestamp.getTime() - a.latestTimestamp.getTime()
   );
 
-  const totalInteractionsCount = rawEvents.length;
-
   return {
     notifications,
     totalUnreadCount: notifications.length,
-    totalInteractionsCount,
+    totalInteractionsCount: rawEvents.length,
   };
 }

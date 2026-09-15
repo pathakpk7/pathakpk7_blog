@@ -19,14 +19,13 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load notifications
+  // Load notifications non-blockingly
   const loadNotifications = async () => {
     try {
       setLoading(true);
       const data = await getAggregatedNotifications();
       setNotifications(data.notifications);
 
-      // Check last read timestamp from localStorage
       const lastRead = localStorage.getItem("admin_notifications_last_read");
       if (lastRead) {
         const lastReadTime = new Date(lastRead).getTime();
@@ -45,9 +44,16 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
   };
 
   useEffect(() => {
-    loadNotifications();
-    const interval = setInterval(loadNotifications, 60000); // refresh every minute
-    return () => clearInterval(interval);
+    // Slight deferral on mount to prioritize initial page load
+    const timer = setTimeout(() => {
+      loadNotifications();
+    }, 600);
+
+    const interval = setInterval(loadNotifications, 120000); // refresh every 2 mins
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   // Close dropdown on click outside

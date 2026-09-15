@@ -3,16 +3,19 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { addComment } from "@/app/actions/comment";
+import { addComment, editComment, deleteComment } from "@/app/actions/comment";
 import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
-import { Send, MessageSquare, CornerDownRight, AtSign } from "lucide-react";
+import { Send, MessageSquare, CornerDownRight, AtSign, Edit3, Trash2, Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-interface CommentItem {
+export interface CommentItem {
   id: string;
+  userId?: string;
   content: string;
   createdAt: Date | string;
+  updatedAt?: Date | string;
   user: {
+    id?: string;
     name?: string | null;
     image?: string | null;
     profile?: { displayName?: string | null; avatarUrl?: string | null; username?: string | null } | null;
@@ -24,6 +27,8 @@ interface CommentSectionProps {
   postId: string;
   comments: CommentItem[];
   isLoggedIn: boolean;
+  currentUserId?: string;
+  isAdmin?: boolean;
 }
 
 interface MentionUser {
@@ -33,19 +38,34 @@ interface MentionUser {
   avatar?: string | null;
 }
 
-export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionProps) {
+export function CommentSection({
+  postId,
+  comments: initialComments,
+  isLoggedIn,
+  currentUserId,
+  isAdmin = false,
+}: CommentSectionProps) {
   const router = useRouter();
+  const [commentList, setCommentList] = useState<CommentItem[]>(initialComments);
   const [content, setContent] = useState("");
   const [replyParentId, setReplyParentId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Sync initialComments when server updates
+  useEffect(() => {
+    setCommentList(initialComments);
+  }, [initialComments]);
 
   // Mention autocomplete state
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionSuggestions, setMentionSuggestions] = useState<MentionUser[]>([]);
-  const [activeInput, setActiveInput] = useState<"main" | "reply" | null>(null);
+  const [activeInput, setActiveInput] = useState<"main" | "reply" | "edit" | null>(null);
   const replyInputRef = useRef<HTMLTextAreaElement>(null);
   const mainInputRef = useRef<HTMLTextAreaElement>(null);
+  const editInputRef = useRef<HTMLTextAreaElement>(null);
 
   // Search mentionable users
   useEffect(() => {
@@ -72,14 +92,12 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
   // Handle typing to detect @mention
   const handleInputChange = (
     text: string,
-    target: "main" | "reply",
+    target: "main" | "reply" | "edit",
     textarea: HTMLTextAreaElement
   ) => {
-    if (target === "main") {
-      setContent(text);
-    } else {
-      setReplyContent(text);
-    }
+    if (target === "main") setContent(text);
+    else if (target === "reply") setReplyContent(text);
+    else setEditContent(text);
 
     const cursorPos = textarea.selectionStart;
     const textBeforeCursor = text.slice(0, cursorPos);
@@ -96,8 +114,9 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
 
   const insertMention = (user: MentionUser) => {
     const isMain = activeInput === "main";
-    const text = isMain ? content : replyContent;
-    const textarea = isMain ? mainInputRef.current : replyInputRef.current;
+    const isReply = activeInput === "reply";
+    const text = isMain ? content : isReply ? replyContent : editContent;
+    const textarea = isMain ? mainInputRef.current : isReply ? replyInputRef.current : editInputRef.current;
 
     if (!textarea) return;
 
@@ -110,11 +129,9 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
     const newPrefix = words.length > 0 ? words.join(" ") + " " : "";
     const newText = `${newPrefix}@${user.username} ${textAfterCursor}`;
 
-    if (isMain) {
-      setContent(newText);
-    } else {
-      setReplyContent(newText);
-    }
+    if (isMain) setContent(newText);
+    else if (isReply) setReplyContent(newText);
+    else setEditContent(newText);
 
     setMentionQuery(null);
     setMentionSuggestions([]);
@@ -127,6 +144,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
   };
 
   const handleStartReply = (commentId: string, authorUsername?: string | null, authorName?: string | null) => {
+    setEditingCommentId(null);
     setReplyParentId(commentId);
     const tag = authorUsername
       ? `@${authorUsername} `
@@ -140,6 +158,73 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
     }, 100);
   };
 
+  const handleStartEdit = (comment: CommentItem) => {
+    setReplyParentId(null);
+    setEditingCommentId(comment.id);
+    setEditContent(comment.content);
+
+    setTimeout(() => {
+      editInputRef.current?.focus();
+    }, 100);
+  };
+
+  // Submit Edit with Optimistic UI update
+  const handleSaveEdit = async (commentId: string) => {
+    if (!editContent.trim()) return;
+
+    const trimmed = editContent.trim();
+    const prevList = [...commentList];
+
+    // Optimistically update
+    const updatedList = commentList.map((c) => {
+      if (c.id === commentId) {
+        return { ...c, content: trimmed, updatedAt: new Date() };
+      }
+      if (c.replies) {
+        return {
+          ...c,
+          replies: c.replies.map((r) =>
+            r.id === commentId ? { ...r, content: trimmed, updatedAt: new Date() } : r
+          ),
+        };
+      }
+      return c;
+    });
+
+    setCommentList(updatedList);
+    setEditingCommentId(null);
+
+    try {
+      await editComment(commentId, trimmed);
+    } catch (err) {
+      console.error("Failed to save edited comment:", err);
+      setCommentList(prevList);
+    }
+  };
+
+  // Delete comment / reply
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Are you sure you want to delete this reply?")) return;
+
+    const prevList = [...commentList];
+    const filteredList = commentList
+      .filter((c) => c.id !== commentId)
+      .map((c) => ({
+        ...c,
+        replies: c.replies ? c.replies.filter((r) => r.id !== commentId) : [],
+      }));
+
+    setCommentList(filteredList);
+
+    try {
+      await deleteComment(commentId);
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
+      setCommentList(prevList);
+    }
+  };
+
+  // Submit New Comment or Reply
   const handleSubmit = async (e: React.FormEvent, parentId?: string) => {
     e.preventDefault();
     if (!isLoggedIn) {
@@ -152,7 +237,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
 
     setSubmitting(true);
     try {
-      await addComment(postId, textToSubmit, parentId);
+      const res = await addComment(postId, textToSubmit, parentId);
       if (parentId) {
         setReplyContent("");
         setReplyParentId(null);
@@ -160,12 +245,34 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
         setContent("");
       }
       setMentionQuery(null);
-      router.refresh();
+
+      // Optimistically append newly added comment
+      if (res?.comment) {
+        if (parentId) {
+          setCommentList((prev) =>
+            prev.map((c) =>
+              c.id === parentId
+                ? { ...c, replies: [...(c.replies || []), res.comment as any] }
+                : c
+            )
+          );
+        } else {
+          setCommentList((prev) => [res.comment as any, ...prev]);
+        }
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Check if current user can edit a comment
+  const canEdit = (comment: CommentItem) => {
+    if (!isLoggedIn) return false;
+    if (isAdmin) return true;
+    const authorId = comment.userId || comment.user?.id;
+    return currentUserId && authorId && currentUserId === authorId;
   };
 
   // Render text with clickable @mentions
@@ -188,13 +295,18 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
     });
   };
 
+  const totalCommentsCount = commentList.reduce(
+    (acc, curr) => acc + 1 + (curr.replies?.length || 0),
+    0
+  );
+
   return (
     <section id="comments" className="mt-16 pt-10 border-t border-border space-y-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h3 className="font-serif-editorial text-2xl font-bold text-foreground">
-            Discussion ({comments.length})
+            Discussion ({totalCommentsCount})
           </h3>
         </div>
         <span className="text-xs text-muted-foreground flex items-center space-x-1">
@@ -251,7 +363,7 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
             <button
               type="submit"
               disabled={submitting || !content.trim()}
-              className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition-colors disabled:opacity-50 active:scale-95"
+              className="inline-flex items-center space-x-2 px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition-colors disabled:opacity-50 active:scale-95 shadow-xs"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{submitting ? "Posting..." : "Post Comment"}</span>
@@ -272,15 +384,18 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
 
       {/* Comments List */}
       <div className="space-y-4 pt-4">
-        {comments.length === 0 ? (
+        {commentList.length === 0 ? (
           <p className="text-sm text-muted-foreground italic text-center py-6">
             No comments yet. Be the first to start the discussion!
           </p>
         ) : (
-          comments.map((comment) => {
+          commentList.map((comment) => {
             const author = comment.user.profile?.displayName || comment.user.name || "Reader";
             const username = comment.user.profile?.username;
             const avatar = comment.user.profile?.avatarUrl || `https://api.dicebear.com/9.x/adventurer/svg?seed=${username || author}`;
+            const isEditing = editingCommentId === comment.id;
+            const userCanEdit = canEdit(comment);
+            const isEdited = comment.updatedAt && new Date(comment.updatedAt).getTime() - new Date(comment.createdAt).getTime() > 1000;
 
             return (
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
@@ -299,16 +414,81 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                       )}
                     </div>
                   </div>
-                  <span className="text-muted-foreground text-[11px]">{formatDate(comment.createdAt)}</span>
+
+                  <div className="flex items-center space-x-2 text-muted-foreground text-[11px]">
+                    <span>{formatDate(comment.createdAt)}</span>
+                    {isEdited && <span className="italic text-zinc-400 text-[10px]">(edited)</span>}
+                  </div>
                 </div>
 
-                <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line pl-8.5">
-                  {renderFormattedContent(comment.content)}
-                </div>
+                {/* Comment Body or Edit Form */}
+                {isEditing ? (
+                  <div className="pl-8.5 pt-1 space-y-2 relative">
+                    <textarea
+                      ref={editInputRef}
+                      value={editContent}
+                      onChange={(e) => handleInputChange(e.target.value, "edit", e.target)}
+                      className="w-full p-3 rounded-lg bg-muted border border-border text-xs text-foreground focus:outline-none resize-y min-h-[80px]"
+                    />
 
-                {/* Reply button */}
-                {isLoggedIn && (
-                  <div className="pl-8.5">
+                    {/* Mention Dropdown for Edit */}
+                    {activeInput === "edit" && mentionSuggestions.length > 0 && (
+                      <div className="absolute left-2 bottom-full mb-1 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-30 overflow-hidden py-1">
+                        {mentionSuggestions.map((u) => (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => insertMention(u)}
+                            className="flex items-center space-x-2.5 w-full px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-left transition-colors"
+                          >
+                            <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                              <Image src={getSafeAvatarUrl(u.avatar, u.username)} alt={u.displayName} fill className="object-cover" />
+                            </div>
+                            <span className="text-xs font-semibold text-foreground">@{u.username}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-[11px] text-rose-500 hover:text-rose-600 flex items-center space-x-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Delete</span>
+                      </button>
+
+                      <div className="flex space-x-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingCommentId(null)}
+                          className="px-3 py-1 text-xs text-muted-foreground hover:bg-muted rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEdit(comment.id)}
+                          disabled={!editContent.trim()}
+                          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold active:scale-95 transition-colors flex items-center space-x-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          <span>Save</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line pl-8.5">
+                    {renderFormattedContent(comment.content)}
+                  </div>
+                )}
+
+                {/* Reply and Edit Action buttons */}
+                {!isEditing && isLoggedIn && (
+                  <div className="pl-8.5 flex items-center space-x-4 pt-1">
                     <button
                       onClick={() => {
                         if (replyParentId === comment.id) {
@@ -322,6 +502,16 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                       <CornerDownRight className="w-3 h-3" />
                       <span>Reply {username ? `@${username}` : ""}</span>
                     </button>
+
+                    {userCanEdit && (
+                      <button
+                        onClick={() => handleStartEdit(comment)}
+                        className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium inline-flex items-center space-x-1 transition-colors"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>Edit</span>
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -397,9 +587,12 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                       const repAuthor = reply.user.profile?.displayName || reply.user.name || "Reader";
                       const repUsername = reply.user.profile?.username;
                       const repAvatar = reply.user.profile?.avatarUrl;
+                      const isRepEditing = editingCommentId === reply.id;
+                      const repCanEdit = canEdit(reply);
+                      const isRepEdited = reply.updatedAt && new Date(reply.updatedAt).getTime() - new Date(reply.createdAt).getTime() > 1000;
 
                       return (
-                        <div key={reply.id} className="space-y-1 bg-muted/40 p-3 rounded-lg">
+                        <div key={reply.id} className="space-y-1.5 bg-muted/40 p-3 rounded-lg">
                           <div className="flex items-center justify-between text-[11px]">
                             <div className="flex items-center space-x-2">
                               <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
@@ -413,11 +606,71 @@ export function CommentSection({ postId, comments, isLoggedIn }: CommentSectionP
                                 <span className="font-semibold text-foreground">{repAuthor}</span>
                               )}
                             </div>
-                            <span className="text-muted-foreground">{formatDate(reply.createdAt)}</span>
+                            <div className="flex items-center space-x-1.5 text-muted-foreground">
+                              <span>{formatDate(reply.createdAt)}</span>
+                              {isRepEdited && <span className="italic text-zinc-400 text-[9px]">(edited)</span>}
+                            </div>
                           </div>
-                          <div className="text-xs text-foreground/80 leading-relaxed pl-7 whitespace-pre-line">
-                            {renderFormattedContent(reply.content)}
-                          </div>
+
+                          {/* Reply Body or Edit Form */}
+                          {isRepEditing ? (
+                            <div className="pl-7 pt-1 space-y-2 relative">
+                              <textarea
+                                ref={editInputRef}
+                                value={editContent}
+                                onChange={(e) => handleInputChange(e.target.value, "edit", e.target)}
+                                className="w-full p-2.5 rounded-lg bg-card border border-border text-xs text-foreground focus:outline-none resize-y min-h-[60px]"
+                              />
+
+                              <div className="flex items-center justify-between">
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteComment(reply.id)}
+                                  className="text-[10px] text-rose-500 hover:text-rose-600 flex items-center space-x-1"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  <span>Delete</span>
+                                </button>
+
+                                <div className="flex space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingCommentId(null)}
+                                    className="px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted rounded"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveEdit(reply.id)}
+                                    disabled={!editContent.trim()}
+                                    className="px-2.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold active:scale-95 transition-colors"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-xs text-foreground/80 leading-relaxed pl-7 whitespace-pre-line">
+                                {renderFormattedContent(reply.content)}
+                              </div>
+
+                              {/* Edit button for reply */}
+                              {repCanEdit && (
+                                <div className="pl-7 pt-0.5">
+                                  <button
+                                    onClick={() => handleStartEdit(reply)}
+                                    className="text-[11px] text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 inline-flex items-center space-x-1"
+                                  >
+                                    <Edit3 className="w-2.5 h-2.5" />
+                                    <span>Edit</span>
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       );
                     })}
