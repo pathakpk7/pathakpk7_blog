@@ -353,8 +353,18 @@ export function NotificationCenter({
             </div>
           )}
 
+          {/* Mobile-only swipe tip */}
+          {personalNotifications.length > 0 && (
+            <div className="sm:hidden flex items-center justify-between text-[11px] text-muted-foreground px-1 pb-1">
+              <span className="flex items-center space-x-1 text-zinc-500 dark:text-zinc-400">
+                <Trash2 className="w-3 h-3 text-rose-500" />
+                <span>Swipe right to delete on mobile</span>
+              </span>
+            </div>
+          )}
+
           {personalNotifications.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-3">
+            <div className="p-12 text-center rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3 shadow-xs">
               <Bell className="w-8 h-8 mx-auto text-muted-foreground/60 stroke-1" />
               <h3 className="text-sm font-semibold text-foreground">No notifications</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
@@ -370,13 +380,15 @@ export function NotificationCenter({
               return (
                 <div
                   key={item.id}
-                  className="relative overflow-hidden rounded-xl border border-border group bg-card transition-all"
+                  className="relative overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 group bg-white dark:bg-zinc-900 shadow-xs"
                 >
-                  {/* Swipe reveal background for mobile */}
-                  <div className="absolute inset-0 bg-rose-600 flex items-center px-4 text-white font-semibold text-xs space-x-2 pointer-events-none">
-                    <Trash2 className="w-4 h-4" />
-                    <span>Swipe to Delete</span>
-                  </div>
+                  {/* Swipe reveal background: ONLY on mobile during active swipe */}
+                  {isBeingSwiped && swipeOffset > 5 && (
+                    <div className="sm:hidden absolute inset-0 bg-rose-600 flex items-center px-4 text-white font-semibold text-xs space-x-2 z-0">
+                      <Trash2 className="w-4 h-4" />
+                      <span>Delete</span>
+                    </div>
+                  )}
 
                   <div
                     onTouchStart={(e) => handleTouchStart(e, item.id)}
@@ -386,8 +398,8 @@ export function NotificationCenter({
                       transform: isBeingSwiped && swipeOffset > 0 ? `translateX(${swipeOffset}px)` : "none",
                       transition: isBeingSwiped ? "none" : "transform 0.15s ease-out",
                     }}
-                    className={`relative z-10 flex items-center justify-between p-3.5 sm:p-4 bg-card hover:bg-muted/40 transition-colors gap-3 ${
-                      !item.read ? "bg-blue-500/5 dark:bg-blue-950/20 border-l-4 border-l-blue-600" : ""
+                    className={`relative z-10 flex items-center justify-between p-3.5 sm:p-4 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 transition-colors gap-3 ${
+                      !item.read ? "bg-blue-50/70 dark:bg-blue-950/30 border-l-4 border-l-blue-600" : ""
                     }`}
                   >
                     {/* Checkbox (if in selection mode) */}
@@ -409,7 +421,7 @@ export function NotificationCenter({
 
                     {/* Actor Avatar with Icon */}
                     <div className="relative shrink-0">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden bg-zinc-800 border border-border">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
                         <Image
                           src={getSafeAvatarUrl(item.actor.avatarUrl, item.actor.username)}
                           alt={item.actor.name}
@@ -417,7 +429,7 @@ export function NotificationCenter({
                           className="object-cover"
                         />
                       </div>
-                      <div className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-card shadow-xs border border-border">
+                      <div className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-zinc-900 shadow-xs border border-zinc-200 dark:border-zinc-800">
                         {details.icon}
                       </div>
                     </div>
@@ -428,12 +440,12 @@ export function NotificationCenter({
                       onClick={() => handleItemClick(item)}
                       className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs"
                     >
-                      <div className="flex flex-wrap items-center gap-1 leading-snug">
-                        <span className="font-bold text-foreground">{item.actor.name}</span>
-                        <span className="font-mono text-[11px] text-muted-foreground">(@{item.actor.username})</span>
-                        <span className="text-muted-foreground font-normal">{details.actionText}</span>
+                      <div className="flex flex-wrap items-center gap-1.5 leading-snug">
+                        <span className="font-bold text-zinc-950 dark:text-zinc-50">{item.actor.name}</span>
+                        <span className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">@{item.actor.username}</span>
+                        <span className="text-zinc-600 dark:text-zinc-300 font-normal">{details.actionText}</span>
                         {item.comment?.content && (
-                          <span className="text-foreground italic font-medium truncate max-w-[200px] sm:max-w-xs">
+                          <span className="text-zinc-800 dark:text-zinc-200 italic font-medium truncate max-w-[200px] sm:max-w-xs">
                             &ldquo;{item.comment.content}&rdquo;
                           </span>
                         )}
@@ -444,15 +456,14 @@ export function NotificationCenter({
                         )}
                       </div>
 
-                      <span className="text-[11px] text-muted-foreground font-mono shrink-0 whitespace-nowrap">
+                      <span className="text-[11px] text-zinc-400 font-mono shrink-0 whitespace-nowrap">
                         {formatDate(item.createdAt)}
                       </span>
                     </Link>
 
-                    {/* Right action delete icon */}
                     <button
                       onClick={(e) => handleDeleteSingle(item.id, e)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 transition-colors shrink-0 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                       title="Delete notification"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
