@@ -401,21 +401,21 @@ export function CommentSection({
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2.5">
-                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                       <Image src={getSafeAvatarUrl(avatar, username || author)} alt={author} fill className="object-cover" />
                     </div>
                     <div>
                       {username ? (
-                        <Link href={`/${username}`} className="font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                          {author} <span className="font-mono text-zinc-400 font-normal">@{username}</span>
+                        <Link href={`/${username}`} className="font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          {author} <span className="font-mono text-zinc-500 dark:text-zinc-400 font-normal">@{username}</span>
                         </Link>
                       ) : (
-                        <span className="font-semibold text-foreground">{author}</span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{author}</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-muted-foreground text-[11px]">
+                  <div className="flex items-center space-x-2 text-zinc-500 dark:text-zinc-400 text-[11px]">
                     <span>{formatDate(comment.createdAt)}</span>
                     {isEdited && <span className="italic text-zinc-400 text-[10px]">(edited)</span>}
                   </div>
@@ -428,7 +428,7 @@ export function CommentSection({
                       ref={editInputRef}
                       value={editContent}
                       onChange={(e) => handleInputChange(e.target.value, "edit", e.target)}
-                      className="w-full p-3 rounded-lg bg-muted border border-border text-xs text-foreground focus:outline-none resize-y min-h-[80px]"
+                      className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none resize-y min-h-[80px]"
                     />
 
                     {/* Mention Dropdown for Edit */}
@@ -444,7 +444,7 @@ export function CommentSection({
                             <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0">
                               <Image src={getSafeAvatarUrl(u.avatar, u.username)} alt={u.displayName} fill className="object-cover" />
                             </div>
-                            <span className="text-xs font-semibold text-foreground">@{u.username}</span>
+                            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">@{u.username}</span>
                           </button>
                         ))}
                       </div>
@@ -454,7 +454,7 @@ export function CommentSection({
                       <button
                         type="button"
                         onClick={() => handleDeleteComment(comment.id)}
-                        className="text-[11px] text-rose-500 hover:text-rose-600 flex items-center space-x-1"
+                        className="text-[11px] text-rose-500 hover:text-rose-600 flex items-center space-x-1 font-medium"
                       >
                         <Trash2 className="w-3 h-3" />
                         <span>Delete</span>
@@ -464,7 +464,7 @@ export function CommentSection({
                         <button
                           type="button"
                           onClick={() => setEditingCommentId(null)}
-                          className="px-3 py-1 text-xs text-muted-foreground hover:bg-muted rounded"
+                          className="px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
                         >
                           Cancel
                         </button>
@@ -481,7 +481,7 @@ export function CommentSection({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line pl-8.5">
+                  <div className="text-sm text-zinc-900 dark:text-zinc-100 leading-relaxed whitespace-pre-line pl-8.5">
                     {renderFormattedContent(comment.content)}
                   </div>
                 )}
@@ -506,7 +506,7 @@ export function CommentSection({
                     {userCanEdit && (
                       <button
                         onClick={() => handleStartEdit(comment)}
-                        className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 font-medium inline-flex items-center space-x-1 transition-colors"
+                        className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium inline-flex items-center space-x-1 transition-colors"
                       >
                         <Edit3 className="w-3 h-3" />
                         <span>Edit</span>
@@ -524,13 +524,13 @@ export function CommentSection({
                         value={replyContent}
                         onChange={(e) => handleInputChange(e.target.value, "reply", e.target)}
                         placeholder="Write a reply... (type @ to tag someone)"
-                        className="w-full p-3 rounded-lg bg-muted border border-border text-xs text-foreground focus:outline-none resize-none min-h-[75px]"
+                        className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none resize-none min-h-[75px]"
                       />
 
                       {/* Mention Suggestions Dropdown for Reply */}
                       {activeInput === "reply" && mentionSuggestions.length > 0 && (
                         <div className="absolute left-2 bottom-full mb-1 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-30 overflow-hidden py-1">
-                          <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground bg-muted/30">
+                          <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-800/50">
                             Tag a reader
                           </p>
                           {mentionSuggestions.map((u) => (
@@ -549,7 +549,7 @@ export function CommentSection({
                                 />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-foreground truncate">{u.displayName}</p>
+                                <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{u.displayName}</p>
                                 <p className="text-[10px] font-mono text-blue-600 dark:text-blue-400">@{u.username}</p>
                               </div>
                             </button>
@@ -565,7 +565,7 @@ export function CommentSection({
                           setReplyParentId(null);
                           setMentionQuery(null);
                         }}
-                        className="px-3 py-1 text-xs text-muted-foreground hover:bg-muted rounded"
+                        className="px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
                       >
                         Cancel
                       </button>
@@ -592,21 +592,21 @@ export function CommentSection({
                       const isRepEdited = reply.updatedAt && new Date(reply.updatedAt).getTime() - new Date(reply.createdAt).getTime() > 1000;
 
                       return (
-                        <div key={reply.id} className="space-y-1.5 bg-muted/40 p-3 rounded-lg">
+                        <div key={reply.id} className="space-y-1.5 bg-zinc-50/80 dark:bg-zinc-900/60 p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-800/60">
                           <div className="flex items-center justify-between text-[11px]">
                             <div className="flex items-center space-x-2">
-                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                                 <Image src={getSafeAvatarUrl(repAvatar, repUsername || repAuthor)} alt={repAuthor} fill className="object-cover" />
                               </div>
                               {repUsername ? (
-                                <Link href={`/${repUsername}`} className="font-semibold text-foreground hover:underline">
-                                  {repAuthor} <span className="font-mono text-zinc-400 font-normal">@{repUsername}</span>
+                                <Link href={`/${repUsername}`} className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">
+                                  {repAuthor} <span className="font-mono text-zinc-500 dark:text-zinc-400 font-normal">@{repUsername}</span>
                                 </Link>
                               ) : (
-                                <span className="font-semibold text-foreground">{repAuthor}</span>
+                                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{repAuthor}</span>
                               )}
                             </div>
-                            <div className="flex items-center space-x-1.5 text-muted-foreground">
+                            <div className="flex items-center space-x-1.5 text-zinc-500 dark:text-zinc-400">
                               <span>{formatDate(reply.createdAt)}</span>
                               {isRepEdited && <span className="italic text-zinc-400 text-[9px]">(edited)</span>}
                             </div>
@@ -619,14 +619,14 @@ export function CommentSection({
                                 ref={editInputRef}
                                 value={editContent}
                                 onChange={(e) => handleInputChange(e.target.value, "edit", e.target)}
-                                className="w-full p-2.5 rounded-lg bg-card border border-border text-xs text-foreground focus:outline-none resize-y min-h-[60px]"
+                                className="w-full p-2.5 rounded-lg bg-card border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none resize-y min-h-[60px]"
                               />
 
                               <div className="flex items-center justify-between">
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteComment(reply.id)}
-                                  className="text-[10px] text-rose-500 hover:text-rose-600 flex items-center space-x-1"
+                                  className="text-[10px] text-rose-500 hover:text-rose-600 flex items-center space-x-1 font-medium"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                   <span>Delete</span>
@@ -636,7 +636,7 @@ export function CommentSection({
                                   <button
                                     type="button"
                                     onClick={() => setEditingCommentId(null)}
-                                    className="px-2.5 py-0.5 text-xs text-muted-foreground hover:bg-muted rounded"
+                                    className="px-2.5 py-0.5 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
                                   >
                                     Cancel
                                   </button>
@@ -653,7 +653,7 @@ export function CommentSection({
                             </div>
                           ) : (
                             <>
-                              <div className="text-xs text-foreground/80 leading-relaxed pl-7 whitespace-pre-line">
+                              <div className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed pl-7 whitespace-pre-line">
                                 {renderFormattedContent(reply.content)}
                               </div>
 
@@ -662,7 +662,7 @@ export function CommentSection({
                                 <div className="pl-7 pt-0.5">
                                   <button
                                     onClick={() => handleStartEdit(reply)}
-                                    className="text-[11px] text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 inline-flex items-center space-x-1"
+                                    className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 inline-flex items-center space-x-1 transition-colors"
                                   >
                                     <Edit3 className="w-2.5 h-2.5" />
                                     <span>Edit</span>

@@ -233,70 +233,70 @@ export function Header({ onOpenSearch }: HeaderProps) {
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium rounded-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
-                <Home className="w-4 h-4 text-blue-500" />
+                <Home className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span>Home</span>
               </Link>
               <Link
                 href="/technology"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Technology & AI
               </Link>
               <Link
                 href="/science"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Science & Space
               </Link>
               <Link
                 href="/coding"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Coding & Tutorials
               </Link>
               <Link
                 href="/ideas"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Ideas & Essays
               </Link>
               <Link
                 href="/creative"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Creative & Poems
               </Link>
               <Link
                 href="/notes"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 Notes & Musings
               </Link>
               <Link
                 href="/about"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-500"
+                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
               >
                 About Platform
               </Link>
             </div>
 
-            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col space-y-2">
+            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col space-y-1.5">
               {session?.user ? (
                 <>
                   {isAdmin && (
                     <Link
                       href="/studio"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 rounded-md"
+                      className="flex items-center space-x-2.5 px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg transition-colors"
                     >
                       <PenTool className="w-4 h-4" />
                       <span>Writer Studio CMS</span>
@@ -305,7 +305,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                   <Link
                     href="/library"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
                   >
                     <BookOpen className="w-4 h-4 text-blue-500" />
                     <span>My Library & Reading List</span>
@@ -313,17 +313,17 @@ export function Header({ onOpenSearch }: HeaderProps) {
                   <Link
                     href={`/${username}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
                   >
-                    <User className="w-4 h-4" />
+                    <User className="w-4 h-4 text-zinc-500" />
                     <span>My Profile & Interactions</span>
                   </Link>
                   <Link
                     href="/settings"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
                   >
-                    <Settings className="w-4 h-4" />
+                    <Settings className="w-4 h-4 text-zinc-500" />
                     <span>Account Settings</span>
                   </Link>
                   <button
@@ -332,7 +332,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                       await signOut({ redirect: false });
                       window.location.href = "/";
                     }}
-                    className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900 w-full text-left"
+                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 w-full text-left transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     <span>Sign Out</span>

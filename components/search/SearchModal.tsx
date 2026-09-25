@@ -175,8 +175,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         </div>
 
         {/* Search Filter Shortcuts Bar */}
-        <div className="flex items-center space-x-2 px-4 py-2 border-b border-border/60 bg-muted/10 text-xs overflow-x-auto">
-          <span className="text-[10px] uppercase font-mono tracking-wider text-muted-foreground shrink-0">
+        <div className="flex items-center space-x-2 px-4 py-2 border-b border-border bg-zinc-50/80 dark:bg-zinc-900/60 text-xs overflow-x-auto">
+          <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 dark:text-zinc-400 shrink-0 font-semibold">
             Quick Filters:
           </span>
           <button
@@ -185,7 +185,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               "inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors shrink-0",
               query.startsWith("#")
                 ? "bg-blue-600 text-white font-semibold"
-                : "bg-muted text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-foreground"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-zinc-700/80"
             )}
           >
             <Hash className="w-3 h-3" />
@@ -197,7 +197,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               "inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors shrink-0",
               query.startsWith("@")
                 ? "bg-purple-600 text-white font-semibold"
-                : "bg-muted text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-foreground"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-zinc-700/80"
             )}
           >
             <AtSign className="w-3 h-3" />
@@ -208,8 +208,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             className={cn(
               "inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors shrink-0",
               !query.startsWith("#") && !query.startsWith("@") && query
-                ? "bg-foreground text-background font-semibold"
-                : "bg-muted text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-foreground"
+                ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white border border-zinc-200/80 dark:border-zinc-700/80"
             )}
           >
             <Search className="w-3 h-3" />
@@ -277,7 +277,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
               {/* Suggested Topics / Headings */}
               <div className="space-y-2">
-                <p className="font-semibold uppercase tracking-wider text-[10px] text-foreground flex items-center space-x-1.5">
+                <p className="font-semibold uppercase tracking-wider text-[10px] text-zinc-900 dark:text-zinc-200 flex items-center space-x-1.5">
                   <BookOpen className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Topic & Heading Keywords</span>
                 </p>
@@ -286,7 +286,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <button
                       key={topic}
                       onClick={() => setQuery(topic)}
-                      className="px-3 py-1 rounded-lg bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-foreground transition-colors"
+                      className="px-3 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium border border-zinc-200/80 dark:border-zinc-700/80 transition-colors"
                     >
                       {topic}
                     </button>
@@ -311,9 +311,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         key={author.id}
                         href={`/${author.username}`}
                         onClick={onClose}
-                        className="flex items-center space-x-3 p-2.5 rounded-xl bg-muted/40 hover:bg-purple-500/10 border border-border/80 hover:border-purple-500/30 transition-all group"
+                        className="flex items-center space-x-3 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 hover:bg-purple-50 dark:hover:bg-purple-950/30 border border-zinc-200 dark:border-zinc-800 hover:border-purple-300 dark:hover:border-purple-500/40 transition-all group"
                       >
-                        <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                        <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                           <Image
                             src={getSafeAvatarUrl(author.avatarUrl, author.username)}
                             alt={author.displayName}
@@ -323,18 +323,18 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center space-x-1.5">
-                            <p className="text-xs font-semibold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 truncate">
+                            <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-purple-600 dark:group-hover:text-purple-400 truncate">
                               {author.displayName}
                             </p>
                             {author.role === "ADMIN" && (
-                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-blue-500/20 text-blue-500 uppercase font-bold">
+                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-blue-500/20 text-blue-600 dark:text-blue-400 uppercase font-bold">
                                 Admin
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] font-mono text-muted-foreground">@{author.username}</p>
+                          <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">@{author.username}</p>
                         </div>
-                        <span className="text-[10px] font-mono text-muted-foreground shrink-0">
+                        <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 shrink-0">
                           {author.postCount} {author.postCount === 1 ? "post" : "posts"}
                         </span>
                       </Link>
@@ -358,7 +358,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-mono font-medium transition-colors"
                       >
                         <span>#{tag.name}</span>
-                        <span className="text-[10px] text-muted-foreground">({tag.postCount})</span>
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">({tag.postCount})</span>
                       </button>
                     ))}
                   </div>
@@ -368,11 +368,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {/* 3. Matching Articles & Headings */}
               {posts.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] uppercase font-mono font-bold tracking-wider text-muted-foreground flex items-center space-x-1 px-1">
+                  <p className="text-[10px] uppercase font-mono font-bold tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center space-x-1 px-1">
                     <BookOpen className="w-3 h-3" />
                     <span>Articles & Essays ({posts.length})</span>
                   </p>
-                  <div className="divide-y divide-border/60">
+                  <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
                     {posts.map((item) => {
                       const authorName = item.author?.profile?.displayName || item.author?.name || "The Pathak";
                       const username = item.author?.profile?.username;
@@ -380,7 +380,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       return (
                         <div
                           key={item.id}
-                          className="group flex items-start justify-between py-3 px-2 rounded-xl hover:bg-muted/70 transition-colors relative"
+                          className="group flex items-start justify-between py-3 px-2 rounded-xl hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 transition-colors relative"
                         >
                           <Link
                             href={`/article/${item.slug}`}
@@ -390,32 +390,32 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-semibold uppercase text-blue-600 dark:text-blue-400">
                               <span>{item.section}</span>
                               <span>•</span>
-                              <span className="inline-flex items-center space-x-1 text-muted-foreground font-normal">
+                              <span className="inline-flex items-center space-x-1 text-zinc-500 dark:text-zinc-400 font-normal">
                                 {item.contentType === "QUOTE" && <Quote className="w-2.5 h-2.5 text-amber-500" />}
                                 <span>{item.contentType}</span>
                               </span>
                               <span>•</span>
-                              <span className="text-muted-foreground font-normal lowercase">{authorName}</span>
+                              <span className="text-zinc-500 dark:text-zinc-400 font-normal lowercase">{authorName}</span>
                               {item.readingTime && (
                                 <>
                                   <span>•</span>
-                                  <span className="text-muted-foreground font-normal">{item.readingTime} min read</span>
+                                  <span className="text-zinc-500 dark:text-zinc-400 font-normal">{item.readingTime} min read</span>
                                 </>
                               )}
                             </div>
 
-                            <h4 className="font-serif-editorial text-base sm:text-lg font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+                            <h4 className="font-serif-editorial text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
                               {item.contentType === "QUOTE" ? `“${item.title}”` : item.title}
                             </h4>
 
                             {item.subtitle && (
-                              <p className="text-xs text-muted-foreground line-clamp-1 italic font-serif">
+                              <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-1 italic font-serif">
                                 — {item.subtitle}
                               </p>
                             )}
 
                             {item.excerpt && !item.subtitle && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">{item.excerpt}</p>
+                              <p className="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-1">{item.excerpt}</p>
                             )}
 
                             {/* Tag badges on post */}
@@ -429,7 +429,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                       e.stopPropagation();
                                       setQuery(`#${tag.name}`);
                                     }}
-                                    className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-muted text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10 cursor-pointer"
+                                    className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer transition-colors"
                                   >
                                     #{tag.name}
                                   </span>
