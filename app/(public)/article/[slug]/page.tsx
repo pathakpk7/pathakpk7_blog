@@ -125,10 +125,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       publishedTime = post.publishedAt.toISOString();
     }
 
-    // High-resolution preview image for WhatsApp / Facebook / Twitter / Telegram / LinkedIn
-    let imageUrl = `${baseUrl}/article/${slug}/opengraph-image`;
+    // High-performance CDN preview images for WhatsApp, Telegram, Twitter, Facebook, LinkedIn
+    let primaryImageUrl = `${baseUrl}/emblem.png`;
     if (post.coverImageUrl && post.coverImageUrl.trim().length > 5) {
-      imageUrl = post.coverImageUrl.startsWith("http")
+      primaryImageUrl = post.coverImageUrl.startsWith("http")
         ? post.coverImageUrl
         : `${baseUrl}${post.coverImageUrl.startsWith("/") ? "" : "/"}${post.coverImageUrl}`;
     }
@@ -153,12 +153,20 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         authors: [authorName],
         images: [
           {
-            url: imageUrl,
-            secureUrl: imageUrl,
+            url: primaryImageUrl,
+            secureUrl: primaryImageUrl,
             width: 1200,
             height: 630,
             type: "image/png",
             alt: post.title,
+          },
+          {
+            url: `${baseUrl}/emblem.png`,
+            secureUrl: `${baseUrl}/emblem.png`,
+            width: 512,
+            height: 512,
+            type: "image/png",
+            alt: "ThePathak.tech Logo",
           },
         ],
       },
@@ -168,7 +176,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         description,
         images: [
           {
-            url: imageUrl,
+            url: primaryImageUrl,
             alt: post.title,
             width: 1200,
             height: 630,
