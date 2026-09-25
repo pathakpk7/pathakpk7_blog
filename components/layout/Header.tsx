@@ -65,12 +65,12 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
               {/* Brand Logo & Editorial Subtitle */}
               <Link href="/" className="group flex items-center space-x-2.5 shrink-0">
-                <div className="relative w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/60 dark:border-zinc-800 shrink-0 bg-zinc-950">
+                <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/80 dark:border-zinc-800 shrink-0 bg-zinc-950 flex items-center justify-center">
                   <Image
                     src="/emblem.png"
                     alt="ThePathak.tech Logo"
                     fill
-                    sizes="72px"
+                    sizes="(max-width: 640px) 32px, 36px"
                     className="object-contain p-0.5"
                     priority
                     unoptimized
