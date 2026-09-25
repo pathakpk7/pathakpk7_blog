@@ -34,13 +34,12 @@ export async function toggleLike(postId: string) {
         select: { authorId: true },
       });
       if (post && post.authorId !== userId) {
-        await db.notification.create({
-          data: {
-            userId: post.authorId,
-            actorId: userId,
-            type: "POST_LIKE",
-            postId,
-          },
+        const { dispatchNotification } = await import("@/app/actions/notification");
+        await dispatchNotification({
+          userId: post.authorId,
+          actorId: userId,
+          type: "POST_LIKE",
+          postId,
         });
       }
     } catch (e) {}

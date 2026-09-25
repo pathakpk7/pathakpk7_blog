@@ -210,12 +210,34 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           where: { parentId: null, status: "APPROVED" },
           include: {
             user: { include: { profile: true } },
-            likes: { select: { userId: true } },
+            likes: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    profile: { select: { displayName: true, username: true, avatarUrl: true } },
+                  },
+                },
+              },
+            },
             replies: {
               where: { status: "APPROVED" },
               include: {
                 user: { include: { profile: true } },
-                likes: { select: { userId: true } },
+                likes: {
+                  include: {
+                    user: {
+                      select: {
+                        id: true,
+                        name: true,
+                        image: true,
+                        profile: { select: { displayName: true, username: true, avatarUrl: true } },
+                      },
+                    },
+                  },
+                },
               },
               orderBy: { createdAt: "asc" },
             },
@@ -254,14 +276,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     avatarUrl: l.user?.profile?.avatarUrl || l.user?.image,
   }));
 
+  const formatCommentLikedUsers = (likesList: any[]) =>
+    (likesList || []).map((l: any) => ({
+      id: l.user?.id || l.userId,
+      name: l.user?.profile?.displayName || l.user?.name || "Reader",
+      username: l.user?.profile?.username || (l.user?.name ? l.user.name.toLowerCase().replace(/\s+/g, "_") : "reader"),
+      avatarUrl: l.user?.profile?.avatarUrl || l.user?.image,
+    }));
+
   const formattedComments = (post.comments || []).map((c: any) => ({
     ...c,
     isLiked: userId ? (c.likes || []).some((l: any) => l.userId === userId) : false,
     likesCount: c.likes?.length || 0,
+    likedUsers: formatCommentLikedUsers(c.likes),
     replies: (c.replies || []).map((r: any) => ({
       ...r,
       isLiked: userId ? (r.likes || []).some((l: any) => l.userId === userId) : false,
       likesCount: r.likes?.length || 0,
+      likedUsers: formatCommentLikedUsers(r.likes),
     })),
   }));
 

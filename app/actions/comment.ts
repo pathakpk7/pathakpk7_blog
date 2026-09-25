@@ -48,15 +48,15 @@ export async function addComment(postId: string, content: string, parentId?: str
         select: { userId: true },
       });
 
+      const { dispatchNotification } = await import("@/app/actions/notification");
+
       if (parentComment && parentComment.userId !== userId) {
-        await db.notification.create({
-          data: {
-            userId: parentComment.userId,
-            actorId: userId,
-            type: "COMMENT_REPLY",
-            postId,
-            commentId: comment.id,
-          },
+        await dispatchNotification({
+          userId: parentComment.userId,
+          actorId: userId,
+          type: "COMMENT_REPLY",
+          postId,
+          commentId: comment.id,
         });
         notifiedUserIds.add(parentComment.userId);
       }
@@ -76,16 +76,15 @@ export async function addComment(postId: string, content: string, parentId?: str
         select: { userId: true, username: true },
       });
 
+      const { dispatchNotification } = await import("@/app/actions/notification");
       for (const prof of mentionedProfiles) {
         if (prof.userId !== userId && !notifiedUserIds.has(prof.userId)) {
-          await db.notification.create({
-            data: {
-              userId: prof.userId,
-              actorId: userId,
-              type: "MENTION",
-              postId,
-              commentId: comment.id,
-            },
+          await dispatchNotification({
+            userId: prof.userId,
+            actorId: userId,
+            type: "MENTION",
+            postId,
+            commentId: comment.id,
           });
           notifiedUserIds.add(prof.userId);
         }
@@ -94,14 +93,13 @@ export async function addComment(postId: string, content: string, parentId?: str
 
     // 3. If commenting on a post, notify the post author
     if (comment.post?.authorId && comment.post.authorId !== userId && !notifiedUserIds.has(comment.post.authorId)) {
-      await db.notification.create({
-        data: {
-          userId: comment.post.authorId,
-          actorId: userId,
-          type: "POST_COMMENT",
-          postId,
-          commentId: comment.id,
-        },
+      const { dispatchNotification } = await import("@/app/actions/notification");
+      await dispatchNotification({
+        userId: comment.post.authorId,
+        actorId: userId,
+        type: "POST_COMMENT",
+        postId,
+        commentId: comment.id,
       });
     }
   } catch (err) {

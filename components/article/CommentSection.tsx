@@ -17,6 +17,7 @@ export interface CommentItem {
   updatedAt?: Date | string;
   likesCount?: number;
   isLiked?: boolean;
+  likedUsers?: Array<{ id: string; name?: string | null; username?: string | null; avatarUrl?: string | null }>;
   user: {
     id?: string;
     name?: string | null;
@@ -56,6 +57,10 @@ export function CommentSection({
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [likersModalData, setLikersModalData] = useState<{
+    commentAuthor: string;
+    likedUsers: Array<{ id: string; name?: string | null; username?: string | null; avatarUrl?: string | null }>;
+  } | null>(null);
 
   // Sync initialComments when server updates
   useEffect(() => {
@@ -550,20 +555,36 @@ export function CommentSection({
                 {/* Like, Reply and Edit Action buttons */}
                 {!isEditing && (
                   <div className="pl-8.5 flex items-center space-x-4 pt-1">
-                    {/* Like button */}
-                    <button
-                      type="button"
-                      onClick={() => handleLikeComment(comment.id)}
-                      className={`inline-flex items-center space-x-1 text-xs font-medium transition-colors ${
-                        comment.isLiked
-                          ? "text-rose-600 dark:text-rose-400 font-semibold"
-                          : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
-                      }`}
-                      title={comment.isLiked ? "Unlike comment" : "Like comment"}
-                    >
-                      <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? "fill-current text-rose-500" : ""}`} />
-                      {(comment.likesCount || 0) > 0 && <span>{comment.likesCount}</span>}
-                    </button>
+                    {/* Like button & likers trigger */}
+                    <div className="inline-flex items-center space-x-1">
+                      <button
+                        type="button"
+                        onClick={() => handleLikeComment(comment.id)}
+                        className={`inline-flex items-center space-x-1 text-xs font-medium transition-colors ${
+                          comment.isLiked
+                            ? "text-rose-600 dark:text-rose-400 font-semibold"
+                            : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                        }`}
+                        title={comment.isLiked ? "Unlike comment" : "Like comment"}
+                      >
+                        <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? "fill-current text-rose-500" : ""}`} />
+                      </button>
+                      {(comment.likesCount || 0) > 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setLikersModalData({
+                              commentAuthor: author,
+                              likedUsers: comment.likedUsers || [],
+                            })
+                          }
+                          className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline"
+                          title="View who liked this comment"
+                        >
+                          {comment.likesCount}
+                        </button>
+                      )}
+                    </div>
 
                     {/* Reply button */}
                     {isLoggedIn ? (
@@ -747,19 +768,35 @@ export function CommentSection({
 
                               {/* Actions for reply: Like and Edit */}
                               <div className="pl-7 pt-1 flex items-center space-x-3">
-                                <button
-                                  type="button"
-                                  onClick={() => handleLikeComment(reply.id)}
-                                  className={`inline-flex items-center space-x-1 text-[11px] font-medium transition-colors ${
-                                    reply.isLiked
-                                      ? "text-rose-600 dark:text-rose-400 font-semibold"
-                                      : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
-                                  }`}
-                                  title={reply.isLiked ? "Unlike reply" : "Like reply"}
-                                >
-                                  <Heart className={`w-3 h-3 ${reply.isLiked ? "fill-current text-rose-500" : ""}`} />
-                                  {(reply.likesCount || 0) > 0 && <span>{reply.likesCount}</span>}
-                                </button>
+                                <div className="inline-flex items-center space-x-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleLikeComment(reply.id)}
+                                    className={`inline-flex items-center space-x-1 text-[11px] font-medium transition-colors ${
+                                      reply.isLiked
+                                        ? "text-rose-600 dark:text-rose-400 font-semibold"
+                                        : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                                    }`}
+                                    title={reply.isLiked ? "Unlike reply" : "Like reply"}
+                                  >
+                                    <Heart className={`w-3 h-3 ${reply.isLiked ? "fill-current text-rose-500" : ""}`} />
+                                  </button>
+                                  {(reply.likesCount || 0) > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setLikersModalData({
+                                          commentAuthor: repAuthor,
+                                          likedUsers: reply.likedUsers || [],
+                                        })
+                                      }
+                                      className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline"
+                                      title="View who liked this reply"
+                                    >
+                                      {reply.likesCount}
+                                    </button>
+                                  )}
+                                </div>
 
                                 {repCanEdit && (
                                   <button
@@ -783,6 +820,75 @@ export function CommentSection({
           })
         )}
       </div>
+
+      {/* Likers Modal for Comments & Replies */}
+      {likersModalData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="px-4 py-3 bg-muted/40 border-b border-border flex items-center justify-between">
+              <div className="flex items-center space-x-2 min-w-0">
+                <Heart className="w-4 h-4 fill-rose-500 text-rose-500 shrink-0" />
+                <h4 className="text-xs font-bold text-foreground truncate">
+                  Liked by ({likersModalData.likedUsers.length})
+                </h4>
+              </div>
+              <button
+                onClick={() => setLikersModalData(null)}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="max-h-72 overflow-y-auto divide-y divide-border p-2">
+              {likersModalData.likedUsers.length === 0 ? (
+                <p className="p-6 text-center text-xs text-muted-foreground">No likes recorded yet.</p>
+              ) : (
+                likersModalData.likedUsers.map((user, idx) => {
+                  const uName = user.name || "Reader";
+                  const uHandle = user.username || uName.toLowerCase().replace(/\s+/g, "_");
+                  const uAvatar = getSafeAvatarUrl(user.avatarUrl, uHandle);
+
+                  return (
+                    <Link
+                      key={user.id || idx}
+                      href={`/${uHandle}`}
+                      onClick={() => setLikersModalData(null)}
+                      className="flex items-center space-x-2.5 p-2 hover:bg-muted/50 rounded-xl transition-colors group"
+                    >
+                      <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+                        <Image
+                          src={uAvatar}
+                          alt={uName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                          {uName}
+                        </p>
+                        <p className="text-[10px] font-mono text-muted-foreground truncate">
+                          @{uHandle}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-2.5 bg-muted/40 border-t border-border text-center">
+              <button
+                onClick={() => setLikersModalData(null)}
+                className="w-full py-1 text-xs font-semibold text-foreground bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

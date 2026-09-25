@@ -12,15 +12,18 @@ import {
   ExternalLink,
   CheckCheck,
   AtSign,
-  UserCheck,
+  Trash2,
+  X,
   Sparkles,
 } from "lucide-react";
 import {
   getUserNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
+  deleteNotification,
   UserPersonalNotification,
   AggregatedPostNotification,
+  Interactor,
 } from "@/app/actions/notification";
 import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
 
@@ -36,7 +39,11 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
   const [adminNotifications, setAdminNotifications] = useState<AggregatedPostNotification[]>([]);
   const [activeTab, setActiveTab] = useState<"personal" | "admin">("personal");
   const [unreadCount, setUnreadCount] = useState(0);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [modalData, setModalData] = useState<{
+    title: string;
+    type: "likes" | "comments" | "bookmarks";
+    items: Interactor[];
+  } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load notifications non-blockingly
@@ -109,6 +116,17 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
     }
   };
 
+  // Handle single notification delete
+  const handleDeleteItem = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPersonalNotifications((prev) => prev.filter((n) => n.id !== id));
+    setUnreadCount((c) => Math.max(0, c - 1));
+    try {
+      await deleteNotification(id);
+    } catch (err) {}
+  };
+
   // Handle single notification click
   const handleItemClick = async (notification: UserPersonalNotification) => {
     if (!notification.read) {
@@ -131,12 +149,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "COMMENT_LIKE":
         return {
           icon: <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              liked your comment
-            </span>
-          ),
+          actionText: "liked your comment",
           snippet: item.comment?.content ? `“${item.comment.content}”` : null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}#comments` : "#",
@@ -144,12 +157,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "COMMENT_REPLY":
         return {
           icon: <MessageSquare className="w-3.5 h-3.5 text-blue-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              replied to your comment
-            </span>
-          ),
+          actionText: "commented back on your comment",
           snippet: item.comment?.content ? `“${item.comment.content}”` : null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}#comments` : "#",
@@ -157,12 +165,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "MENTION":
         return {
           icon: <AtSign className="w-3.5 h-3.5 text-emerald-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              mentioned you in a comment
-            </span>
-          ),
+          actionText: "tagged you in a comment",
           snippet: item.comment?.content ? `“${item.comment.content}”` : null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}#comments` : "#",
@@ -170,12 +173,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "POST_LIKE":
         return {
           icon: <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              liked your article
-            </span>
-          ),
+          actionText: "liked your article",
           snippet: null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}` : "#",
@@ -183,12 +181,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "POST_BOOKMARK":
         return {
           icon: <Bookmark className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              saved your article to their library
-            </span>
-          ),
+          actionText: "saved your article in library",
           snippet: null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}` : "#",
@@ -196,12 +189,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       case "POST_COMMENT":
         return {
           icon: <MessageSquare className="w-3.5 h-3.5 text-blue-500" />,
-          title: (
-            <span>
-              <strong className="text-zinc-950 dark:text-zinc-100 font-semibold">{item.actor.name}</strong>{" "}
-              commented on your article
-            </span>
-          ),
+          actionText: "commented on your article",
           snippet: item.comment?.content ? `“${item.comment.content}”` : null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}#comments` : "#",
@@ -209,7 +197,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       default:
         return {
           icon: <Bell className="w-3.5 h-3.5 text-zinc-500" />,
-          title: <span>New interaction from {item.actor.name}</span>,
+          actionText: "interacted with you",
           snippet: null,
           postTitle: item.post?.title,
           linkUrl: item.post ? `/article/${item.post.slug}` : "#",
@@ -268,19 +256,17 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
                   className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline flex items-center space-x-1 font-medium"
                 >
                   <CheckCheck className="w-3 h-3" />
-                  <span>Mark all read</span>
+                  <span>Mark read</span>
                 </button>
               )}
-              {isAdmin && (
-                <Link
-                  href="/studio/notifications"
-                  onClick={() => setOpen(false)}
-                  className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center space-x-0.5"
-                >
-                  <span>Studio</span>
-                  <ChevronRight className="w-3 h-3" />
-                </Link>
-              )}
+              <Link
+                href="/notifications"
+                onClick={() => setOpen(false)}
+                className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center space-x-0.5 font-medium"
+              >
+                <span>Full view</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
             </div>
           </div>
 
@@ -313,7 +299,7 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
             </div>
           )}
 
-          {/* Tab 1: Personal Notifications for All Users */}
+          {/* Tab 1: Single-Line Personal Notifications */}
           {(!isAdmin || activeTab === "personal") && (
             <div className="max-h-[380px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60">
               {loading && personalNotifications.length === 0 ? (
@@ -323,179 +309,157 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
                   <Bell className="w-6 h-6 mx-auto text-zinc-300 dark:text-zinc-600 stroke-1" />
                   <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">No notifications yet</p>
                   <p className="text-[11px] text-zinc-400 dark:text-zinc-500 max-w-xs mx-auto">
-                    When someone likes your comments, replies to you, or mentions you with @username, they will appear here.
+                    When readers like your comment, reply to you, or mention @username, updates will appear here.
                   </p>
                 </div>
               ) : (
                 personalNotifications.map((item) => {
                   const content = renderNotificationContent(item);
                   return (
-                    <Link
+                    <div
                       key={item.id}
-                      href={content.linkUrl}
-                      onClick={() => handleItemClick(item)}
-                      className={`block p-3.5 transition-colors text-left space-y-1.5 ${
-                        !item.read
-                          ? "bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+                      className={`group relative flex items-center justify-between p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors gap-2 text-left ${
+                        !item.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
                       }`}
                     >
-                      <div className="flex items-start space-x-3">
-                        {/* Actor Avatar with Type Badge */}
-                        <div className="relative shrink-0 mt-0.5">
-                          <div className="relative w-8 h-8 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
-                            <Image
-                              src={getSafeAvatarUrl(item.actor.avatarUrl, item.actor.username)}
-                              alt={item.actor.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-zinc-900 shadow-xs border border-zinc-200 dark:border-zinc-800">
-                            {content.icon}
-                          </div>
+                      {/* Actor Avatar with Type Badge */}
+                      <div className="relative shrink-0">
+                        <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 border border-zinc-200 dark:border-zinc-800">
+                          <Image
+                            src={getSafeAvatarUrl(item.actor.avatarUrl, item.actor.username)}
+                            alt={item.actor.name}
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-
-                        {/* Text details */}
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-snug line-clamp-2">
-                              {content.title}
-                            </p>
-                            {!item.read && (
-                              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
-                            )}
-                          </div>
-
-                          {content.snippet && (
-                            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 italic line-clamp-2 bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-md border border-zinc-200/60 dark:border-zinc-800/60">
-                              {content.snippet}
-                            </p>
-                          )}
-
-                          {content.postTitle && (
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 font-medium flex items-center space-x-1">
-                              <span>on &ldquo;{content.postTitle}&rdquo;</span>
-                            </p>
-                          )}
-
-                          <span className="text-[10px] text-zinc-400 font-mono block">
-                            {formatDate(item.createdAt)}
-                          </span>
+                        <div className="absolute -bottom-1 -right-1 p-0.5 rounded-full bg-white dark:bg-zinc-900 shadow-xs border border-zinc-200 dark:border-zinc-800">
+                          {content.icon}
                         </div>
                       </div>
-                    </Link>
+
+                      {/* Single-line details */}
+                      <Link
+                        href={content.linkUrl}
+                        onClick={() => handleItemClick(item)}
+                        className="flex-1 min-w-0 space-y-0.5 text-xs"
+                      >
+                        <p className="text-zinc-800 dark:text-zinc-200 line-clamp-2 leading-tight">
+                          <strong className="font-semibold text-zinc-950 dark:text-white">{item.actor.name}</strong>{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">@{item.actor.username}</span>{" "}
+                          <span>{content.actionText}</span>
+                          {content.snippet && (
+                            <span className="italic text-zinc-600 dark:text-zinc-300 ml-1">
+                              {content.snippet}
+                            </span>
+                          )}
+                        </p>
+                        <div className="flex items-center space-x-2 text-[10px] text-zinc-400 font-mono">
+                          <span>{formatDate(item.createdAt)}</span>
+                          {!item.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                        </div>
+                      </Link>
+
+                      {/* Delete item button */}
+                      <button
+                        onClick={(e) => handleDeleteItem(item.id, e)}
+                        className="p-1 text-zinc-400 hover:text-rose-500 opacity-60 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   );
                 })
               )}
             </div>
           )}
 
-          {/* Tab 2: Admin Aggregated Post Digest */}
+          {/* Tab 2: Compact Admin Cards with Clickable Badges */}
           {isAdmin && activeTab === "admin" && (
-            <div className="max-h-[380px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60">
-              {loading && adminNotifications.length === 0 ? (
-                <div className="p-8 text-center text-xs text-zinc-400">Loading publication interactions...</div>
-              ) : adminNotifications.length === 0 ? (
+            <div className="max-h-[380px] overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60 p-2 space-y-2">
+              {adminNotifications.length === 0 ? (
                 <div className="p-8 text-center space-y-1">
                   <Bell className="w-6 h-6 mx-auto text-zinc-300 dark:text-zinc-600 stroke-1" />
                   <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">No publication interactions yet</p>
                 </div>
               ) : (
-                adminNotifications.map((item) => {
-                  const isExpanded = expandedId === item.id;
-                  const recentUsersText =
-                    item.interactors.length === 1
-                      ? `@${item.interactors[0].username}`
-                      : item.interactors.length === 2
-                      ? `@${item.interactors[0].username} and @${item.interactors[1].username}`
-                      : `@${item.interactors[0].username} and ${item.interactors.length - 1} others`;
-
+                adminNotifications.map((batch) => {
                   return (
                     <div
-                      key={item.id}
-                      className="p-3.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors text-left space-y-2"
+                      key={batch.id}
+                      className="p-3 rounded-xl bg-zinc-50/80 dark:bg-zinc-950/60 border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 text-left"
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start justify-between gap-1">
                         <Link
-                          href={`/article/${item.postSlug}`}
+                          href={`/article/${batch.postSlug}`}
                           onClick={() => setOpen(false)}
-                          className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 flex-1 flex items-center space-x-1"
+                          className="text-xs font-bold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 line-clamp-1 flex-1 flex items-center space-x-1"
+                          title={batch.postTitle}
                         >
-                          <span>{item.postTitle}</span>
+                          <span className="truncate">{batch.postTitle}</span>
                           <ExternalLink className="w-3 h-3 shrink-0 opacity-60" />
                         </Link>
-                        <span className="text-[10px] text-zinc-400 shrink-0 font-mono">
-                          {formatDate(item.latestTimestamp)}
+                        <span className="text-[10px] text-zinc-400 font-mono shrink-0">
+                          {formatDate(batch.latestTimestamp)}
                         </span>
                       </div>
 
-                      {/* Interaction Badges Row */}
+                      {/* Interactive Compact Badges */}
                       <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                        {item.likesCount > 0 && (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40 font-medium">
-                            <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
-                            <span>{item.likesCount} {item.likesCount === 1 ? "like" : "likes"}</span>
-                          </span>
-                        )}
-                        {item.commentsCount > 0 && (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 font-medium">
-                            <MessageSquare className="w-3 h-3 text-blue-500" />
-                            <span>{item.commentsCount} {item.commentsCount === 1 ? "comment" : "comments"}</span>
-                          </span>
-                        )}
-                        {item.bookmarksCount > 0 && (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 font-medium">
-                            <Bookmark className="w-3 h-3 text-amber-500" />
-                            <span>{item.bookmarksCount} {item.bookmarksCount === 1 ? "save" : "saves"}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Interactor Avatars & summary */}
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex -space-x-1.5 overflow-hidden">
-                            {item.interactors.slice(0, 3).map((user, idx) => (
-                              <div
-                                key={idx}
-                                className="relative w-5 h-5 rounded-full ring-2 ring-white dark:ring-zinc-900 overflow-hidden bg-zinc-800 shrink-0"
-                              >
-                                <Image
-                                  src={getSafeAvatarUrl(user.avatarUrl, user.username)}
-                                  alt={user.name}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            {recentUsersText}
-                          </span>
-                        </div>
-
-                        {item.sampleComments.length > 0 && (
+                        {batch.likesCount > 0 && (
                           <button
-                            onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                            className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                            type="button"
+                            onClick={() =>
+                              setModalData({
+                                title: `Likes on "${batch.postTitle}"`,
+                                type: "likes",
+                                items: batch.likedUsers,
+                              })
+                            }
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/60 dark:border-rose-800/40 font-semibold hover:scale-105 transition-all"
+                            title="Click to view users who liked"
                           >
-                            {isExpanded ? "Hide replies" : "View comments"}
+                            <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                            <span>{batch.likesCount} {batch.likesCount === 1 ? "like" : "likes"}</span>
+                          </button>
+                        )}
+
+                        {batch.commentsCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModalData({
+                                title: `Comments on "${batch.postTitle}"`,
+                                type: "comments",
+                                items: batch.commenters,
+                              })
+                            }
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 font-semibold hover:scale-105 transition-all"
+                            title="Click to view comments"
+                          >
+                            <MessageSquare className="w-3 h-3 text-blue-500" />
+                            <span>{batch.commentsCount} {batch.commentsCount === 1 ? "comment" : "comments"}</span>
+                          </button>
+                        )}
+
+                        {batch.bookmarksCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setModalData({
+                                title: `Saves on "${batch.postTitle}"`,
+                                type: "bookmarks",
+                                items: batch.bookmarkers,
+                              })
+                            }
+                            className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40 font-semibold hover:scale-105 transition-all"
+                            title="Click to view users who saved"
+                          >
+                            <Bookmark className="w-3 h-3 fill-amber-500 text-amber-500" />
+                            <span>{batch.bookmarksCount} {batch.bookmarksCount === 1 ? "save" : "saves"}</span>
                           </button>
                         )}
                       </div>
-
-                      {/* Expandable comments preview */}
-                      {isExpanded && item.sampleComments.length > 0 && (
-                        <div className="mt-2 p-2 rounded-lg bg-zinc-100 dark:bg-zinc-950/70 border border-zinc-200 dark:border-zinc-800 space-y-1.5 animate-in fade-in duration-100">
-                          {item.sampleComments.map((c) => (
-                            <div key={c.id} className="text-[11px] space-y-0.5">
-                              <span className="font-semibold text-zinc-900 dark:text-zinc-200">{c.author}: </span>
-                              <span className="text-zinc-600 dark:text-zinc-400 italic">&ldquo;{c.content}&rdquo;</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   );
                 })
@@ -504,18 +468,98 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
           )}
 
           {/* Footer */}
-          {isAdmin && (
-            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-950/60 border-t border-zinc-200 dark:border-zinc-800 text-center">
-              <Link
-                href="/studio/notifications"
-                onClick={() => setOpen(false)}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center space-x-1"
+          <div className="p-2.5 bg-zinc-50 dark:bg-zinc-950/60 border-t border-zinc-200 dark:border-zinc-800 text-center">
+            <Link
+              href={isAdmin ? "/studio/notifications" : "/notifications"}
+              onClick={() => setOpen(false)}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center space-x-1"
+            >
+              <span>View All Notifications & History</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Interactors Modal */}
+      {modalData && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-950/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div className="flex items-center space-x-2 min-w-0">
+                {modalData.type === "likes" && <Heart className="w-4 h-4 fill-rose-500 text-rose-500 shrink-0" />}
+                {modalData.type === "comments" && <MessageSquare className="w-4 h-4 text-blue-500 shrink-0" />}
+                {modalData.type === "bookmarks" && <Bookmark className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />}
+                <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                  {modalData.title}
+                </h4>
+              </div>
+              <button
+                onClick={() => setModalData(null)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
               >
-                <span>Go to Notifications Center</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          )}
+
+            <div className="max-h-72 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 p-2">
+              {modalData.items.length === 0 ? (
+                <p className="p-6 text-center text-xs text-zinc-400">No users found.</p>
+              ) : (
+                modalData.items.map((user, idx) => {
+                  return (
+                    <div
+                      key={idx}
+                      className="p-2 flex items-start justify-between gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-xl transition-colors"
+                    >
+                      <Link
+                        href={`/${user.username}`}
+                        onClick={() => {
+                          setModalData(null);
+                          setOpen(false);
+                        }}
+                        className="flex items-center space-x-2.5 min-w-0 flex-1 group"
+                      >
+                        <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
+                          <Image
+                            src={getSafeAvatarUrl(user.avatarUrl, user.username)}
+                            alt={user.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                            {user.name}
+                          </p>
+                          <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 truncate">
+                            @{user.username}
+                          </p>
+                          {user.commentSnippet && (
+                            <p className="text-[10px] text-zinc-700 dark:text-zinc-300 italic mt-0.5 line-clamp-2 bg-zinc-100 dark:bg-zinc-800/60 p-1 rounded border border-zinc-200 dark:border-zinc-700/60">
+                              &ldquo;{user.commentSnippet}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      </Link>
+                      <span className="text-[10px] font-mono text-zinc-400 shrink-0 mt-0.5">
+                        {formatDate(user.createdAt)}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-2.5 bg-zinc-50 dark:bg-zinc-950/60 border-t border-zinc-200 dark:border-zinc-800 text-center">
+              <button
+                onClick={() => setModalData(null)}
+                className="w-full py-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

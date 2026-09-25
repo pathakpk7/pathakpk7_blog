@@ -46,17 +46,16 @@ export async function toggleCommentLike(commentId: string) {
     });
     isLiked = true;
 
-    // Create notification if someone else liked the comment
+    // Create notification if someone else liked the comment (debounced)
     if (comment.userId !== userId) {
       try {
-        await db.notification.create({
-          data: {
-            userId: comment.userId,
-            actorId: userId,
-            type: "COMMENT_LIKE",
-            commentId,
-            postId: comment.postId,
-          },
+        const { dispatchNotification } = await import("@/app/actions/notification");
+        await dispatchNotification({
+          userId: comment.userId,
+          actorId: userId,
+          type: "COMMENT_LIKE",
+          commentId,
+          postId: comment.postId,
         });
       } catch (e) {
         console.warn("Notification creation failed:", e);

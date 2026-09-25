@@ -33,13 +33,12 @@ export async function toggleBookmark(postId: string) {
         select: { authorId: true },
       });
       if (post && post.authorId !== userId) {
-        await db.notification.create({
-          data: {
-            userId: post.authorId,
-            actorId: userId,
-            type: "POST_BOOKMARK",
-            postId,
-          },
+        const { dispatchNotification } = await import("@/app/actions/notification");
+        await dispatchNotification({
+          userId: post.authorId,
+          actorId: userId,
+          type: "POST_BOOKMARK",
+          postId,
         });
       }
     } catch (e) {}

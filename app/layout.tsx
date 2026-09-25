@@ -83,7 +83,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${newsreader.variable} ${firaCode.variable} ${devanagari.variable}`}>
-      <body className="antialiased selection:bg-blue-500 selection:text-white">
+      <body suppressHydrationWarning className="antialiased selection:bg-blue-500 selection:text-white">
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <ClientLayoutWrapper>{children}</ClientLayoutWrapper>

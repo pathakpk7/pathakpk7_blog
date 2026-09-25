@@ -5,11 +5,13 @@ import { db } from "@/lib/db/prisma";
 import { revalidatePath } from "next/cache";
 
 export interface Interactor {
+  id?: string;
   name: string;
   username: string;
   avatarUrl?: string | null;
   type: "like" | "comment" | "bookmark";
   commentSnippet?: string;
+  commentId?: string;
   createdAt: Date;
 }
 
@@ -25,7 +27,10 @@ export interface AggregatedPostNotification {
   latestTimestamp: Date;
   earliestTimestamp: Date;
   interactors: Interactor[];
-  sampleComments: { id: string; content: string; author: string; createdAt: Date }[];
+  likedUsers: Interactor[];
+  commenters: Interactor[];
+  bookmarkers: Interactor[];
+  sampleComments: { id: string; content: string; author: string; username: string; avatarUrl?: string | null; createdAt: Date }[];
 }
 
 export interface UserPersonalNotification {
@@ -48,6 +53,62 @@ export interface UserPersonalNotification {
   } | null;
   read: boolean;
   createdAt: Date;
+}
+
+/**
+ * Dispatch notification with 30-second spam/rapid-click debouncing.
+ * If the same actor interacts on the same target within 30 seconds, the existing notification is refreshed instead of creating duplicates.
+ */
+export async function dispatchNotification({
+  userId,
+  actorId,
+  type,
+  postId,
+  commentId,
+}: {
+  userId: string;
+  actorId: string;
+  type: "COMMENT_REPLY" | "COMMENT_LIKE" | "MENTION" | "POST_LIKE" | "POST_BOOKMARK" | "POST_COMMENT";
+  postId?: string | null;
+  commentId?: string | null;
+}) {
+  if (!userId || !actorId || userId === actorId) return;
+
+  try {
+    const thirtySecondsAgo = new Date(Date.now() - 30 * 1000);
+
+    const existing = await db.notification.findFirst({
+      where: {
+        userId,
+        actorId,
+        type,
+        postId: postId || null,
+        commentId: commentId || null,
+        createdAt: { gte: thirtySecondsAgo },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existing) {
+      // Touch existing notification timestamp & ensure unread
+      await db.notification.update({
+        where: { id: existing.id },
+        data: { createdAt: new Date(), read: false },
+      });
+    } else {
+      await db.notification.create({
+        data: {
+          userId,
+          actorId,
+          type,
+          postId: postId || null,
+          commentId: commentId || null,
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to dispatch notification:", err);
+  }
 }
 
 export async function getUserNotifications(): Promise<{
@@ -90,12 +151,12 @@ export async function getUserNotifications(): Promise<{
       },
     },
     orderBy: { createdAt: "desc" },
-    take: 30,
+    take: 50,
   });
 
   const personalNotifications: UserPersonalNotification[] = rawPersonal.map((n) => {
     const actorName = n.actor.profile?.displayName || n.actor.name || "Reader";
-    const actorUsername = n.actor.profile?.username || actorName.toLowerCase().replace(/\s+/g, "_");
+    const actorUsername = n.actor.profile?.username || (n.actor.name ? n.actor.name.toLowerCase().replace(/\s+/g, "_") : "reader");
     const actorAvatar = n.actor.profile?.avatarUrl || n.actor.image;
 
     return {
@@ -108,7 +169,7 @@ export async function getUserNotifications(): Promise<{
         avatarUrl: actorAvatar,
       },
       post: n.post,
-      comment: n.comment ? { id: n.comment.id, content: n.comment.content.slice(0, 120) } : null,
+      comment: n.comment ? { id: n.comment.id, content: n.comment.content.slice(0, 140) } : null,
       read: n.read,
       createdAt: n.createdAt,
     };
@@ -116,7 +177,7 @@ export async function getUserNotifications(): Promise<{
 
   const unreadPersonalCount = personalNotifications.filter((n) => !n.read).length;
 
-  // 2. If Admin, also aggregate interactions across all publications
+  // 2. If Admin, aggregate interactions per post cleanly
   let adminAggregatedNotifications: AggregatedPostNotification[] = [];
 
   if (isAdmin) {
@@ -129,6 +190,7 @@ export async function getUserNotifications(): Promise<{
             post: { select: { id: true, title: true, slug: true } },
             user: {
               select: {
+                id: true,
                 name: true,
                 image: true,
                 profile: { select: { displayName: true, avatarUrl: true, username: true } },
@@ -136,7 +198,7 @@ export async function getUserNotifications(): Promise<{
             },
           },
           orderBy: { createdAt: "desc" },
-          take: 40,
+          take: 60,
         }),
         db.bookmark.findMany({
           select: {
@@ -145,6 +207,7 @@ export async function getUserNotifications(): Promise<{
             post: { select: { id: true, title: true, slug: true } },
             user: {
               select: {
+                id: true,
                 name: true,
                 image: true,
                 profile: { select: { displayName: true, avatarUrl: true, username: true } },
@@ -152,7 +215,7 @@ export async function getUserNotifications(): Promise<{
             },
           },
           orderBy: { createdAt: "desc" },
-          take: 40,
+          take: 60,
         }),
         db.comment.findMany({
           where: {
@@ -166,6 +229,7 @@ export async function getUserNotifications(): Promise<{
             post: { select: { id: true, title: true, slug: true } },
             user: {
               select: {
+                id: true,
                 name: true,
                 image: true,
                 profile: { select: { displayName: true, avatarUrl: true, username: true } },
@@ -173,20 +237,20 @@ export async function getUserNotifications(): Promise<{
             },
           },
           orderBy: { createdAt: "desc" },
-          take: 40,
+          take: 60,
         }),
       ]);
 
-      interface RawEvent {
+      type RawEvent = {
         type: "like" | "comment" | "bookmark";
         postId: string;
         postTitle: string;
         postSlug: string;
-        user: { name: string; username: string; avatarUrl?: string | null };
+        user: { id: string; name: string; username: string; avatarUrl?: string | null };
         commentSnippet?: string;
         commentId?: string;
         createdAt: Date;
-      }
+      };
 
       const rawEvents: RawEvent[] = [];
 
@@ -199,7 +263,7 @@ export async function getUserNotifications(): Promise<{
           postId: l.postId,
           postTitle: l.post.title,
           postSlug: l.post.slug,
-          user: { name: author, username, avatarUrl: l.user.profile?.avatarUrl || l.user.image },
+          user: { id: l.user.id, name: author, username, avatarUrl: l.user.profile?.avatarUrl || l.user.image },
           createdAt: l.createdAt,
         });
       }
@@ -213,7 +277,7 @@ export async function getUserNotifications(): Promise<{
           postId: b.postId,
           postTitle: b.post.title,
           postSlug: b.post.slug,
-          user: { name: author, username, avatarUrl: b.user.profile?.avatarUrl || b.user.image },
+          user: { id: b.user.id, name: author, username, avatarUrl: b.user.profile?.avatarUrl || b.user.image },
           createdAt: b.createdAt,
         });
       }
@@ -227,8 +291,8 @@ export async function getUserNotifications(): Promise<{
           postId: c.postId,
           postTitle: c.post.title,
           postSlug: c.post.slug,
-          user: { name: author, username, avatarUrl: c.user.profile?.avatarUrl || c.user.image },
-          commentSnippet: c.content.slice(0, 120),
+          user: { id: c.user.id, name: author, username, avatarUrl: c.user.profile?.avatarUrl || c.user.image },
+          commentSnippet: c.content.slice(0, 140),
           commentId: c.id,
           createdAt: c.createdAt,
         });
@@ -236,101 +300,79 @@ export async function getUserNotifications(): Promise<{
 
       rawEvents.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-      const BATCH_GAP_MS = 48 * 60 * 60 * 1000;
-      const aggregatedMap = new Map<string, AggregatedPostNotification>();
+      // Group per unique post
+      const postMap = new Map<string, AggregatedPostNotification>();
 
       for (const event of rawEvents) {
-        let matchingKey: string | null = null;
-        for (const [key, batch] of aggregatedMap.entries()) {
-          if (batch.postId === event.postId) {
-            const timeDiff = Math.abs(batch.earliestTimestamp.getTime() - event.createdAt.getTime());
-            if (timeDiff <= BATCH_GAP_MS) {
-              matchingKey = key;
-              break;
-            }
-          }
-        }
-
-        if (!matchingKey) {
-          const key = `${event.postId}-${event.createdAt.getTime()}`;
-          aggregatedMap.set(key, {
-            id: key,
+        if (!postMap.has(event.postId)) {
+          postMap.set(event.postId, {
+            id: `post-${event.postId}`,
             postId: event.postId,
             postTitle: event.postTitle,
             postSlug: event.postSlug,
-            likesCount: event.type === "like" ? 1 : 0,
-            commentsCount: event.type === "comment" ? 1 : 0,
-            bookmarksCount: event.type === "bookmark" ? 1 : 0,
-            totalInteractions: 1,
+            likesCount: 0,
+            commentsCount: 0,
+            bookmarksCount: 0,
+            totalInteractions: 0,
             latestTimestamp: event.createdAt,
             earliestTimestamp: event.createdAt,
-            interactors: [
-              {
-                name: event.user.name,
-                username: event.user.username,
-                avatarUrl: event.user.avatarUrl,
-                type: event.type,
-                commentSnippet: event.commentSnippet,
-                createdAt: event.createdAt,
-              },
-            ],
-            sampleComments:
-              event.type === "comment" && event.commentSnippet && event.commentId
-                ? [
-                    {
-                      id: event.commentId,
-                      content: event.commentSnippet,
-                      author: event.user.name,
-                      createdAt: event.createdAt,
-                    },
-                  ]
-                : [],
+            interactors: [],
+            likedUsers: [],
+            commenters: [],
+            bookmarkers: [],
+            sampleComments: [],
           });
-        } else {
-          const batch = aggregatedMap.get(matchingKey)!;
-          if (event.type === "like") batch.likesCount += 1;
-          if (event.type === "comment") batch.commentsCount += 1;
-          if (event.type === "bookmark") batch.bookmarksCount += 1;
-          batch.totalInteractions += 1;
+        }
 
-          if (event.createdAt.getTime() > batch.latestTimestamp.getTime()) {
-            batch.latestTimestamp = event.createdAt;
-          }
-          if (event.createdAt.getTime() < batch.earliestTimestamp.getTime()) {
-            batch.earliestTimestamp = event.createdAt;
-          }
+        const batch = postMap.get(event.postId)!;
+        batch.totalInteractions += 1;
 
-          const exists = batch.interactors.some(
-            (i) => i.username === event.user.username && i.type === event.type
-          );
-          if (!exists && batch.interactors.length < 10) {
-            batch.interactors.push({
-              name: event.user.name,
-              username: event.user.username,
-              avatarUrl: event.user.avatarUrl,
-              type: event.type,
-              commentSnippet: event.commentSnippet,
-              createdAt: event.createdAt,
-            });
-          }
+        if (event.createdAt.getTime() > batch.latestTimestamp.getTime()) {
+          batch.latestTimestamp = event.createdAt;
+        }
 
-          if (
-            event.type === "comment" &&
-            event.commentSnippet &&
-            event.commentId &&
-            batch.sampleComments.length < 4
-          ) {
+        const interactorObj: Interactor = {
+          id: event.user.id,
+          name: event.user.name,
+          username: event.user.username,
+          avatarUrl: event.user.avatarUrl,
+          type: event.type,
+          commentSnippet: event.commentSnippet,
+          commentId: event.commentId,
+          createdAt: event.createdAt,
+        };
+
+        if (event.type === "like") {
+          batch.likesCount += 1;
+          if (!batch.likedUsers.some((u) => u.username === event.user.username)) {
+            batch.likedUsers.push(interactorObj);
+          }
+        } else if (event.type === "comment") {
+          batch.commentsCount += 1;
+          batch.commenters.push(interactorObj);
+          if (event.commentSnippet && event.commentId && batch.sampleComments.length < 5) {
             batch.sampleComments.push({
               id: event.commentId,
               content: event.commentSnippet,
               author: event.user.name,
+              username: event.user.username,
+              avatarUrl: event.user.avatarUrl,
               createdAt: event.createdAt,
             });
           }
+        } else if (event.type === "bookmark") {
+          batch.bookmarksCount += 1;
+          if (!batch.bookmarkers.some((u) => u.username === event.user.username)) {
+            batch.bookmarkers.push(interactorObj);
+          }
+        }
+
+        if (!batch.interactors.some((u) => u.username === event.user.username && u.type === event.type)) {
+          batch.interactors.push(interactorObj);
         }
       }
 
-      adminAggregatedNotifications = Array.from(aggregatedMap.values()).sort(
+      adminAggregatedNotifications = Array.from(postMap.values()).sort(
         (a, b) => b.latestTimestamp.getTime() - a.latestTimestamp.getTime()
       );
     } catch (e) {
@@ -375,6 +417,52 @@ export async function markAllNotificationsAsRead() {
     return { success: true };
   } catch {
     return { success: false };
+  }
+}
+
+export async function deleteNotification(notificationId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+  try {
+    await db.notification.deleteMany({
+      where: { id: notificationId, userId: session.user.id },
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: "Failed to delete notification" };
+  }
+}
+
+export async function deleteSelectedNotifications(notificationIds: string[]) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+  if (!notificationIds || notificationIds.length === 0) return { success: true };
+
+  try {
+    await db.notification.deleteMany({
+      where: {
+        id: { in: notificationIds },
+        userId: session.user.id,
+      },
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: "Failed to delete selected notifications" };
+  }
+}
+
+export async function deleteAllNotifications() {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+  try {
+    await db.notification.deleteMany({
+      where: { userId: session.user.id },
+    });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: "Failed to delete all notifications" };
   }
 }
 
