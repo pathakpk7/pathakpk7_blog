@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { addComment, editComment, deleteComment } from "@/app/actions/comment";
+import { toggleCommentLike } from "@/app/actions/comment-like";
 import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
-import { Send, MessageSquare, CornerDownRight, AtSign, Edit3, Trash2, Check, X } from "lucide-react";
+import { Send, MessageSquare, CornerDownRight, AtSign, Edit3, Trash2, Check, X, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export interface CommentItem {
@@ -14,6 +15,8 @@ export interface CommentItem {
   content: string;
   createdAt: Date | string;
   updatedAt?: Date | string;
+  likesCount?: number;
+  isLiked?: boolean;
   user: {
     id?: string;
     name?: string | null;
@@ -220,6 +223,64 @@ export function CommentSection({
       await deleteComment(commentId);
     } catch (err) {
       console.error("Failed to delete comment:", err);
+      setCommentList(prevList);
+    }
+  };
+
+  // Like / Unlike comment or reply
+  const handleLikeComment = async (commentId: string) => {
+    if (!isLoggedIn) {
+      router.push("/login");
+      return;
+    }
+
+    const prevList = [...commentList];
+    const updatedList = commentList.map((c) => {
+      if (c.id === commentId) {
+        const nextLiked = !c.isLiked;
+        const count = (c.likesCount || 0) + (nextLiked ? 1 : -1);
+        return { ...c, isLiked: nextLiked, likesCount: Math.max(0, count) };
+      }
+      if (c.replies) {
+        return {
+          ...c,
+          replies: c.replies.map((r) => {
+            if (r.id === commentId) {
+              const nextLiked = !r.isLiked;
+              const count = (r.likesCount || 0) + (nextLiked ? 1 : -1);
+              return { ...r, isLiked: nextLiked, likesCount: Math.max(0, count) };
+            }
+            return r;
+          }),
+        };
+      }
+      return c;
+    });
+
+    setCommentList(updatedList);
+
+    try {
+      const res = await toggleCommentLike(commentId);
+      if (res) {
+        setCommentList((current) =>
+          current.map((c) => {
+            if (c.id === commentId) {
+              return { ...c, isLiked: res.isLiked, likesCount: res.likeCount };
+            }
+            if (c.replies) {
+              return {
+                ...c,
+                replies: c.replies.map((r) =>
+                  r.id === commentId ? { ...r, isLiked: res.isLiked, likesCount: res.likeCount } : r
+                ),
+              };
+            }
+            return c;
+          })
+        );
+      }
+    } catch (err) {
+      console.error("Failed to toggle comment like:", err);
       setCommentList(prevList);
     }
   };
@@ -486,23 +547,50 @@ export function CommentSection({
                   </div>
                 )}
 
-                {/* Reply and Edit Action buttons */}
-                {!isEditing && isLoggedIn && (
+                {/* Like, Reply and Edit Action buttons */}
+                {!isEditing && (
                   <div className="pl-8.5 flex items-center space-x-4 pt-1">
+                    {/* Like button */}
                     <button
-                      onClick={() => {
-                        if (replyParentId === comment.id) {
-                          setReplyParentId(null);
-                        } else {
-                          handleStartReply(comment.id, username, author);
-                        }
-                      }}
-                      className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
+                      type="button"
+                      onClick={() => handleLikeComment(comment.id)}
+                      className={`inline-flex items-center space-x-1 text-xs font-medium transition-colors ${
+                        comment.isLiked
+                          ? "text-rose-600 dark:text-rose-400 font-semibold"
+                          : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                      }`}
+                      title={comment.isLiked ? "Unlike comment" : "Like comment"}
                     >
-                      <CornerDownRight className="w-3 h-3" />
-                      <span>Reply {username ? `@${username}` : ""}</span>
+                      <Heart className={`w-3.5 h-3.5 ${comment.isLiked ? "fill-current text-rose-500" : ""}`} />
+                      {(comment.likesCount || 0) > 0 && <span>{comment.likesCount}</span>}
                     </button>
 
+                    {/* Reply button */}
+                    {isLoggedIn ? (
+                      <button
+                        onClick={() => {
+                          if (replyParentId === comment.id) {
+                            setReplyParentId(null);
+                          } else {
+                            handleStartReply(comment.id, username, author);
+                          }
+                        }}
+                        className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
+                      >
+                        <CornerDownRight className="w-3 h-3" />
+                        <span>Reply {username ? `@${username}` : ""}</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => router.push("/login")}
+                        className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium inline-flex items-center space-x-1"
+                      >
+                        <CornerDownRight className="w-3 h-3" />
+                        <span>Reply</span>
+                      </button>
+                    )}
+
+                    {/* Edit button */}
                     {userCanEdit && (
                       <button
                         onClick={() => handleStartEdit(comment)}
@@ -657,9 +745,23 @@ export function CommentSection({
                                 {renderFormattedContent(reply.content)}
                               </div>
 
-                              {/* Edit button for reply */}
-                              {repCanEdit && (
-                                <div className="pl-7 pt-0.5">
+                              {/* Actions for reply: Like and Edit */}
+                              <div className="pl-7 pt-1 flex items-center space-x-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleLikeComment(reply.id)}
+                                  className={`inline-flex items-center space-x-1 text-[11px] font-medium transition-colors ${
+                                    reply.isLiked
+                                      ? "text-rose-600 dark:text-rose-400 font-semibold"
+                                      : "text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400"
+                                  }`}
+                                  title={reply.isLiked ? "Unlike reply" : "Like reply"}
+                                >
+                                  <Heart className={`w-3 h-3 ${reply.isLiked ? "fill-current text-rose-500" : ""}`} />
+                                  {(reply.likesCount || 0) > 0 && <span>{reply.likesCount}</span>}
+                                </button>
+
+                                {repCanEdit && (
                                   <button
                                     onClick={() => handleStartEdit(reply)}
                                     className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 inline-flex items-center space-x-1 transition-colors"
@@ -667,8 +769,8 @@ export function CommentSection({
                                     <Edit3 className="w-2.5 h-2.5" />
                                     <span>Edit</span>
                                   </button>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </>
                           )}
                         </div>

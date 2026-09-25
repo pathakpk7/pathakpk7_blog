@@ -26,7 +26,25 @@ export async function toggleBookmark(postId: string) {
     await db.bookmark.create({
       data: { userId, postId },
     });
+
+    try {
+      const post = await db.post.findUnique({
+        where: { id: postId },
+        select: { authorId: true },
+      });
+      if (post && post.authorId !== userId) {
+        await db.notification.create({
+          data: {
+            userId: post.authorId,
+            actorId: userId,
+            type: "POST_BOOKMARK",
+            postId,
+          },
+        });
+      }
+    } catch (e) {}
   }
 
-  return { bookmarked: !existingBookmark };
+  const count = await db.bookmark.count({ where: { postId } });
+  return { bookmarked: !existingBookmark, count };
 }

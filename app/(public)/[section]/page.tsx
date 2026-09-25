@@ -344,9 +344,15 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
       likedPosts = (profile.user?.likes || [])
         .map((l: any) => l.post)
         .filter((p: any) => p && p.status === "PUBLISHED");
-      bookmarkedPosts = (profile.user?.bookmarks || [])
-        .map((b: any) => b.post)
-        .filter((p: any) => p && p.status === "PUBLISHED");
+      
+      // Bookmarks are strictly private to the profile owner and Admin/Author
+      if (isViewerOwner) {
+        bookmarkedPosts = (profile.user?.bookmarks || [])
+          .map((b: any) => b.post)
+          .filter((p: any) => p && p.status === "PUBLISHED");
+      } else {
+        bookmarkedPosts = [];
+      }
 
       // For owner or admin, include all comments with status badges; for public visitors, show approved comments on published posts
       userComments = (profile.user?.comments || []).filter((c: any) => {
@@ -370,6 +376,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
     currentUserId === profile.userId ||
     currentUserEmail === profile.user?.email?.toLowerCase() ||
     currentUsername === profile.username;
+  const isViewerOwner = isOwnProfile || isCurrentAdmin;
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 min-h-screen">
@@ -457,9 +464,9 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
         )}
 
         {/* Community Stats */}
-        <div className={`grid ${isAdmin || hasPublishedPosts ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3"} gap-3 sm:gap-4 pt-4 border-t border-border/60 text-center`}>
+        <div className="flex flex-wrap items-center justify-around gap-3 sm:gap-4 pt-4 border-t border-border/60 text-center">
           {(isAdmin || hasPublishedPosts) && (
-            <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+            <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1 min-w-[70px]">
               <span className="text-lg sm:text-2xl font-bold font-mono text-foreground">
                 {userPosts.length}
               </span>
@@ -468,7 +475,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
               </p>
             </div>
           )}
-          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1 min-w-[70px]">
             <span className="text-lg sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
               {likedPosts.length}
             </span>
@@ -476,15 +483,17 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
               Liked Posts
             </p>
           </div>
-          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
-            <span className="text-lg sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
-              {bookmarkedPosts.length}
-            </span>
-            <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-              Saved Library
-            </p>
-          </div>
-          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1">
+          {isViewerOwner && (
+            <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1 min-w-[70px]">
+              <span className="text-lg sm:text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">
+                {bookmarkedPosts.length}
+              </span>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Saved Library
+              </p>
+            </div>
+          )}
+          <div className="p-2 sm:p-0 rounded-xl bg-muted/30 sm:bg-transparent space-y-0.5 sm:space-y-1 min-w-[70px]">
             <span className="text-lg sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {userComments.length}
             </span>
@@ -500,6 +509,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
         displayName={profile.displayName}
         username={profile.username}
         isAdmin={isAdmin}
+        canViewBookmarks={isViewerOwner}
         publishedPosts={userPosts}
         likedPosts={likedPosts}
         bookmarkedPosts={bookmarkedPosts}

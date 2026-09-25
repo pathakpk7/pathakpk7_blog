@@ -126,13 +126,6 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     }
 
     const emblemUrl = `${baseUrl}/emblem.png`;
-    let coverUrl = emblemUrl;
-    if (post.coverImageUrl && post.coverImageUrl.trim().length > 5) {
-      coverUrl = post.coverImageUrl.startsWith("http")
-        ? post.coverImageUrl
-        : `${baseUrl}${post.coverImageUrl.startsWith("/") ? "" : "/"}${post.coverImageUrl}`;
-    }
-
     const canonicalUrl = `${baseUrl}/article/${slug}`;
 
     return {
@@ -155,18 +148,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
           {
             url: emblemUrl,
             secureUrl: emblemUrl,
-            width: 1024,
-            height: 1024,
+            width: 512,
+            height: 512,
             type: "image/png",
             alt: "ThePathak.tech Logo",
-          },
-          {
-            url: coverUrl,
-            secureUrl: coverUrl,
-            width: 1200,
-            height: 630,
-            type: "image/png",
-            alt: post.title,
           },
         ],
       },
@@ -201,15 +186,37 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         },
         category: true,
         tags: { include: { tag: true } },
-        likes: true,
-        bookmarks: userId ? { where: { userId } } : false,
+        likes: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                profile: {
+                  select: {
+                    displayName: true,
+                    username: true,
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        bookmarks: true,
         comments: {
           where: { parentId: null, status: "APPROVED" },
           include: {
             user: { include: { profile: true } },
+            likes: { select: { userId: true } },
             replies: {
               where: { status: "APPROVED" },
-              include: { user: { include: { profile: true } } },
+              include: {
+                user: { include: { profile: true } },
+                likes: { select: { userId: true } },
+              },
               orderBy: { createdAt: "asc" },
             },
           },
@@ -238,7 +245,31 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const isLiked = userId ? post.likes?.some((l: any) => l.userId === userId) : false;
-  const isBookmarked = userId ? (post.bookmarks as any[])?.length > 0 : false;
+  const isBookmarked = userId ? (post.bookmarks as any[])?.some((b: any) => b.userId === userId) : false;
+  const bookmarkCount = (post.bookmarks as any[])?.length || 0;
+  const likedUsers = (post.likes || []).map((l: any) => ({
+    id: l.user?.id,
+    name: l.user?.profile?.displayName || l.user?.name || "Reader",
+    username: l.user?.profile?.username || (l.user?.name ? l.user.name.toLowerCase().replace(/\s+/g, "_") : "reader"),
+    avatarUrl: l.user?.profile?.avatarUrl || l.user?.image,
+  }));
+
+  const formattedComments = (post.comments || []).map((c: any) => ({
+    ...c,
+    isLiked: userId ? (c.likes || []).some((l: any) => l.userId === userId) : false,
+    likesCount: c.likes?.length || 0,
+    replies: (c.replies || []).map((r: any) => ({
+      ...r,
+      isLiked: userId ? (r.likes || []).some((l: any) => l.userId === userId) : false,
+      likesCount: r.likes?.length || 0,
+    })),
+  }));
+
+  const totalCommentsCount = formattedComments.reduce(
+    (acc: number, c: any) => acc + 1 + (c.replies?.length || 0),
+    0
+  );
+
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
   const authorBio = post.author?.profile?.bio || "Lead Software Architect, Writer & Thinker.";
   const authorAvatar = post.author?.profile?.avatarUrl;
@@ -412,7 +443,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             initialLiked={isLiked}
             initialLikeCount={post.likes?.length || 0}
             initialBookmarked={isBookmarked}
-            commentCount={post.comments?.length || 0}
+            initialBookmarkCount={bookmarkCount}
+            commentCount={totalCommentsCount}
+            likedUsers={likedUsers}
             slug={post.slug}
             title={post.title}
             isLoggedIn={!!userId}
@@ -421,10 +454,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
         </div>
 
-        {/* Comment Section with edit permissions and instant response */}
+        {/* Comment Section with comment liking and edit permissions */}
         <CommentSection
           postId={post.id}
-          comments={(post.comments as any) || []}
+          comments={formattedComments}
           isLoggedIn={!!userId}
           currentUserId={userId}
           isAdmin={isAdmin}

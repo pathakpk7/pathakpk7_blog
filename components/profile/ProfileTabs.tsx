@@ -44,6 +44,7 @@ interface ProfileTabsProps {
   displayName: string;
   username: string;
   isAdmin: boolean;
+  canViewBookmarks?: boolean;
   publishedPosts: PostItem[];
   likedPosts: PostItem[];
   bookmarkedPosts: PostItem[];
@@ -55,13 +56,14 @@ export function ProfileTabs({
   displayName,
   username,
   isAdmin,
+  canViewBookmarks = true,
   publishedPosts,
   likedPosts,
   bookmarkedPosts,
   comments,
   defaultTab,
 }: ProfileTabsProps) {
-  // Determine initial active tab: if author has published articles, start there; otherwise start on Liked or Bookmarks
+  // Determine initial active tab: if author has published articles, start there; otherwise start on Liked
   const hasPublished = publishedPosts.length > 0 || isAdmin;
   const initialTab: "publications" | "liked" | "bookmarks" | "comments" =
     defaultTab ||
@@ -69,7 +71,7 @@ export function ProfileTabs({
       ? "publications"
       : likedPosts.length > 0
       ? "liked"
-      : bookmarkedPosts.length > 0
+      : canViewBookmarks && bookmarkedPosts.length > 0
       ? "bookmarks"
       : comments.length > 0
       ? "comments"
@@ -104,26 +106,28 @@ export function ProfileTabs({
           </span>
         </button>
 
-        {/* Saved in Library Tab */}
-        <button
-          type="button"
-          onClick={() => setActiveTab("bookmarks")}
-          className={`flex items-center space-x-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all duration-150 shrink-0 ${
-            activeTab === "bookmarks"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-500/5 rounded-t-xl"
-              : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-          }`}
-        >
-          <BookmarkIcon className={`w-4 h-4 ${activeTab === "bookmarks" ? "fill-current" : ""}`} />
-          <span>Saved in Library</span>
-          <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
-            activeTab === "bookmarks"
-              ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
-              : "bg-muted text-muted-foreground"
-          }`}>
-            {bookmarkedPosts.length}
-          </span>
-        </button>
+        {/* Saved in Library Tab - Only visible to Profile Owner and Admin */}
+        {canViewBookmarks && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("bookmarks")}
+            className={`flex items-center space-x-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all duration-150 shrink-0 ${
+              activeTab === "bookmarks"
+                ? "border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-500/5 rounded-t-xl"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+            }`}
+          >
+            <BookmarkIcon className={`w-4 h-4 ${activeTab === "bookmarks" ? "fill-current" : ""}`} />
+            <span>Saved in Library</span>
+            <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+              activeTab === "bookmarks"
+                ? "bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                : "bg-muted text-muted-foreground"
+            }`}>
+              {bookmarkedPosts.length}
+            </span>
+          </button>
+        )}
 
         {/* Comments & Discussions Tab */}
         <button
@@ -220,7 +224,7 @@ export function ProfileTabs({
         )}
 
         {/* 2. SAVED IN LIBRARY / BOOKMARKS PANEL */}
-        {activeTab === "bookmarks" && (
+        {canViewBookmarks && activeTab === "bookmarks" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>

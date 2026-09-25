@@ -27,6 +27,23 @@ export async function toggleLike(postId: string) {
     await db.like.create({
       data: { userId, postId },
     });
+
+    try {
+      const post = await db.post.findUnique({
+        where: { id: postId },
+        select: { authorId: true },
+      });
+      if (post && post.authorId !== userId) {
+        await db.notification.create({
+          data: {
+            userId: post.authorId,
+            actorId: userId,
+            type: "POST_LIKE",
+            postId,
+          },
+        });
+      }
+    } catch (e) {}
   }
 
   const count = await db.like.count({ where: { postId } });

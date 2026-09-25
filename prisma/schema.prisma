@@ -66,6 +66,9 @@ model User {
   bookmarks     Bookmark[]
   history       ReadingHistory[]
   comments      Comment[]
+  commentLikes  CommentLike[]
+  notifications Notification[]   @relation("UserNotifications")
+  actorNotifications Notification[] @relation("ActorNotifications")
   views         PostView[]
 
   @@map("users")
@@ -185,6 +188,7 @@ model Post {
   bookmarks      Bookmark[]
   history        ReadingHistory[]
   comments       Comment[]
+  notifications  Notification[]
   views          PostView[]
   revisions      PostRevision[]
 
@@ -260,21 +264,64 @@ model ReadingHistory {
 }
 
 model Comment {
-  id        String        @id @default(cuid())
-  postId    String
-  userId    String
-  parentId  String?
-  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[]     @relation("CommentReplies")
-  content   String        @db.Text
-  status    CommentStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  postId        String
+  userId        String
+  parentId      String?
+  post          Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Comment[]     @relation("CommentReplies")
+  likes         CommentLike[]
+  notifications Notification[]
+  content       String        @db.Text
+  status        CommentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([postId])
   @@map("comments")
+}
+
+enum NotificationType {
+  COMMENT_REPLY
+  COMMENT_LIKE
+  MENTION
+  POST_LIKE
+  POST_BOOKMARK
+  POST_COMMENT
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  actorId   String
+  type      NotificationType
+  postId    String?
+  commentId String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User             @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: Cascade)
+  post      Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, commentId])
+  @@map("comment_likes")
 }
 
 model Media {

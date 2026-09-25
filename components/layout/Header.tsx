@@ -109,8 +109,8 @@ export function Header({ onOpenSearch }: HeaderProps) {
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              {/* Admin Notification Bell */}
-              {isAdmin && <NotificationBell variant="header" />}
+              {/* User / Admin Notification Bell */}
+              {session?.user && <NotificationBell variant="header" />}
 
               {/* User State */}
               {session?.user ? (
