@@ -7,6 +7,7 @@ import { toggleLike } from "@/app/actions/like";
 import { toggleBookmark } from "@/app/actions/bookmark";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { DeletePostButton } from "./DeletePostButton";
 
 interface ArticleActionsProps {
@@ -17,7 +18,7 @@ interface ArticleActionsProps {
   commentCount: number;
   slug: string;
   title: string;
-  isLoggedIn: boolean;
+  isLoggedIn?: boolean;
   isAdmin?: boolean;
   section?: string;
 }
@@ -30,11 +31,15 @@ export function ArticleActions({
   commentCount,
   slug,
   title,
-  isLoggedIn,
-  isAdmin = false,
+  isLoggedIn: initialIsLoggedIn = false,
+  isAdmin: initialIsAdmin = false,
   section = "technology",
 }: ArticleActionsProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user || initialIsLoggedIn;
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com" || initialIsAdmin;
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [bookmarked, setBookmarked] = useState(initialBookmarked);

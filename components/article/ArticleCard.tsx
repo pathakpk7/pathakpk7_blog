@@ -81,7 +81,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               "text-xl sm:text-2xl font-serif-editorial italic font-medium tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 leading-snug",
               isHindi && "font-devanagari text-2xl not-italic"
             )}>
-              <Link href={`/article/${post.slug}`}>
+              <Link href={`/article/${post.slug}`} prefetch={true}>
                 <span className="absolute inset-0" aria-hidden="true" />
                 &ldquo;{post.title}&rdquo;
               </Link>
@@ -123,7 +123,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             <span className="text-zinc-500 font-normal">{post.contentType}</span>
           </div>
           <h2 className="font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-tight">
-            <Link href={`/article/${post.slug}`} className="focus:outline-none">
+            <Link href={`/article/${post.slug}`} prefetch={true} className="focus:outline-none">
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
@@ -178,7 +178,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             "text-2xl font-bold tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150",
             isHindi ? "font-devanagari text-3xl" : "font-serif-editorial"
           )}>
-            <Link href={`/article/${post.slug}`}>
+            <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
@@ -211,7 +211,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             {sectionUpper}
           </span>
           <h4 className="font-serif-editorial text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 line-clamp-2">
-            <Link href={`/article/${post.slug}`}>
+            <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
@@ -250,7 +250,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               <span className="text-zinc-500 font-normal">{post.contentType}</span>
             </div>
             <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150">
-              <Link href={`/article/${post.slug}`}>
+              <Link href={`/article/${post.slug}`} prefetch={true}>
                 <span className="absolute inset-0" aria-hidden="true" />
                 {post.title}
               </Link>
@@ -294,7 +294,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             <span className="text-zinc-500 font-normal">{post.contentType}</span>
           </div>
           <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-snug">
-            <Link href={`/article/${post.slug}`}>
+            <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>

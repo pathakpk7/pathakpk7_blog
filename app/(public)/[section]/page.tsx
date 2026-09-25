@@ -8,7 +8,7 @@ import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare, Settings } from "lucide-react";
 import { formatDate, getSafeAvatarUrl, getBaseUrl } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface SectionPageProps {
   params: Promise<{ section: string }>;
