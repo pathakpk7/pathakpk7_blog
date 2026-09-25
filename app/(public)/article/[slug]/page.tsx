@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     } catch {}
 
     const isQuote = post.contentType === "QUOTE";
-    const title = post.seoTitle || (isQuote ? `“${post.title}” — ThePathak.tech` : `${post.title} | ThePathak.tech`);
+    const rawTitle = post.seoTitle || (isQuote ? `“${post.title}”` : post.title);
 
     let plainContent = "";
     if (post.content) {
@@ -125,10 +125,10 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       publishedTime = post.publishedAt.toISOString();
     }
 
-    // High-performance CDN preview images for WhatsApp, Telegram, Twitter, Facebook, LinkedIn
-    let primaryImageUrl = `${baseUrl}/emblem.png`;
+    const emblemUrl = `${baseUrl}/emblem.png`;
+    let coverUrl = emblemUrl;
     if (post.coverImageUrl && post.coverImageUrl.trim().length > 5) {
-      primaryImageUrl = post.coverImageUrl.startsWith("http")
+      coverUrl = post.coverImageUrl.startsWith("http")
         ? post.coverImageUrl
         : `${baseUrl}${post.coverImageUrl.startsWith("/") ? "" : "/"}${post.coverImageUrl}`;
     }
@@ -136,7 +136,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     const canonicalUrl = `${baseUrl}/article/${slug}`;
 
     return {
-      title,
+      title: rawTitle,
       description,
       authors: [{ name: authorName }],
       alternates: {
@@ -153,35 +153,28 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         authors: [authorName],
         images: [
           {
-            url: primaryImageUrl,
-            secureUrl: primaryImageUrl,
+            url: emblemUrl,
+            secureUrl: emblemUrl,
+            width: 1024,
+            height: 1024,
+            type: "image/png",
+            alt: "ThePathak.tech Logo",
+          },
+          {
+            url: coverUrl,
+            secureUrl: coverUrl,
             width: 1200,
             height: 630,
             type: "image/png",
             alt: post.title,
-          },
-          {
-            url: `${baseUrl}/emblem.png`,
-            secureUrl: `${baseUrl}/emblem.png`,
-            width: 512,
-            height: 512,
-            type: "image/png",
-            alt: "ThePathak.tech Logo",
           },
         ],
       },
       twitter: {
-        card: "summary_large_image",
+        card: "summary",
         title: post.title,
         description,
-        images: [
-          {
-            url: primaryImageUrl,
-            alt: post.title,
-            width: 1200,
-            height: 630,
-          },
-        ],
+        images: [emblemUrl],
       },
     };
   } catch (err) {
