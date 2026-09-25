@@ -105,7 +105,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         </div>
 
         <div className="flex items-center justify-between pt-3 border-t border-amber-500/20 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">{authorName}</span>
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
           <span className="font-mono text-[11px] uppercase tracking-wider">{post.section}</span>
         </div>
       </article>
@@ -139,7 +139,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             </p>
           )}
           <div className="flex items-center space-x-4 pt-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{authorName}</span>
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
             <span>•</span>
             <span>{formatDate(post.publishedAt)}</span>
             <span>•</span>
@@ -196,7 +196,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           )}
         </div>
         <div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
-          <span>{authorName}</span>
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
           <span>{post.readingTime} min read</span>
         </div>
       </article>
@@ -306,7 +306,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           )}
         </div>
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border/50">
-          <span>{authorName}</span>
+          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
           <span>{post.readingTime} min read</span>
         </div>
       </div>

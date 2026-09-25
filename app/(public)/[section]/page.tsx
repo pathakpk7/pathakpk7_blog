@@ -389,7 +389,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
             </div>
             <div className="space-y-1 min-w-0">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <h1 className="font-serif-editorial text-xl sm:text-3xl font-bold text-foreground truncate">
+                <h1 className="font-serif-editorial text-xl sm:text-3xl font-bold text-zinc-950 dark:text-white truncate">
                   {profile.displayName}
                 </h1>
                 {isAdmin ? (

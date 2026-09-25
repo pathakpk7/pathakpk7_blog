@@ -150,7 +150,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         className="object-cover"
                       />
                     </div>
-                    <span className="hidden xl:inline-block text-xs font-semibold text-foreground max-w-[85px] truncate">
+                    <span className="hidden xl:inline-block text-xs font-semibold text-zinc-900 dark:text-zinc-100 max-w-[95px] truncate">
                       {session.user.name || username}
                     </span>
                   </Link>

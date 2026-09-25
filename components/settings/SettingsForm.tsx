@@ -350,14 +350,15 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
             </div>
 
             {/* Display Name */}
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Display Name</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">Display Name</label>
               <input
                 type="text"
                 required
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full p-3 rounded-xl bg-card border border-border text-sm focus:outline-none focus:border-blue-500"
+                placeholder="Your Public Name"
+                className="w-full p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-sm text-zinc-900 dark:text-zinc-100 font-medium focus:outline-none focus:border-blue-500 transition-colors shadow-xs"
               />
             </div>
 

@@ -310,9 +310,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   className="object-cover"
                 />
               </div>
-              <span className="font-semibold text-foreground">{authorName}</span>
+              <span className="font-semibold text-zinc-950 dark:text-zinc-100">{authorName}</span>
               {post.author?.profile?.username && (
-                <span className="font-mono text-zinc-400 text-[11px]">@{post.author.profile.username}</span>
+                <span className="font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">@{post.author.profile.username}</span>
               )}
             </Link>
             <span>•</span>

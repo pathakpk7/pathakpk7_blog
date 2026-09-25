@@ -128,8 +128,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const totalMatches = posts.length + authors.length + tags.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-4 bg-zinc-950/70 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl bg-card rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col max-h-[82vh] transition-all">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-20 px-4 bg-zinc-950/70 backdrop-blur-sm animate-in fade-in duration-150 cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl bg-card rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[82vh] transition-all cursor-default"
+      >
         {/* Search Header Input */}
         <div className="flex items-center px-4 py-3.5 border-b border-border space-x-3 bg-muted/20">
           <Search className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />

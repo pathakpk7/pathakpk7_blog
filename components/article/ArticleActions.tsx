@@ -84,60 +84,62 @@ export function ArticleActions({
   };
 
   return (
-    <div className="flex items-center space-x-1.5 sm:space-x-2 bg-card/95 dark:bg-zinc-900/95 border border-border px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-xl backdrop-blur-md max-w-[calc(100vw-32px)]">
+    <div className="flex items-center space-x-1.5 sm:space-x-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full shadow-2xl backdrop-blur-md max-w-[calc(100vw-32px)]">
       {/* Like Button */}
       <button
         onClick={handleLike}
         className={cn(
-          "flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+          "flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95",
           liked
-            ? "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"
-            : "text-muted-foreground hover:bg-muted"
+            ? "bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60"
+            : "text-zinc-700 dark:text-zinc-200 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         )}
+        title={liked ? "Unlike article" : "Like article"}
       >
-        <Heart className={cn("w-4 h-4", liked && "fill-current text-rose-500")} />
-        <span>{likeCount}</span>
+        <Heart className={cn("w-4 h-4", liked ? "fill-current text-rose-500" : "text-zinc-600 dark:text-zinc-300")} />
+        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{likeCount}</span>
       </button>
 
       {/* Bookmark Button */}
       <button
         onClick={handleBookmark}
         className={cn(
-          "p-2 rounded-full text-xs font-semibold transition-all",
+          "p-2 rounded-full text-xs font-semibold transition-all active:scale-95",
           bookmarked
-            ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400"
-            : "text-muted-foreground hover:bg-muted"
+            ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/60"
+            : "text-zinc-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         )}
-        title={bookmarked ? "Bookmarked" : "Bookmark article"}
+        title={bookmarked ? "Bookmarked in library" : "Save to library"}
       >
-        <Bookmark className={cn("w-4 h-4", bookmarked && "fill-current text-blue-500")} />
+        <Bookmark className={cn("w-4 h-4", bookmarked ? "fill-current text-blue-500" : "text-zinc-600 dark:text-zinc-300")} />
       </button>
 
       {/* Comment Scroll Link */}
       <a
         href="#comments"
-        className="flex items-center space-x-1.5 px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted rounded-full transition-colors"
+        className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+        title="View discussion"
       >
-        <MessageSquare className="w-4 h-4" />
-        <span>{commentCount}</span>
+        <MessageSquare className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
+        <span className="text-zinc-900 dark:text-zinc-100">{commentCount}</span>
       </a>
 
       {/* Share Button */}
       <button
         onClick={handleShare}
-        className="p-2 text-muted-foreground hover:bg-muted rounded-full transition-colors relative"
-        title="Share article"
+        className="p-2 text-zinc-700 dark:text-zinc-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors relative active:scale-95"
+        title="Share article link"
       >
-        {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
+        {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />}
       </button>
 
-      {/* Admin Quick Actions */}
+      {/* Admin-Only Quick Actions */}
       {isAdmin && (
         <>
-          <span className="w-px h-4 bg-border mx-1" />
+          <span className="w-px h-4 bg-zinc-200 dark:bg-zinc-700 mx-1" />
           <Link
             href={`/studio/posts/${postId}/edit`}
-            className="p-2 text-zinc-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-full transition-colors"
+            className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-full transition-colors"
             title="Edit article in Studio"
           >
             <Edit3 className="w-4 h-4" />
