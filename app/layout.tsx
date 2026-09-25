@@ -53,10 +53,11 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/emblem.png",
-        width: 1024,
-        height: 1024,
-        alt: "ThePathak.tech Logo",
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        type: "image/png",
+        alt: "ThePathak.tech Banner",
       },
     ],
   },
@@ -64,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ThePathak.tech — Technology • Science • Code • Words",
     description: "Interpretation over repetition. Independent publishing platform.",
-    images: ["/emblem.png"],
+    images: ["/opengraph-image"],
   },
 };
 

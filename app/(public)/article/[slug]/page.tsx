@@ -11,6 +11,7 @@ import { ArticleCard } from "@/components/article/ArticleCard";
 import { Clock, Calendar, Tag as TagIcon, ArrowLeft, Quote, Edit3 } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
+import { headers } from "next/headers";
 import { DeletePostButton } from "@/components/article/DeletePostButton";
 
 export const revalidate = 60;
@@ -93,7 +94,16 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
 
-    const baseUrl = getBaseUrl();
+    let baseUrl = getBaseUrl();
+    try {
+      const headerList = await headers();
+      const host = headerList.get("x-forwarded-host") || headerList.get("host");
+      const proto = headerList.get("x-forwarded-proto") || "https";
+      if (host) {
+        baseUrl = `${proto}://${host}`;
+      }
+    } catch {}
+
     const isQuote = post.contentType === "QUOTE";
     const title = post.seoTitle || (isQuote ? `“${post.title}” — ThePathak.tech` : `${post.title} | ThePathak.tech`);
 
@@ -115,8 +125,8 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       publishedTime = post.publishedAt.toISOString();
     }
 
-    // Resolve full absolute image URL for WhatsApp / Facebook / Twitter / Telegram
-    let imageUrl = `${baseUrl}/emblem.png`;
+    // High-resolution preview image for WhatsApp / Facebook / Twitter / Telegram / LinkedIn
+    let imageUrl = `${baseUrl}/article/${slug}/opengraph-image`;
     if (post.coverImageUrl && post.coverImageUrl.trim().length > 5) {
       imageUrl = post.coverImageUrl.startsWith("http")
         ? post.coverImageUrl
@@ -128,6 +138,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     return {
       title,
       description,
+      authors: [{ name: authorName }],
       alternates: {
         canonical: canonicalUrl,
       },
@@ -136,14 +147,17 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         description,
         url: canonicalUrl,
         siteName: "ThePathak.tech",
+        locale: "en_US",
         type: "article",
         publishedTime,
         authors: [authorName],
         images: [
           {
             url: imageUrl,
+            secureUrl: imageUrl,
             width: 1200,
             height: 630,
+            type: "image/png",
             alt: post.title,
           },
         ],
@@ -152,7 +166,14 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         card: "summary_large_image",
         title: post.title,
         description,
-        images: [imageUrl],
+        images: [
+          {
+            url: imageUrl,
+            alt: post.title,
+            width: 1200,
+            height: 630,
+          },
+        ],
       },
     };
   } catch (err) {

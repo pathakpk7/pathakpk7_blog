@@ -48,9 +48,18 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName
   },
 };
 
+import { headers } from "next/headers";
+
 export async function generateMetadata({ params }: SectionPageProps) {
   const { section } = await params;
-  const baseUrl = getBaseUrl();
+  let baseUrl = getBaseUrl();
+  try {
+    const headerList = await headers();
+    const host = headerList.get("x-forwarded-host") || headerList.get("host");
+    const proto = headerList.get("x-forwarded-proto") || "https";
+    if (host) baseUrl = `${proto}://${host}`;
+  } catch {}
+
   const config = VALID_SECTIONS[section];
 
   if (config) {
@@ -70,9 +79,9 @@ export async function generateMetadata({ params }: SectionPageProps) {
         type: "website",
         images: [
           {
-            url: `${baseUrl}/emblem.png`,
-            width: 1024,
-            height: 1024,
+            url: `${baseUrl}/opengraph-image`,
+            width: 1200,
+            height: 630,
             alt: config.title,
           },
         ],
@@ -81,7 +90,7 @@ export async function generateMetadata({ params }: SectionPageProps) {
         card: "summary_large_image",
         title,
         description,
-        images: [`${baseUrl}/emblem.png`],
+        images: [`${baseUrl}/opengraph-image`],
       },
     };
   }
