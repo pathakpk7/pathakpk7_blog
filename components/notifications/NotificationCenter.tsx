@@ -58,6 +58,8 @@ export function NotificationCenter({
     items: Interactor[];
   } | null>(null);
 
+  const [confirmDeleteNotification, setConfirmDeleteNotification] = useState<UserPersonalNotification | null>(null);
+
   // Swipe-to-delete state for mobile
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [swipeOffset, setSwipeOffset] = useState(0);
@@ -178,9 +180,9 @@ export function NotificationCenter({
     }
   };
 
-  const handleTouchEnd = (id: string) => {
-    if (swipingId === id && swipeOffset > 85) {
-      handleDeleteSingle(id);
+  const handleTouchEnd = (item: UserPersonalNotification) => {
+    if (swipingId === item.id && swipeOffset > 80) {
+      setConfirmDeleteNotification(item);
     }
     setSwipingId(null);
     setSwipeOffset(0);
@@ -393,7 +395,7 @@ export function NotificationCenter({
                   <div
                     onTouchStart={(e) => handleTouchStart(e, item.id)}
                     onTouchMove={(e) => handleTouchMove(e, item.id)}
-                    onTouchEnd={() => handleTouchEnd(item.id)}
+                    onTouchEnd={() => handleTouchEnd(item)}
                     style={{
                       transform: isBeingSwiped && swipeOffset > 0 ? `translateX(${swipeOffset}px)` : "none",
                       transition: isBeingSwiped ? "none" : "transform 0.15s ease-out",
@@ -462,7 +464,11 @@ export function NotificationCenter({
                     </Link>
 
                     <button
-                      onClick={(e) => handleDeleteSingle(item.id, e)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setConfirmDeleteNotification(item);
+                      }}
                       className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0 opacity-80 sm:opacity-0 sm:group-hover:opacity-100"
                       title="Delete notification"
                     >
@@ -657,6 +663,59 @@ export function NotificationCenter({
                 className="w-full py-1.5 px-3 text-xs font-semibold text-foreground bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal for Mobile Swipe & Single Delete */}
+      {confirmDeleteNotification && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 p-5 space-y-4 text-center">
+            <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base font-bold text-foreground">
+                Delete Notification?
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Are you sure you want to remove this notification?
+              </p>
+              <div className="p-2.5 rounded-xl bg-muted/40 border border-border text-left text-xs text-foreground/90 mt-2 space-y-1">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {confirmDeleteNotification.actor.name}{" "}
+                  <span className="font-normal text-muted-foreground">
+                    @{confirmDeleteNotification.actor.username}
+                  </span>
+                </p>
+                <p className="text-[11px] text-muted-foreground line-clamp-2">
+                  {getPersonalDetails(confirmDeleteNotification).actionText}
+                  {confirmDeleteNotification.post?.title ? ` on "${confirmDeleteNotification.post.title}"` : ""}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteNotification(null)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors active:scale-95 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const id = confirmDeleteNotification.id;
+                  setConfirmDeleteNotification(null);
+                  handleDeleteSingle(id);
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors active:scale-95 cursor-pointer"
+              >
+                Delete
               </button>
             </div>
           </div>
