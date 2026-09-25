@@ -14,12 +14,16 @@ export default async function HomePage() {
   let notesPosts: any[] = [];
 
   try {
-    const [featured, tech, science, coding, creative, notes] = await Promise.all([
+    const [latestPosts, tech, science, coding, creative, notes] = await Promise.all([
+      // Dynamic Featured: Latest published post dynamically becomes the featured publication
       db.post.findMany({
-        where: { status: "PUBLISHED", featured: true },
-        take: 2,
+        where: { status: "PUBLISHED" },
+        take: 1,
         orderBy: { publishedAt: "desc" },
-        include: { author: { include: { profile: true } } },
+        include: {
+          author: { include: { profile: true } },
+          tags: { include: { tag: true } },
+        },
       }),
       db.post.findMany({
         where: { status: "PUBLISHED", section: "technology" },
@@ -53,7 +57,7 @@ export default async function HomePage() {
       }),
     ]);
 
-    featuredPosts = featured;
+    featuredPosts = latestPosts;
     techPosts = tech;
     sciencePosts = science;
     codingPosts = coding;
@@ -101,15 +105,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured Section Spotlight */}
+      {/* Dynamic Featured Spotlight — Latest Publication */}
       {featuredPosts.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex items-center justify-between border-b border-border pb-4">
-            <h2 className="font-serif-editorial text-3xl font-bold tracking-tight text-foreground">
-              Featured Articles
-            </h2>
+            <div className="space-y-0.5">
+              <span className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono font-bold">
+                LATEST RELEASE
+              </span>
+              <h2 className="font-serif-editorial text-3xl font-bold tracking-tight text-foreground">
+                Featured Publication
+              </h2>
+            </div>
             <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-              CURATED ESSAYS
+              CURATED EDITORIAL
             </span>
           </div>
 
