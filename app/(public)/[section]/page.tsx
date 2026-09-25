@@ -6,7 +6,7 @@ import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare, Settings } from "lucide-react";
-import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
+import { formatDate, getSafeAvatarUrl, getBaseUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -50,11 +50,39 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName
 
 export async function generateMetadata({ params }: SectionPageProps) {
   const { section } = await params;
+  const baseUrl = getBaseUrl();
   const config = VALID_SECTIONS[section];
+
   if (config) {
+    const title = `${config.title} | ThePathak.tech`;
+    const description = config.subtitle;
+    const url = `${baseUrl}/${section}`;
+
     return {
-      title: `${config.title} | ThePathak.tech`,
-      description: config.subtitle,
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        title,
+        description,
+        url,
+        siteName: "ThePathak.tech",
+        type: "website",
+        images: [
+          {
+            url: `${baseUrl}/emblem.png`,
+            width: 1024,
+            height: 1024,
+            alt: config.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [`${baseUrl}/emblem.png`],
+      },
     };
   }
 
@@ -70,9 +98,36 @@ export async function generateMetadata({ params }: SectionPageProps) {
     });
 
     if (profile) {
+      const title = `${profile.displayName} (@${profile.username}) | ThePathak.tech`;
+      const description = profile.bio || `Profile and publications by ${profile.displayName} on ThePathak.tech`;
+      const url = `${baseUrl}/${profile.username}`;
+      const avatar = profile.avatarUrl || `${baseUrl}/emblem.png`;
+
       return {
-        title: `${profile.displayName} (@${profile.username}) | ThePathak.tech`,
-        description: profile.bio || `Profile and publications by ${profile.displayName} on ThePathak.tech`,
+        title,
+        description,
+        alternates: { canonical: url },
+        openGraph: {
+          title,
+          description,
+          url,
+          siteName: "ThePathak.tech",
+          type: "profile",
+          images: [
+            {
+              url: avatar.startsWith("http") ? avatar : `${baseUrl}${avatar.startsWith("/") ? "" : "/"}${avatar}`,
+              width: 512,
+              height: 512,
+              alt: profile.displayName,
+            },
+          ],
+        },
+        twitter: {
+          card: "summary",
+          title,
+          description,
+          images: [avatar.startsWith("http") ? avatar : `${baseUrl}${avatar.startsWith("/") ? "" : "/"}${avatar}`],
+        },
       };
     }
   } catch (err) {

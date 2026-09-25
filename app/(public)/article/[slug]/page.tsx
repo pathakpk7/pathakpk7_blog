@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { db } from "@/lib/db/prisma";
 import { auth } from "@/auth";
-import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn } from "@/lib/utils";
+import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn, getBaseUrl } from "@/lib/utils";
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
@@ -68,30 +68,91 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       where: { slug },
       select: {
         title: true,
+        subtitle: true,
         excerpt: true,
+        content: true,
+        section: true,
+        contentType: true,
         seoTitle: true,
         seoDescription: true,
         coverImageUrl: true,
         publishedAt: true,
+        author: {
+          select: {
+            name: true,
+            profile: {
+              select: {
+                displayName: true,
+                username: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
+
+    const baseUrl = getBaseUrl();
+    const isQuote = post.contentType === "QUOTE";
+    const title = post.seoTitle || (isQuote ? `“${post.title}” — ThePathak.tech` : `${post.title} | ThePathak.tech`);
+
+    let plainContent = "";
+    if (post.content) {
+      plainContent = post.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+    }
+    const description =
+      post.seoDescription ||
+      post.excerpt ||
+      post.subtitle ||
+      (plainContent ? `${plainContent}...` : "") ||
+      "An editorial publication on ThePathak.tech — Technology • Science • Code • Ideas • Words.";
+
+    const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
 
     let publishedTime: string | undefined = undefined;
     if (post.publishedAt instanceof Date && !isNaN(post.publishedAt.getTime())) {
       publishedTime = post.publishedAt.toISOString();
     }
 
+    // Resolve full absolute image URL for WhatsApp / Facebook / Twitter / Telegram
+    let imageUrl = `${baseUrl}/emblem.png`;
+    if (post.coverImageUrl && post.coverImageUrl.trim().length > 5) {
+      imageUrl = post.coverImageUrl.startsWith("http")
+        ? post.coverImageUrl
+        : `${baseUrl}${post.coverImageUrl.startsWith("/") ? "" : "/"}${post.coverImageUrl}`;
+    }
+
+    const canonicalUrl = `${baseUrl}/article/${slug}`;
+
     return {
-      title: post.seoTitle || `${post.title} | ThePathak.tech`,
-      description: post.seoDescription || post.excerpt || "",
+      title,
+      description,
+      alternates: {
+        canonical: canonicalUrl,
+      },
       openGraph: {
         title: post.title,
-        description: post.excerpt || "",
+        description,
+        url: canonicalUrl,
+        siteName: "ThePathak.tech",
         type: "article",
         publishedTime,
-        images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : [],
+        authors: [authorName],
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: post.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: post.title,
+        description,
+        images: [imageUrl],
       },
     };
   } catch (err) {

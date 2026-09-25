@@ -27,10 +27,15 @@ const devanagari = Noto_Serif_Devanagari({
   variable: "--font-devanagari",
 });
 
+import { getBaseUrl } from "@/lib/utils";
+
 export const metadata: Metadata = {
-  title: "ThePathak.tech — Technology • Science • Code • Ideas • Words",
+  metadataBase: new URL(getBaseUrl()),
+  title: {
+    default: "ThePathak.tech — Technology • Science • Code • Ideas • Words",
+    template: "%s | ThePathak.tech",
+  },
   description: "An independent editorial publishing platform focused on interpretation over repetition.",
-  metadataBase: new URL("https://thepathak.tech"),
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -42,18 +47,24 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ThePathak.tech — Technology • Science • Code • Words",
     description: "Interpretation over repetition. Independent publishing platform.",
-    url: "https://thepathak.tech",
+    url: getBaseUrl(),
     siteName: "ThePathak.tech",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: "/logo.png",
+        url: "/emblem.png",
         width: 1024,
         height: 1024,
         alt: "ThePathak.tech Logo",
       },
     ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ThePathak.tech — Technology • Science • Code • Words",
+    description: "Interpretation over repetition. Independent publishing platform.",
+    images: ["/emblem.png"],
   },
 };
 
