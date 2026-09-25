@@ -300,9 +300,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-4 border-t border-b border-border py-4 text-xs text-muted-foreground">
             <Link
               href={`/${post.author?.profile?.username || "pathak"}`}
-              className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
             >
-              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-border">
+              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                 <Image
                   src={getSafeAvatarUrl(authorAvatar, post.author?.profile?.username || "pathak")}
                   alt={authorName}
@@ -310,18 +310,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   className="object-cover"
                 />
               </div>
-              <span className="font-semibold text-zinc-950 dark:text-zinc-100">{authorName}</span>
+              <span className="font-bold text-zinc-950 dark:text-zinc-50 text-xs sm:text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{authorName}</span>
               {post.author?.profile?.username && (
-                <span className="font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">@{post.author.profile.username}</span>
+                <span className="font-mono text-zinc-600 dark:text-zinc-400 text-[11px] font-medium">@{post.author.profile.username}</span>
               )}
             </Link>
             <span>•</span>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 text-zinc-600 dark:text-zinc-400">
               <Calendar className="w-3.5 h-3.5" />
               <span>{formatDate(post.publishedAt)}</span>
             </div>
             <span>•</span>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 text-zinc-600 dark:text-zinc-400">
               <Clock className="w-3.5 h-3.5" />
               <span>{post.readingTime || calculateReadingTime(post.content)} min read</span>
             </div>
@@ -358,9 +358,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Author Bio Box */}
-        <div className="p-6 rounded-2xl bg-card border border-border max-w-3xl mx-auto flex items-start space-x-4">
-          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0">
-            <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-zinc-800 border border-border p-0.5 hover:scale-105 transition-transform">
+        <div className="p-6 rounded-2xl bg-card border border-border max-w-3xl mx-auto flex items-start space-x-4 shadow-xs">
+          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0 group">
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 p-0.5 group-hover:scale-105 transition-transform">
               <Image
                 src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
                 alt={authorName}
@@ -372,14 +372,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </Link>
           <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <Link href={`/${post.author?.profile?.username || "pathak"}`} className="font-semibold text-foreground text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              <Link href={`/${post.author?.profile?.username || "pathak"}`} className="font-bold text-zinc-950 dark:text-zinc-50 text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                 {authorName}
               </Link>
               {post.author?.profile?.username && (
-                <span className="font-mono text-zinc-400 text-xs">@{post.author.profile.username}</span>
+                <span className="font-mono text-zinc-600 dark:text-zinc-400 text-xs font-medium">@{post.author.profile.username}</span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">{authorBio}</p>
+            <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">{authorBio}</p>
           </div>
         </div>
 

@@ -285,7 +285,7 @@ export function CommentSection({
           <Link
             key={index}
             href={`/${username}`}
-            className="inline-flex items-center text-blue-600 dark:text-blue-400 font-semibold hover:underline bg-blue-50 dark:bg-blue-950/50 px-1 py-0.5 rounded text-xs mx-0.5 border border-blue-200/50 dark:border-blue-800/40 transition-colors"
+            className="inline-flex items-center text-blue-700 dark:text-blue-300 font-semibold hover:underline bg-blue-100/80 dark:bg-blue-950/60 px-1.5 py-0.5 rounded text-xs mx-0.5 border border-blue-300/80 dark:border-blue-800/60 transition-colors"
           >
             {part}
           </Link>
@@ -401,23 +401,23 @@ export function CommentSection({
               <div key={comment.id} className="space-y-3 bg-card p-4 rounded-xl border border-border/60">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2.5">
-                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                       <Image src={getSafeAvatarUrl(avatar, username || author)} alt={author} fill className="object-cover" />
                     </div>
                     <div>
                       {username ? (
-                        <Link href={`/${username}`} className="font-semibold text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                          {author} <span className="font-mono text-zinc-500 dark:text-zinc-400 font-normal">@{username}</span>
+                        <Link href={`/${username}`} className="font-bold text-zinc-950 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                          {author} <span className="font-mono text-zinc-600 dark:text-zinc-400 font-medium">@{username}</span>
                         </Link>
                       ) : (
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">{author}</span>
+                        <span className="font-bold text-zinc-950 dark:text-zinc-50">{author}</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                  <div className="flex items-center space-x-2 text-zinc-600 dark:text-zinc-400 text-[11px]">
                     <span>{formatDate(comment.createdAt)}</span>
-                    {isEdited && <span className="italic text-zinc-400 text-[10px]">(edited)</span>}
+                    {isEdited && <span className="italic text-zinc-500 dark:text-zinc-400 text-[10px]">(edited)</span>}
                   </div>
                 </div>
 
@@ -595,20 +595,20 @@ export function CommentSection({
                         <div key={reply.id} className="space-y-1.5 bg-zinc-50/80 dark:bg-zinc-900/60 p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-800/60">
                           <div className="flex items-center justify-between text-[11px]">
                             <div className="flex items-center space-x-2">
-                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
+                              <div className="relative w-5 h-5 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
                                 <Image src={getSafeAvatarUrl(repAvatar, repUsername || repAuthor)} alt={repAuthor} fill className="object-cover" />
                               </div>
                               {repUsername ? (
-                                <Link href={`/${repUsername}`} className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">
-                                  {repAuthor} <span className="font-mono text-zinc-500 dark:text-zinc-400 font-normal">@{repUsername}</span>
+                                <Link href={`/${repUsername}`} className="font-bold text-zinc-950 dark:text-zinc-50 hover:underline">
+                                  {repAuthor} <span className="font-mono text-zinc-600 dark:text-zinc-400 font-medium">@{repUsername}</span>
                                 </Link>
                               ) : (
-                                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{repAuthor}</span>
+                                <span className="font-bold text-zinc-950 dark:text-zinc-50">{repAuthor}</span>
                               )}
                             </div>
-                            <div className="flex items-center space-x-1.5 text-zinc-500 dark:text-zinc-400">
+                            <div className="flex items-center space-x-1.5 text-zinc-600 dark:text-zinc-400">
                               <span>{formatDate(reply.createdAt)}</span>
-                              {isRepEdited && <span className="italic text-zinc-400 text-[9px]">(edited)</span>}
+                              {isRepEdited && <span className="italic text-zinc-500 dark:text-zinc-400 text-[9px]">(edited)</span>}
                             </div>
                           </div>
 
