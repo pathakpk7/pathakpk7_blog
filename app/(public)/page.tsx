@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ArrowRight, Sparkles, Code2, Rocket, Feather, BookOpen, Layers } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -33,7 +34,7 @@ export default async function HomePage() {
       }),
       db.post.findMany({
         where: { status: "PUBLISHED", section: "science" },
-        take: 2,
+        take: 3,
         orderBy: { publishedAt: "desc" },
         include: { author: { include: { profile: true } } },
       }),
@@ -78,11 +79,11 @@ export default async function HomePage() {
           </div>
 
           <div className="max-w-4xl space-y-4">
-            <h1 className="font-serif-editorial text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
+            <h1 className="font-serif-editorial text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
               The world is changing. <br />
               <span className="italic font-normal text-blue-600 dark:text-blue-400">Let&apos;s understand it.</span>
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl font-normal leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl font-normal leading-relaxed">
               Interpretation over repetition. Exploring software engineering, autonomous AI systems, astrophysics, personal essays, and creative literature.
             </p>
           </div>
@@ -110,7 +111,7 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="flex items-center justify-between border-b border-border pb-4">
             <div className="space-y-0.5">
-              <span className="text-[10px] uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono font-bold">
+              <span className="text-xs uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono font-semibold">
                 LATEST RELEASE
               </span>
               <h2 className="font-serif-editorial text-3xl font-bold tracking-tight text-foreground">
@@ -170,9 +171,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {sciencePosts.map((post) => (
-              <ArticleCard key={post.id} post={post as any} variant="horizontal" />
+              <ArticleCard key={post.id} post={post as any} variant="standard" />
             ))}
           </div>
         </section>
@@ -246,7 +247,16 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className={cn(
+            "grid gap-4",
+            notesPosts.length === 1
+              ? "grid-cols-1 max-w-xl"
+              : notesPosts.length === 2
+              ? "grid-cols-1 sm:grid-cols-2"
+              : notesPosts.length === 3
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          )}>
             {notesPosts.map((post) => (
               <ArticleCard key={post.id} post={post as any} variant="compact" />
             ))}
