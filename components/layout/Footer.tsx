@@ -106,11 +106,6 @@ export function Footer() {
                   Search Archive
                 </Link>
               </li>
-              <li>
-                <Link href="/login" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  Author Sign In
-                </Link>
-              </li>
             </ul>
           </nav>
 
