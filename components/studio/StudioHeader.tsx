@@ -72,22 +72,19 @@ export function StudioHeader() {
             {mobileOpen ? <X className="w-4 h-4 text-rose-400" /> : <Menu className="w-4 h-4 text-blue-400" />}
           </button>
 
-          {/* Desktop Collapsible Sidebar Toggle Button */}
+          {/* Desktop Collapsible Sidebar Toggle Button (Icon Only) */}
           <button
             type="button"
             onClick={toggleSidebar}
-            className="hidden md:inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors border border-zinc-700/80 active:scale-95 shadow-xs"
-            title={isSidebarCollapsed ? "Show Sidebar (Ctrl+B)" : "Hide Sidebar (Ctrl+B)"}
-            aria-label="Toggle Sidebar"
+            className="hidden md:inline-flex items-center justify-center p-2 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors border border-zinc-700/80 active:scale-95 shadow-xs"
+            title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             {isSidebarCollapsed ? (
               <PanelLeftOpen className="w-4 h-4 text-blue-400" />
             ) : (
-              <PanelLeftClose className="w-4 h-4 text-blue-400" />
+              <PanelLeftClose className="w-4 h-4 text-zinc-300 hover:text-white" />
             )}
-            <span className="text-xs font-semibold">
-              {isSidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
-            </span>
           </button>
 
           <Link

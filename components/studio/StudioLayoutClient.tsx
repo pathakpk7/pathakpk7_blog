@@ -3,7 +3,8 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidebar } from "./StudioSidebar";
-import { PanelLeftOpen } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface StudioContextType {
   isSidebarCollapsed: boolean;
@@ -72,22 +73,51 @@ export function StudioLayoutClient({ children }: { children: React.ReactNode }) 
         <div className="flex flex-1 relative overflow-hidden">
           <StudioSidebar />
 
+          {/* LeetCode-style Vertical Divider Collapse/Expand Handle */}
+          <div
+            className={cn(
+              "hidden md:flex relative items-center justify-center select-none z-30 group cursor-pointer transition-colors",
+              isSidebarCollapsed ? "w-2.5" : "w-1"
+            )}
+            onClick={toggleSidebar}
+            title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+          >
+            {/* Divider Line Highlight */}
+            <div
+              className={cn(
+                "absolute inset-y-0 left-0 w-px transition-colors duration-150",
+                "bg-zinc-800 group-hover:bg-blue-500",
+                isSidebarCollapsed && "bg-zinc-800/80 group-hover:bg-blue-500"
+              )}
+            />
+
+            {/* LeetCode-style Pill Handle Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleSidebar();
+              }}
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 flex items-center justify-center",
+                "w-4 h-12 rounded-full transition-all duration-200 shadow-lg",
+                "bg-zinc-900 border border-zinc-700 text-zinc-400 group-hover:text-white group-hover:border-blue-500 group-hover:bg-zinc-800",
+                "active:scale-95",
+                isSidebarCollapsed ? "-left-1 hover:scale-110" : "-left-2 hover:scale-110"
+              )}
+              aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <ChevronRight className="w-3 h-3 text-blue-400 group-hover:text-blue-300" />
+              ) : (
+                <ChevronLeft className="w-3 h-3 group-hover:text-zinc-100" />
+              )}
+            </button>
+          </div>
+
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-zinc-950 transition-all duration-300 w-full min-w-0">
             {children}
           </main>
-
-          {/* Collapsed floating expand trigger (visible on desktop when sidebar is hidden) */}
-          {isMounted && isSidebarCollapsed && (
-            <button
-              onClick={toggleSidebar}
-              className="hidden md:flex fixed bottom-6 left-5 z-30 items-center space-x-2 px-3.5 py-2 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 shadow-2xl backdrop-blur-md transition-all active:scale-95 group"
-              title="Expand Studio Sidebar (Ctrl+B)"
-              aria-label="Expand Sidebar"
-            >
-              <PanelLeftOpen className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-semibold">Sidebar</span>
-            </button>
-          )}
         </div>
       </div>
     </StudioContext.Provider>

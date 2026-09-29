@@ -44,41 +44,29 @@ export function StudioSidebar() {
       )}
     >
       <div className="p-4 space-y-6 overflow-y-auto flex-1 min-w-[255px]">
-        {/* Brand & Collapse Button */}
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center space-x-2.5">
-            <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0 bg-zinc-950">
-              <Image
-                src="/emblem.png"
-                alt="ThePathak.tech Logo"
-                fill
-                sizes="64px"
-                className="object-contain p-0.5"
-                unoptimized
-              />
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-serif-editorial text-lg font-bold tracking-tight text-white">
-                  Writer Studio
-                </span>
-                <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded font-mono font-semibold">
-                  CMS
-                </span>
-              </div>
-              <p className="text-[10px] text-zinc-400">ThePathak.tech Author CMS</p>
-            </div>
+        {/* Brand */}
+        <div className="flex items-center space-x-3 px-1">
+          <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0 bg-zinc-950">
+            <Image
+              src="/emblem.png"
+              alt="ThePathak.tech Logo"
+              fill
+              sizes="64px"
+              className="object-contain p-0.5"
+              unoptimized
+            />
           </div>
-
-          <button
-            type="button"
-            onClick={toggleSidebar}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-            title="Hide sidebar (Ctrl+B)"
-            aria-label="Hide sidebar"
-          >
-            <PanelLeftClose className="w-4 h-4" />
-          </button>
+          <div className="space-y-0.5">
+            <div className="flex items-center space-x-2">
+              <span className="font-serif-editorial text-lg font-bold tracking-tight text-white whitespace-nowrap">
+                Writer Studio
+              </span>
+              <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded font-mono font-semibold">
+                CMS
+              </span>
+            </div>
+            <p className="text-[10px] text-zinc-400">ThePathak.tech Author CMS</p>
+          </div>
         </div>
 
         {/* New Post Button */}
