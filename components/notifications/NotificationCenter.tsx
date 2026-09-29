@@ -30,7 +30,7 @@ import {
   deleteSelectedNotifications,
   deleteAllNotifications,
 } from "@/app/actions/notification";
-import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
+import { formatDate, formatDateTime, formatRelativeTime, getSafeAvatarUrl } from "@/lib/utils";
 
 interface NotificationCenterProps {
   initialPersonalNotifications: UserPersonalNotification[];
@@ -458,8 +458,10 @@ export function NotificationCenter({
                         )}
                       </div>
 
-                      <span className="text-[11px] text-zinc-400 font-mono shrink-0 whitespace-nowrap">
-                        {formatDate(item.createdAt)}
+                      <span className="text-[11px] text-zinc-400 font-mono shrink-0 whitespace-nowrap flex items-center space-x-1.5" title={formatDateTime(item.createdAt)}>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold">{formatRelativeTime(item.createdAt)}</span>
+                        <span className="text-zinc-500">•</span>
+                        <span>{formatDateTime(item.createdAt)}</span>
                       </span>
                     </Link>
 
@@ -512,8 +514,10 @@ export function NotificationCenter({
                         <span className="truncate">{batch.postTitle}</span>
                         <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
                       </Link>
-                      <span className="text-[10px] font-mono text-muted-foreground shrink-0 whitespace-nowrap">
-                        {formatDate(batch.latestTimestamp)}
+                      <span className="text-[11px] font-mono text-muted-foreground shrink-0 whitespace-nowrap flex items-center space-x-1.5" title={formatDateTime(batch.latestTimestamp)}>
+                        <span className="text-blue-500/90 dark:text-blue-400 font-semibold">{formatRelativeTime(batch.latestTimestamp)}</span>
+                        <span className="text-zinc-500">•</span>
+                        <span>{formatDateTime(batch.latestTimestamp)}</span>
                       </span>
                     </div>
 
@@ -648,8 +652,9 @@ export function NotificationCenter({
                           )}
                         </div>
                       </Link>
-                      <span className="text-[10px] font-mono text-muted-foreground shrink-0 mt-1">
-                        {formatDate(user.createdAt)}
+                      <span className="text-[10px] font-mono text-muted-foreground shrink-0 mt-1 text-right" title={formatDateTime(user.createdAt)}>
+                        <span className="text-blue-500/90 dark:text-blue-400 font-semibold">{formatRelativeTime(user.createdAt)}</span>
+                        <span className="block text-[9px] text-zinc-500">{formatDate(user.createdAt)}</span>
                       </span>
                     </div>
                   );

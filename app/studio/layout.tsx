@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { StudioSidebar } from "@/components/studio/StudioSidebar";
-import { StudioHeader } from "@/components/studio/StudioHeader";
+import { StudioLayoutClient } from "@/components/studio/StudioLayoutClient";
 
 export const metadata = {
   title: "Writer Studio | ThePathak.tech CMS",
@@ -16,15 +15,5 @@ export default async function StudioLayout({ children }: { children: React.React
     redirect("/");
   }
 
-  return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-sans">
-      <StudioHeader />
-      <div className="flex flex-1">
-        <StudioSidebar />
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto bg-zinc-950">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+  return <StudioLayoutClient>{children}</StudioLayoutClient>;
 }

@@ -18,10 +18,13 @@ import {
   BookOpen,
   Tag,
   Bell,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { cn } from "@/lib/utils";
+import { useStudio } from "./StudioLayoutClient";
 
 const STUDIO_NAV = [
   { name: "Dashboard", href: "/studio", icon: LayoutDashboard },
@@ -37,6 +40,7 @@ export function StudioHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: session } = useSession();
+  const { isSidebarCollapsed, toggleSidebar } = useStudio();
   const username = (session?.user as any)?.username || session?.user?.email?.split("@")[0] || "admin";
 
   // Close on Escape or Route Change
@@ -57,8 +61,8 @@ export function StudioHeader() {
   return (
     <>
       <header className="w-full border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between sticky top-0 z-40">
-        {/* Left: Mobile Drawer Toggle & Exit Button */}
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        {/* Left: Mobile Drawer Toggle, Sidebar Collapse Toggle & Exit Button */}
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -68,9 +72,27 @@ export function StudioHeader() {
             {mobileOpen ? <X className="w-4 h-4 text-rose-400" /> : <Menu className="w-4 h-4 text-blue-400" />}
           </button>
 
+          {/* Desktop Collapsible Sidebar Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="hidden md:inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors border border-zinc-700/80 active:scale-95 shadow-xs"
+            title={isSidebarCollapsed ? "Show Sidebar (Ctrl+B)" : "Hide Sidebar (Ctrl+B)"}
+            aria-label="Toggle Sidebar"
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4 text-blue-400" />
+            ) : (
+              <PanelLeftClose className="w-4 h-4 text-blue-400" />
+            )}
+            <span className="text-xs font-semibold">
+              {isSidebarCollapsed ? "Show Sidebar" : "Hide Sidebar"}
+            </span>
+          </button>
+
           <Link
             href="/"
-            className="group inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3.5 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-all border border-zinc-700 hover:border-zinc-500 shadow-xs active:scale-95"
+            className="group inline-flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-all border border-zinc-700 hover:border-zinc-500 shadow-xs active:scale-95"
             title="Exit Studio mode back to public site"
           >
             <ArrowLeft className="w-3.5 h-3.5 text-blue-400 group-hover:-translate-x-0.5 transition-transform" />

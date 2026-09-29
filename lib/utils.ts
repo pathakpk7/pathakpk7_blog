@@ -14,8 +14,56 @@ export function formatDate(date: Date | string | null | undefined): string {
       month: "short",
       day: "numeric",
       year: "numeric",
-      timeZone: "UTC",
     }).format(d);
+  } catch {
+    return "";
+  }
+}
+
+export function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) return "";
+  try {
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (!(d instanceof Date) || isNaN(d.getTime())) return "";
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(d);
+  } catch {
+    return "";
+  }
+}
+
+export function formatRelativeTime(date: Date | string | null | undefined): string {
+  if (!date) return "";
+  try {
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (!(d instanceof Date) || isNaN(d.getTime())) return "";
+    const now = new Date();
+    const diffMs = now.getTime() - d.getTime();
+    if (diffMs < 0) return "just now";
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHr = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHr / 24);
+
+    if (diffSec < 45) return "a moment ago";
+    if (diffSec < 90) return "1 min ago";
+    if (diffMin < 60) return `${diffMin} mins ago`;
+    if (diffHr === 1) return "1 hr ago";
+    if (diffHr < 24) return `${diffHr} hrs ago`;
+    if (diffDays === 1) return "1 day ago";
+    if (diffDays < 7) return `${diffDays} days ago`;
+    const diffWeeks = Math.floor(diffDays / 7);
+    if (diffWeeks < 4) return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths < 12) return `${diffMonths} month${diffMonths > 1 ? "s" : ""} ago`;
+    const diffYears = Math.floor(diffDays / 365);
+    return `${diffYears} year${diffYears > 1 ? "s" : ""} ago`;
   } catch {
     return "";
   }
@@ -78,5 +126,3 @@ export function getBaseUrl(): string {
   }
   return "https://pathakpk7blog.vercel.app";
 }
-
-

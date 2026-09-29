@@ -25,7 +25,7 @@ import {
   AggregatedPostNotification,
   Interactor,
 } from "@/app/actions/notification";
-import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
+import { formatDate, formatDateTime, formatRelativeTime, getSafeAvatarUrl } from "@/lib/utils";
 
 interface NotificationBellProps {
   variant?: "header" | "studio";
@@ -353,9 +353,11 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
                             </span>
                           )}
                         </p>
-                        <div className="flex items-center space-x-2 text-[10px] text-zinc-400 font-mono">
-                          <span>{formatDate(item.createdAt)}</span>
-                          {!item.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-zinc-400 font-mono">
+                          <span className="text-blue-600 dark:text-blue-400 font-semibold">{formatRelativeTime(item.createdAt)}</span>
+                          <span className="text-zinc-500">•</span>
+                          <span>{formatDateTime(item.createdAt)}</span>
+                          {!item.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 ml-0.5" />}
                         </div>
                       </Link>
 
@@ -399,8 +401,9 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
                           <span className="truncate">{batch.postTitle}</span>
                           <ExternalLink className="w-3 h-3 shrink-0 opacity-60" />
                         </Link>
-                        <span className="text-[10px] text-zinc-400 font-mono shrink-0">
-                          {formatDate(batch.latestTimestamp)}
+                        <span className="text-[10px] font-mono shrink-0 text-right text-zinc-400" title={formatDateTime(batch.latestTimestamp)}>
+                          <span className="text-blue-500/90 dark:text-blue-400 font-semibold">{formatRelativeTime(batch.latestTimestamp)}</span>
+                          <span className="text-zinc-500 ml-1">• {formatDate(batch.latestTimestamp)}</span>
                         </span>
                       </div>
 
@@ -542,8 +545,9 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
                           )}
                         </div>
                       </Link>
-                      <span className="text-[10px] font-mono text-zinc-400 shrink-0 mt-0.5">
-                        {formatDate(user.createdAt)}
+                      <span className="text-[10px] font-mono text-zinc-400 shrink-0 mt-0.5 text-right" title={formatDateTime(user.createdAt)}>
+                        <span className="text-blue-500/90 dark:text-blue-400 font-semibold">{formatRelativeTime(user.createdAt)}</span>
+                        <span className="block text-[9px] text-zinc-500">{formatDate(user.createdAt)}</span>
                       </span>
                     </div>
                   );
