@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext, useCallback } from "react";
 import { StudioHeader } from "./StudioHeader";
 import { StudioSidebar } from "./StudioSidebar";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StudioContextType {
+  sidebarWidth: number;
+  setSidebarWidth: (width: number) => void;
   isSidebarCollapsed: boolean;
   setIsSidebarCollapsed: (collapsed: boolean | ((prev: boolean) => boolean)) => void;
   toggleSidebar: () => void;
+  isDragging: boolean;
 }
 
 const StudioContext = createContext<StudioContextType | undefined>(undefined);
@@ -22,23 +24,37 @@ export function useStudio() {
   return context;
 }
 
-export function StudioLayoutClient({ children }: { children: React.ReactNode }) {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+const DEFAULT_WIDTH = 260;
+const MIN_WIDTH = 180;
+const MAX_WIDTH = 460;
+const COLLAPSE_THRESHOLD = 90;
 
-  // Load saved sidebar state from localStorage
+export function StudioLayoutClient({ children }: { children: React.ReactNode }) {
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_WIDTH);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
+  const lastWidthRef = useRef(DEFAULT_WIDTH);
+
+  // Load saved sidebar width & collapsed state from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("studio_sidebar_collapsed");
-      if (saved !== null) {
-        setIsSidebarCollapsed(saved === "true");
+      const savedWidth = localStorage.getItem("studio_sidebar_width");
+      const savedCollapsed = localStorage.getItem("studio_sidebar_collapsed");
+      if (savedWidth) {
+        const parsed = parseInt(savedWidth, 10);
+        if (!isNaN(parsed) && parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
+          setSidebarWidth(parsed);
+          lastWidthRef.current = parsed;
+        }
+      }
+      if (savedCollapsed !== null) {
+        setIsSidebarCollapsed(savedCollapsed === "true");
       }
     } catch {}
-    setIsMounted(true);
   }, []);
 
-  // Persist sidebar state
-  const toggleSidebar = () => {
+  const toggleSidebar = useCallback(() => {
     setIsSidebarCollapsed((prev) => {
       const next = !prev;
       try {
@@ -46,7 +62,7 @@ export function StudioLayoutClient({ children }: { children: React.ReactNode }) 
       } catch {}
       return next;
     });
-  };
+  }, []);
 
   // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
   useEffect(() => {
@@ -58,64 +74,120 @@ export function StudioLayoutClient({ children }: { children: React.ReactNode }) 
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSidebar]);
+
+  // Mouse drag handlers for resizing sidebar (LeetCode style)
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    isDraggingRef.current = true;
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "col-resize";
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const clientX = e.clientX;
+
+      if (clientX < COLLAPSE_THRESHOLD) {
+        setIsSidebarCollapsed(true);
+        try {
+          localStorage.setItem("studio_sidebar_collapsed", "true");
+        } catch {}
+      } else {
+        const clampedWidth = Math.max(MIN_WIDTH, Math.min(clientX, MAX_WIDTH));
+        setSidebarWidth(clampedWidth);
+        lastWidthRef.current = clampedWidth;
+        setIsSidebarCollapsed(false);
+        try {
+          localStorage.setItem("studio_sidebar_width", String(clampedWidth));
+          localStorage.setItem("studio_sidebar_collapsed", "false");
+        } catch {}
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
   }, []);
 
   return (
     <StudioContext.Provider
       value={{
+        sidebarWidth,
+        setSidebarWidth,
         isSidebarCollapsed,
         setIsSidebarCollapsed,
         toggleSidebar,
+        isDragging,
       }}
     >
-      <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-blue-600 selection:text-white">
+      <div className="flex flex-col h-screen overflow-hidden bg-zinc-950 text-zinc-100 font-sans selection:bg-blue-600 selection:text-white">
         <StudioHeader />
-        <div className="flex flex-1 relative overflow-hidden">
+
+        <div className="flex flex-1 overflow-hidden relative">
           <StudioSidebar />
 
-          {/* LeetCode-style Vertical Divider Collapse/Expand Handle */}
+          {/* LeetCode-style Draggable Resizer Gutter */}
           <div
+            onMouseDown={handleMouseDown}
+            onDoubleClick={() => {
+              if (isSidebarCollapsed) {
+                setIsSidebarCollapsed(false);
+                setSidebarWidth(lastWidthRef.current || DEFAULT_WIDTH);
+              } else {
+                setIsSidebarCollapsed(true);
+              }
+            }}
             className={cn(
-              "hidden md:flex relative items-center justify-center select-none z-30 group cursor-pointer transition-colors",
-              isSidebarCollapsed ? "w-2.5" : "w-1"
+              "hidden md:flex relative items-center justify-center select-none z-30 cursor-col-resize shrink-0 transition-colors",
+              "w-2 -ml-1 hover:w-2 hover:bg-blue-500/20",
+              isDragging && "bg-blue-500/30 w-2",
+              isSidebarCollapsed && "cursor-e-resize ml-0 w-2"
             )}
-            onClick={toggleSidebar}
-            title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            title="Drag freely to resize sidebar width, or double click to toggle"
           >
-            {/* Divider Line Highlight */}
+            {/* Center border line indicator */}
             <div
               className={cn(
-                "absolute inset-y-0 left-0 w-px transition-colors duration-150",
-                "bg-zinc-800 group-hover:bg-blue-500",
-                isSidebarCollapsed && "bg-zinc-800/80 group-hover:bg-blue-500"
+                "h-full w-[1px] bg-zinc-800 transition-colors duration-150",
+                isDragging ? "bg-blue-500 w-[2px]" : "hover:bg-blue-500/80"
               )}
             />
 
-            {/* LeetCode-style Pill Handle Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleSidebar();
-              }}
+            {/* Subtle LeetCode-style Grip Handle */}
+            <div
               className={cn(
-                "absolute top-1/2 -translate-y-1/2 flex items-center justify-center",
-                "w-4 h-12 rounded-full transition-all duration-200 shadow-lg",
-                "bg-zinc-900 border border-zinc-700 text-zinc-400 group-hover:text-white group-hover:border-blue-500 group-hover:bg-zinc-800",
-                "active:scale-95",
-                isSidebarCollapsed ? "-left-1 hover:scale-110" : "-left-2 hover:scale-110"
+                "absolute top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none",
+                "w-3.5 h-10 rounded-full transition-all duration-150 shadow-md",
+                "bg-zinc-800 border border-zinc-700/80",
+                isDragging ? "bg-blue-600 border-blue-400 scale-105" : "hover:bg-zinc-700"
               )}
-              aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
-              {isSidebarCollapsed ? (
-                <ChevronRight className="w-3 h-3 text-blue-400 group-hover:text-blue-300" />
-              ) : (
-                <ChevronLeft className="w-3 h-3 group-hover:text-zinc-100" />
-              )}
-            </button>
+              <div className="flex flex-col space-y-1 items-center justify-center">
+                <span className="w-1 h-1 rounded-full bg-zinc-400" />
+                <span className="w-1 h-1 rounded-full bg-zinc-400" />
+                <span className="w-1 h-1 rounded-full bg-zinc-400" />
+              </div>
+            </div>
           </div>
 
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-zinc-950 transition-all duration-300 w-full min-w-0">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto bg-zinc-950 w-full min-w-0">
             {children}
           </main>
         </div>

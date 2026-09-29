@@ -15,7 +15,6 @@ import {
   BookOpen,
   Tag,
   Bell,
-  PanelLeftClose,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useStudio } from "./StudioLayoutClient";
@@ -32,18 +31,20 @@ const STUDIO_NAV = [
 
 export function StudioSidebar() {
   const pathname = usePathname();
-  const { isSidebarCollapsed, toggleSidebar } = useStudio();
+  const { sidebarWidth, isSidebarCollapsed, isDragging } = useStudio();
 
   return (
     <aside
+      style={{
+        width: isSidebarCollapsed ? 0 : `${sidebarWidth}px`,
+      }}
       className={cn(
-        "border-r border-zinc-800 bg-zinc-900 text-zinc-100 flex flex-col justify-between h-[calc(100vh-57px)] sticky top-[57px] shrink-0 hidden md:flex transition-all duration-300 ease-in-out z-20",
-        isSidebarCollapsed
-          ? "w-0 border-r-0 overflow-hidden opacity-0 pointer-events-none p-0"
-          : "w-64 opacity-100"
+        "h-full border-r border-zinc-800 bg-zinc-900 text-zinc-100 flex flex-col justify-between shrink-0 hidden md:flex z-20 overflow-hidden",
+        !isDragging && "transition-[width,opacity] duration-200 ease-out",
+        isSidebarCollapsed && "opacity-0 border-r-0 pointer-events-none"
       )}
     >
-      <div className="p-4 space-y-6 overflow-y-auto flex-1 min-w-[255px]">
+      <div className="p-4 space-y-6 overflow-y-auto flex-1 min-w-[220px]">
         {/* Brand */}
         <div className="flex items-center space-x-3 px-1">
           <div className="relative w-8 h-8 rounded-lg overflow-hidden border border-zinc-800 shrink-0 bg-zinc-950">
@@ -56,16 +57,16 @@ export function StudioSidebar() {
               unoptimized
             />
           </div>
-          <div className="space-y-0.5">
+          <div className="space-y-0.5 min-w-0">
             <div className="flex items-center space-x-2">
-              <span className="font-serif-editorial text-lg font-bold tracking-tight text-white whitespace-nowrap">
+              <span className="font-serif-editorial text-lg font-bold tracking-tight text-white truncate">
                 Writer Studio
               </span>
-              <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded font-mono font-semibold">
+              <span className="text-[9px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-1 py-0.2 rounded font-mono font-semibold shrink-0">
                 CMS
               </span>
             </div>
-            <p className="text-[10px] text-zinc-400">ThePathak.tech Author CMS</p>
+            <p className="text-[10px] text-zinc-400 truncate">ThePathak.tech Author CMS</p>
           </div>
         </div>
 
@@ -74,8 +75,8 @@ export function StudioSidebar() {
           href="/studio/posts/new"
           className="flex items-center justify-center space-x-2 w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shadow-md active:scale-95"
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>Write New Article</span>
+          <PlusCircle className="w-4 h-4 shrink-0" />
+          <span className="truncate">Write New Article</span>
         </Link>
 
         {/* CMS Nav links */}
@@ -98,8 +99,8 @@ export function StudioSidebar() {
                       : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200"
                   )}
                 >
-                  <Icon className="w-4 h-4 text-blue-400" />
-                  <span>{item.name}</span>
+                  <Icon className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="truncate">{item.name}</span>
                 </Link>
               );
             })}
@@ -113,49 +114,49 @@ export function StudioSidebar() {
           </p>
           <nav className="space-y-1 text-xs text-zinc-400">
             <Link href="/" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <Globe className="w-4 h-4 text-blue-400" />
-              <span>Homepage</span>
+              <Globe className="w-4 h-4 text-blue-400 shrink-0" />
+              <span className="truncate">Homepage</span>
             </Link>
             <Link href="/technology" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-1.5 mr-1" />
-              <span>Technology</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Technology</span>
             </Link>
             <Link href="/science" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-1.5 mr-1" />
-              <span>Science & Space</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Science & Space</span>
             </Link>
             <Link href="/coding" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1.5 mr-1" />
-              <span>Coding</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Coding</span>
             </Link>
             <Link href="/ideas" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 ml-1.5 mr-1" />
-              <span>Ideas</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Ideas</span>
             </Link>
             <Link href="/creative" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 ml-1.5 mr-1" />
-              <span>Creative</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Creative</span>
             </Link>
             <Link href="/notes" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 ml-1.5 mr-1" />
-              <span>Notes</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 ml-1.5 mr-1 shrink-0" />
+              <span className="truncate">Notes</span>
             </Link>
             <Link href="/library" className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-zinc-800/60 hover:text-white transition-colors">
-              <BookOpen className="w-4 h-4 text-zinc-400" />
-              <span>My Library</span>
+              <BookOpen className="w-4 h-4 text-zinc-400 shrink-0" />
+              <span className="truncate">My Library</span>
             </Link>
           </nav>
         </div>
       </div>
 
       {/* Exit Studio Button */}
-      <div className="p-4 border-t border-zinc-800 min-w-[255px]">
+      <div className="p-4 border-t border-zinc-800 min-w-[220px]">
         <Link
           href="/"
           className="flex items-center justify-center space-x-2 w-full py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-xs font-semibold transition-colors border border-zinc-700 active:scale-95"
         >
-          <ArrowLeft className="w-4 h-4 text-blue-400" />
-          <span>Exit this Mode</span>
+          <ArrowLeft className="w-4 h-4 text-blue-400 shrink-0" />
+          <span className="truncate">Exit this Mode</span>
         </Link>
       </div>
     </aside>
