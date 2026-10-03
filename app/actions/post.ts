@@ -42,6 +42,11 @@ export async function savePost(input: PostInput) {
     throw new Error("Unauthorized: Only author admin can save posts.");
   }
 
+  // Enforce quotes to be strictly under creative section
+  if (input.contentType === "QUOTE") {
+    input.section = "creative";
+  }
+
   const readingTime = calculateReadingTime(input.content);
   const isPublishing = input.status === "PUBLISHED";
   const publishedAt = isPublishing ? new Date() : undefined;

@@ -165,7 +165,7 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
         subtitle,
         excerpt,
         content,
-        section,
+        section: contentType === "QUOTE" ? "creative" : section,
         contentType,
         status: finalStatus,
         coverImageUrl,
@@ -311,9 +311,10 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
           <div className="space-y-1">
             <label className="text-zinc-400 font-semibold uppercase font-mono text-[10px]">Section</label>
             <select
-              value={section}
+              value={contentType === "QUOTE" ? "creative" : section}
+              disabled={contentType === "QUOTE"}
               onChange={(e) => setSection(e.target.value)}
-              className="w-full p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
+              className="w-full p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none disabled:opacity-75 disabled:cursor-not-allowed"
             >
               <option value="technology">Technology & AI</option>
               <option value="science">Science & Space</option>
@@ -328,7 +329,13 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
             <label className="text-zinc-400 font-semibold uppercase font-mono text-[10px]">Content Type</label>
             <select
               value={contentType}
-              onChange={(e) => setContentType(e.target.value)}
+              onChange={(e) => {
+                const nextType = e.target.value;
+                setContentType(nextType);
+                if (nextType === "QUOTE") {
+                  setSection("creative");
+                }
+              }}
               className="w-full p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
             >
               <option value="ARTICLE">ARTICLE</option>
@@ -336,7 +343,7 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
               <option value="TUTORIAL">TUTORIAL</option>
               <option value="GUIDE">GUIDE</option>
               <option value="NOTE">NOTE</option>
-              <option value="QUOTE">QUOTE</option>
+              <option value="QUOTE">QUOTE (Creative only)</option>
               <option value="POEM">POEM</option>
               <option value="SHAYARI">SHAYARI</option>
               <option value="SHORT_STORY">SHORT STORY</option>

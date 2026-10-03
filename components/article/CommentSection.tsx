@@ -42,6 +42,13 @@ interface MentionUser {
   avatar?: string | null;
 }
 
+interface ReplyTarget {
+  rootCommentId: string;
+  targetCommentId: string;
+  authorName?: string | null;
+  authorUsername?: string | null;
+}
+
 export function CommentSection({
   postId,
   comments: initialComments,
@@ -52,7 +59,7 @@ export function CommentSection({
   const router = useRouter();
   const [commentList, setCommentList] = useState<CommentItem[]>(initialComments);
   const [content, setContent] = useState("");
-  const [replyParentId, setReplyParentId] = useState<string | null>(null);
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -151,13 +158,13 @@ export function CommentSection({
     }, 50);
   };
 
-  const handleStartReply = (commentId: string, authorUsername?: string | null, authorName?: string | null) => {
+  const handleStartReply = (target: ReplyTarget) => {
     setEditingCommentId(null);
-    setReplyParentId(commentId);
-    const tag = authorUsername
-      ? `@${authorUsername} `
-      : authorName
-      ? `@${authorName.toLowerCase().replace(/\s+/g, "_")} `
+    setReplyTarget(target);
+    const tag = target.authorUsername
+      ? `@${target.authorUsername} `
+      : target.authorName
+      ? `@${target.authorName.toLowerCase().replace(/\s+/g, "_")} `
       : "";
     setReplyContent(tag);
 
@@ -167,7 +174,7 @@ export function CommentSection({
   };
 
   const handleStartEdit = (comment: CommentItem) => {
-    setReplyParentId(null);
+    setReplyTarget(null);
     setEditingCommentId(comment.id);
     setEditContent(comment.content);
 
@@ -291,22 +298,26 @@ export function CommentSection({
   };
 
   // Submit New Comment or Reply
-  const handleSubmit = async (e: React.FormEvent, parentId?: string) => {
+  const handleSubmit = async (
+    e: React.FormEvent,
+    targetCommentId?: string,
+    rootCommentId?: string
+  ) => {
     e.preventDefault();
     if (!isLoggedIn) {
       router.push("/login");
       return;
     }
 
-    const textToSubmit = parentId ? replyContent : content;
+    const textToSubmit = targetCommentId ? replyContent : content;
     if (!textToSubmit.trim()) return;
 
     setSubmitting(true);
     try {
-      const res = await addComment(postId, textToSubmit, parentId);
-      if (parentId) {
+      const res = await addComment(postId, textToSubmit, targetCommentId);
+      if (targetCommentId) {
         setReplyContent("");
-        setReplyParentId(null);
+        setReplyTarget(null);
       } else {
         setContent("");
       }
@@ -314,16 +325,36 @@ export function CommentSection({
 
       // Optimistically append newly added comment
       if (res?.comment) {
-        if (parentId) {
+        if (rootCommentId) {
           setCommentList((prev) =>
             prev.map((c) =>
-              c.id === parentId
-                ? { ...c, replies: [...(c.replies || []), res.comment as any] }
+              c.id === rootCommentId
+                ? {
+                    ...c,
+                    replies: [
+                      ...(c.replies || []),
+                      {
+                        ...res.comment,
+                        isLiked: false,
+                        likesCount: 0,
+                        likedUsers: [],
+                      } as any,
+                    ],
+                  }
                 : c
             )
           );
         } else {
-          setCommentList((prev) => [res.comment as any, ...prev]);
+          setCommentList((prev) => [
+            {
+              ...res.comment,
+              isLiked: false,
+              likesCount: 0,
+              likedUsers: [],
+              replies: [],
+            } as any,
+            ...prev,
+          ]);
         }
       }
     } catch (err) {
@@ -333,12 +364,11 @@ export function CommentSection({
     }
   };
 
-  // Check if current user can edit a comment
+  // Check if current user can edit a comment (strictly only the author can edit their own comment)
   const canEdit = (comment: CommentItem) => {
-    if (!isLoggedIn) return false;
-    if (isAdmin) return true;
+    if (!isLoggedIn || !currentUserId) return false;
     const authorId = comment.userId || comment.user?.id;
-    return currentUserId && authorId && currentUserId === authorId;
+    return Boolean(authorId && currentUserId === authorId);
   };
 
   // Render text with clickable @mentions
@@ -360,6 +390,73 @@ export function CommentSection({
       return part;
     });
   };
+
+  const renderReplyForm = (target: ReplyTarget) => (
+    <form
+      onSubmit={(e) => handleSubmit(e, target.targetCommentId, target.rootCommentId)}
+      className="pl-8.5 pt-2 space-y-2 relative animate-in fade-in duration-150"
+    >
+      <div className="relative">
+        <textarea
+          ref={replyInputRef}
+          value={replyContent}
+          onChange={(e) => handleInputChange(e.target.value, "reply", e.target)}
+          placeholder={`Write a reply to ${target.authorUsername ? `@${target.authorUsername}` : target.authorName || "comment"}... (type @ to tag someone)`}
+          className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none resize-none min-h-[75px]"
+        />
+
+        {/* Mention Suggestions Dropdown for Reply */}
+        {activeInput === "reply" && mentionSuggestions.length > 0 && (
+          <div className="absolute left-2 bottom-full mb-1 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-30 overflow-hidden py-1">
+            <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-800/50">
+              Tag a reader
+            </p>
+            {mentionSuggestions.map((u) => (
+              <button
+                key={u.id}
+                type="button"
+                onClick={() => insertMention(u)}
+                className="flex items-center space-x-2.5 w-full px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-left transition-colors"
+              >
+                <div className="relative w-6 h-6 rounded-full overflow-hidden bg-zinc-800 shrink-0">
+                  <Image
+                    src={getSafeAvatarUrl(u.avatar, u.username)}
+                    alt={u.displayName}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{u.displayName}</p>
+                  <p className="text-[10px] font-mono text-blue-600 dark:text-blue-400">@{u.username}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={() => {
+            setReplyTarget(null);
+            setMentionQuery(null);
+          }}
+          className="px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || !replyContent.trim()}
+          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold active:scale-95 transition-colors disabled:opacity-50"
+        >
+          {submitting ? "Sending..." : "Send Reply"}
+        </button>
+      </div>
+    </form>
+  );
 
   const totalCommentsCount = commentList.reduce(
     (acc, curr) => acc + 1 + (curr.replies?.length || 0),
@@ -589,11 +686,17 @@ export function CommentSection({
                     {/* Reply button */}
                     {isLoggedIn ? (
                       <button
+                        type="button"
                         onClick={() => {
-                          if (replyParentId === comment.id) {
-                            setReplyParentId(null);
+                          if (replyTarget?.targetCommentId === comment.id) {
+                            setReplyTarget(null);
                           } else {
-                            handleStartReply(comment.id, username, author);
+                            handleStartReply({
+                              rootCommentId: comment.id,
+                              targetCommentId: comment.id,
+                              authorName: author,
+                              authorUsername: username,
+                            });
                           }
                         }}
                         className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
@@ -603,6 +706,7 @@ export function CommentSection({
                       </button>
                     ) : (
                       <button
+                        type="button"
                         onClick={() => router.push("/login")}
                         className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium inline-flex items-center space-x-1"
                       >
@@ -614,6 +718,7 @@ export function CommentSection({
                     {/* Edit button */}
                     {userCanEdit && (
                       <button
+                        type="button"
                         onClick={() => handleStartEdit(comment)}
                         className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 font-medium inline-flex items-center space-x-1 transition-colors"
                       >
@@ -624,70 +729,8 @@ export function CommentSection({
                   </div>
                 )}
 
-                {/* Reply Input Form */}
-                {replyParentId === comment.id && (
-                  <form onSubmit={(e) => handleSubmit(e, comment.id)} className="pl-8.5 pt-2 space-y-2 relative">
-                    <div className="relative">
-                      <textarea
-                        ref={replyInputRef}
-                        value={replyContent}
-                        onChange={(e) => handleInputChange(e.target.value, "reply", e.target)}
-                        placeholder="Write a reply... (type @ to tag someone)"
-                        className="w-full p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none resize-none min-h-[75px]"
-                      />
-
-                      {/* Mention Suggestions Dropdown for Reply */}
-                      {activeInput === "reply" && mentionSuggestions.length > 0 && (
-                        <div className="absolute left-2 bottom-full mb-1 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl z-30 overflow-hidden py-1">
-                          <p className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-800/50">
-                            Tag a reader
-                          </p>
-                          {mentionSuggestions.map((u) => (
-                            <button
-                              key={u.id}
-                              type="button"
-                              onClick={() => insertMention(u)}
-                              className="flex items-center space-x-2.5 w-full px-3 py-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-left transition-colors"
-                            >
-                              <div className="relative w-6 h-6 rounded-full overflow-hidden bg-zinc-800 shrink-0">
-                                <Image
-                                  src={getSafeAvatarUrl(u.avatar, u.username)}
-                                  alt={u.displayName}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 truncate">{u.displayName}</p>
-                                <p className="text-[10px] font-mono text-blue-600 dark:text-blue-400">@{u.username}</p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReplyParentId(null);
-                          setMentionQuery(null);
-                        }}
-                        className="px-3 py-1 text-xs text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={submitting || !replyContent.trim()}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold active:scale-95 transition-colors"
-                      >
-                        Send Reply
-                      </button>
-                    </div>
-                  </form>
-                )}
+                {/* Reply Input Form directly under top comment */}
+                {replyTarget?.targetCommentId === comment.id && renderReplyForm(replyTarget)}
 
                 {/* Nested Replies */}
                 {comment.replies && comment.replies.length > 0 && (
@@ -766,7 +809,7 @@ export function CommentSection({
                                 {renderFormattedContent(reply.content)}
                               </div>
 
-                              {/* Actions for reply: Like and Edit */}
+                              {/* Actions for reply: Like, Reply, Edit */}
                               <div className="pl-7 pt-1 flex items-center space-x-3">
                                 <div className="inline-flex items-center space-x-1">
                                   <button
@@ -798,8 +841,41 @@ export function CommentSection({
                                   )}
                                 </div>
 
+                                {/* Reply button on nested reply */}
+                                {isLoggedIn ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (replyTarget?.targetCommentId === reply.id) {
+                                        setReplyTarget(null);
+                                      } else {
+                                        handleStartReply({
+                                          rootCommentId: comment.id,
+                                          targetCommentId: reply.id,
+                                          authorName: repAuthor,
+                                          authorUsername: repUsername,
+                                        });
+                                      }
+                                    }}
+                                    className="text-[11px] text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center space-x-1"
+                                  >
+                                    <CornerDownRight className="w-2.5 h-2.5" />
+                                    <span>Reply {repUsername ? `@${repUsername}` : ""}</span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => router.push("/login")}
+                                    className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium inline-flex items-center space-x-1"
+                                  >
+                                    <CornerDownRight className="w-2.5 h-2.5" />
+                                    <span>Reply</span>
+                                  </button>
+                                )}
+
                                 {repCanEdit && (
                                   <button
+                                    type="button"
                                     onClick={() => handleStartEdit(reply)}
                                     className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 inline-flex items-center space-x-1 transition-colors"
                                   >
@@ -810,6 +886,9 @@ export function CommentSection({
                               </div>
                             </>
                           )}
+
+                          {/* Reply Input Form directly under this nested reply */}
+                          {replyTarget?.targetCommentId === reply.id && renderReplyForm(replyTarget)}
                         </div>
                       );
                     })}

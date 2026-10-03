@@ -47,6 +47,17 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   const hasValidCoverImage = typeof post.coverImageUrl === "string" && post.coverImageUrl.trim().length > 5;
   const isQuote = post.contentType?.toUpperCase() === "QUOTE" || variant === "quote";
 
+  const isOrangeTheme =
+    post.section === "ideas" ||
+    post.section === "notes" ||
+    post.section === "creative" ||
+    ["ESSAY", "NOTE", "QUOTE", "POEM", "SHAYARI", "SHORT_STORY", "MICROFICTION", "SHORT_PROSE"].includes(
+      (post.contentType || "").toUpperCase()
+    );
+
+  const orangeCardBg = "bg-gradient-to-br from-amber-500/[0.09] via-orange-500/[0.04] to-transparent dark:from-amber-950/30 dark:via-orange-950/15 dark:to-zinc-900/90 border-amber-500/30 dark:border-amber-500/25 hover:border-orange-500/60 dark:hover:border-orange-500/50 shadow-xs hover:shadow-orange-500/10";
+  const defaultCardBg = "bg-card border-border hover:border-zinc-400 dark:hover:border-zinc-600 shadow-xs";
+
   // Close admin menu when clicking outside or pressing Escape
   useEffect(() => {
     if (!menuOpen) return;
@@ -117,12 +128,12 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (isQuote) {
     return (
-      <article className={cn("group relative bg-card rounded-2xl p-7 border border-amber-500/30 hover:border-amber-500/60 dark:bg-amber-950/10 dark:border-amber-500/30 dark:hover:border-amber-500/50 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-5 shadow-xs", className)}>
+      <article className={cn("group relative bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-amber-500/5 dark:from-amber-950/35 dark:via-orange-950/20 dark:to-zinc-900 rounded-2xl p-7 border border-amber-500/40 hover:border-amber-500/70 dark:border-amber-500/30 dark:hover:border-amber-500/60 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-5 shadow-xs", className)}>
         {AdminOverlay}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
-            <span className="inline-flex items-center space-x-1.5 uppercase tracking-widest font-semibold">
-              <Quote className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 text-[10px] font-bold uppercase tracking-wider font-mono">
+              <Quote className="w-3 h-3 text-amber-600 dark:text-amber-400" />
               <span>QUOTE</span>
             </span>
             <span>{formatDate(post.publishedAt)}</span>
@@ -158,7 +169,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
         <div className="flex items-center justify-between pt-3 border-t border-amber-500/20 text-xs text-muted-foreground">
           <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
-          <span className="font-mono text-xs uppercase tracking-wider">{post.section}</span>
+          <span className="font-mono text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">CREATIVE</span>
         </div>
       </article>
     );
@@ -166,15 +177,28 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "featured") {
     return (
-      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-card rounded-2xl p-6 lg:p-8 border border-border shadow-xs hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
+      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-2xl p-6 lg:p-8 border shadow-xs transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
         {AdminOverlay}
         <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center space-x-3 text-xs font-semibold tracking-wider text-blue-600 dark:text-blue-400 uppercase">
-            <span>{sectionUpper}</span>
-            <span>•</span>
-            <span className="text-zinc-500 font-normal">{post.contentType}</span>
+          <div className="flex items-center space-x-2 text-xs font-semibold tracking-wider uppercase">
+            {isOrangeTheme ? (
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[11px] font-bold">
+                <span>{sectionUpper}</span>
+                <span>•</span>
+                <span className="font-normal">{post.contentType}</span>
+              </span>
+            ) : (
+              <span className="text-blue-600 dark:text-blue-400">
+                <span>{sectionUpper}</span>
+                <span className="mx-1.5">•</span>
+                <span className="text-zinc-500 font-normal">{post.contentType}</span>
+              </span>
+            )}
           </div>
-          <h2 className="font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-tight">
+          <h2 className={cn(
+            "font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground transition-colors duration-150 leading-tight",
+            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+          )}>
             <Link href={`/article/${post.slug}`} prefetch={true} className="focus:outline-none">
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
@@ -219,11 +243,13 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "creative") {
     return (
-      <article className={cn("group relative bg-card rounded-2xl p-8 border border-border/70 hover:border-amber-500/40 dark:hover:border-amber-500/30 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-6", className)}>
+      <article className={cn("group relative rounded-2xl p-8 border transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-6", orangeCardBg, className)}>
         {AdminOverlay}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
-            <span className="uppercase tracking-widest">{post.contentType}</span>
+            <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 text-[10px] font-bold uppercase tracking-wider">
+              {post.contentType}
+            </span>
             <span>{formatDate(post.publishedAt)}</span>
           </div>
           <h3 className={cn(
@@ -247,7 +273,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             </p>
           )}
         </div>
-        <div className="flex items-center justify-between pt-4 border-t border-border/50 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between pt-4 border-t border-amber-500/20 text-xs text-muted-foreground">
           <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
           <span>{post.readingTime} min read</span>
         </div>
@@ -257,12 +283,24 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "compact") {
     return (
-      <article className={cn("group relative flex items-start justify-between space-x-4 py-3 border-b border-border/60 last:border-0 hover:bg-muted/30 px-2 rounded-lg transition-colors duration-150 active:scale-[0.995]", className)}>
-        <div className="space-y-1 pr-14">
-          <span className="text-xs uppercase tracking-wider font-semibold text-blue-600 dark:text-blue-400">
+      <article className={cn(
+        "group relative flex items-start justify-between space-x-4 py-3.5 px-3 rounded-xl border transition-all duration-150 active:scale-[0.995]",
+        isOrangeTheme
+          ? "border-amber-500/25 bg-gradient-to-r from-amber-500/[0.08] via-orange-500/[0.04] to-transparent dark:from-amber-950/25 dark:to-transparent hover:border-amber-500/50"
+          : "border-border/60 hover:bg-muted/30",
+        className
+      )}>
+        <div className="space-y-1.5 pr-14">
+          <span className={cn(
+            "text-xs uppercase tracking-wider font-semibold",
+            isOrangeTheme ? "text-amber-700 dark:text-amber-400 font-mono" : "text-blue-600 dark:text-blue-400"
+          )}>
             {sectionUpper}
           </span>
-          <h4 className="font-serif-editorial text-base font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 line-clamp-2">
+          <h4 className={cn(
+            "font-serif-editorial text-base font-bold text-foreground transition-colors duration-150 line-clamp-2",
+            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+          )}>
             <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
@@ -281,7 +319,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   if (variant === "horizontal") {
     return (
-      <article className={cn("group relative flex flex-col sm:flex-row gap-6 bg-card rounded-xl p-5 border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 active:scale-[0.995]", className)}>
+      <article className={cn("group relative flex flex-col sm:flex-row gap-6 rounded-xl p-5 border transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
         {AdminOverlay}
         {hasValidCoverImage && (
           <div className="relative h-48 sm:h-auto sm:w-48 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
@@ -296,12 +334,25 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         )}
         <div className="flex flex-col justify-between space-y-3">
           <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-              <span>{sectionUpper}</span>
-              <span>•</span>
-              <span className="text-zinc-500 font-normal">{post.contentType}</span>
+            <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
+              {isOrangeTheme ? (
+                <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[10px] font-bold">
+                  <span>{sectionUpper}</span>
+                  <span>•</span>
+                  <span className="font-normal">{post.contentType}</span>
+                </span>
+              ) : (
+                <span className="text-blue-600 dark:text-blue-400">
+                  <span>{sectionUpper}</span>
+                  <span className="mx-1.5">•</span>
+                  <span className="text-zinc-500 font-normal">{post.contentType}</span>
+                </span>
+              )}
             </div>
-            <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150">
+            <h3 className={cn(
+              "font-serif-editorial text-xl font-bold text-foreground transition-colors duration-150",
+              isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+            )}>
               <Link href={`/article/${post.slug}`} prefetch={true}>
                 <span className="absolute inset-0" aria-hidden="true" />
                 {post.title}
@@ -325,7 +376,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   // Standard vertical card
   return (
-    <article className={cn("group relative flex flex-col bg-card rounded-xl overflow-hidden border border-border hover:border-zinc-400 dark:hover:border-zinc-600 transition-all duration-200 shadow-xs active:scale-[0.995]", className)}>
+    <article className={cn("group relative flex flex-col rounded-xl overflow-hidden border transition-all duration-200 shadow-xs active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
       {AdminOverlay}
       {hasValidCoverImage && (
         <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
@@ -340,12 +391,25 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
       )}
       <div className="flex-1 p-6 flex flex-col justify-between space-y-4">
         <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-            <span>{sectionUpper}</span>
-            <span>•</span>
-            <span className="text-zinc-500 font-normal">{post.contentType}</span>
+          <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
+            {isOrangeTheme ? (
+              <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[10px] font-bold">
+                <span>{sectionUpper}</span>
+                <span>•</span>
+                <span className="font-normal">{post.contentType}</span>
+              </span>
+            ) : (
+              <span className="text-blue-600 dark:text-blue-400">
+                <span>{sectionUpper}</span>
+                <span className="mx-1.5">•</span>
+                <span className="text-zinc-500 font-normal">{post.contentType}</span>
+              </span>
+            )}
           </div>
-          <h3 className="font-serif-editorial text-xl font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-150 leading-snug">
+          <h3 className={cn(
+            "font-serif-editorial text-xl font-bold text-foreground transition-colors duration-150 leading-snug",
+            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
+          )}>
             <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}

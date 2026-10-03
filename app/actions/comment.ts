@@ -16,11 +16,29 @@ export async function addComment(postId: string, content: string, parentId?: str
 
   const userId = session.user.id;
 
+  let rootParentId: string | null = null;
+  let targetUserIdToNotify: string | null = null;
+
+  if (parentId) {
+    const targetComment = await db.comment.findUnique({
+      where: { id: parentId },
+      select: { id: true, userId: true, parentId: true },
+    });
+
+    if (targetComment) {
+      targetUserIdToNotify = targetComment.userId;
+      // If the target comment is already a reply, link to the root thread parent
+      rootParentId = targetComment.parentId || targetComment.id;
+    } else {
+      rootParentId = parentId;
+    }
+  }
+
   const comment = await db.comment.create({
     data: {
       postId,
       userId,
-      parentId: parentId || null,
+      parentId: rootParentId,
       content: content.trim(),
       status: "APPROVED",
     },
@@ -41,24 +59,35 @@ export async function addComment(postId: string, content: string, parentId?: str
   try {
     const notifiedUserIds = new Set<string>();
 
-    // 1. If it's a reply to a comment, notify parent comment author
-    if (parentId) {
-      const parentComment = await db.comment.findUnique({
-        where: { id: parentId },
+    // 1. If it's a reply to a comment/reply, notify the author of that specific comment
+    if (targetUserIdToNotify && targetUserIdToNotify !== userId) {
+      const { dispatchNotification } = await import("@/app/actions/notification");
+      await dispatchNotification({
+        userId: targetUserIdToNotify,
+        actorId: userId,
+        type: "COMMENT_REPLY",
+        postId,
+        commentId: comment.id,
+      });
+      notifiedUserIds.add(targetUserIdToNotify);
+    }
+
+    // Also notify root thread author if distinct from target author and not the commenter
+    if (rootParentId && rootParentId !== parentId) {
+      const rootComment = await db.comment.findUnique({
+        where: { id: rootParentId },
         select: { userId: true },
       });
-
-      const { dispatchNotification } = await import("@/app/actions/notification");
-
-      if (parentComment && parentComment.userId !== userId) {
+      if (rootComment && rootComment.userId !== userId && !notifiedUserIds.has(rootComment.userId)) {
+        const { dispatchNotification } = await import("@/app/actions/notification");
         await dispatchNotification({
-          userId: parentComment.userId,
+          userId: rootComment.userId,
           actorId: userId,
           type: "COMMENT_REPLY",
           postId,
           commentId: comment.id,
         });
-        notifiedUserIds.add(parentComment.userId);
+        notifiedUserIds.add(rootComment.userId);
       }
     }
 
@@ -132,12 +161,10 @@ export async function editComment(commentId: string, newContent: string) {
     throw new Error("Comment not found.");
   }
 
-  const userEmail = session.user.email?.toLowerCase();
-  const isAdmin = (session.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
   const isAuthor = existingComment.userId === session.user.id;
 
-  if (!isAuthor && !isAdmin) {
-    throw new Error("You do not have permission to edit this comment.");
+  if (!isAuthor) {
+    throw new Error("You do not have permission to edit this comment. Only the author can edit their comment.");
   }
 
   const updatedComment = await db.comment.update({

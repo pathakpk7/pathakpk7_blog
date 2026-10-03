@@ -1,12 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
-import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare, Settings } from "lucide-react";
-import { formatDate, getSafeAvatarUrl, getBaseUrl } from "@/lib/utils";
+import { User, Calendar, BookOpen, ExternalLink, ArrowLeft, PenTool, Sparkles, Heart, Bookmark as BookmarkIcon, MessageSquare, Settings, Feather, Lightbulb, Layers, Rocket, Code2 } from "lucide-react";
+import { formatDate, getSafeAvatarUrl, getBaseUrl, cn } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -33,7 +33,7 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName
   },
   ideas: {
     title: "Ideas & Essays",
-    subtitle: "Personal observations on deep work, focus, discipline, quotes, and developer life.",
+    subtitle: "Personal observations on deep work, focus, discipline, and developer life.",
     iconName: "Lightbulb",
   },
   creative: {
@@ -43,7 +43,7 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string; iconName
   },
   notes: {
     title: "Notes & Musings",
-    subtitle: "Short-form observations, quick tools, micro-tips, quotes, and technical thoughts.",
+    subtitle: "Short-form observations, quick tools, micro-tips, and technical thoughts.",
     iconName: "BookOpen",
   },
 };
@@ -152,10 +152,17 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
   const typeFilter = resolvedSearchParams?.type?.toUpperCase();
   const sectionConfig = VALID_SECTIONS[section];
 
+  // Redirect Quotes from other sections to Creative & Poems
+  if (sectionConfig && section !== "creative" && typeFilter === "QUOTE") {
+    redirect("/creative?type=quote");
+  }
+
   // If this is a valid section route, render the section archive
   if (sectionConfig) {
     let posts: any[] = [];
     let allSectionPostTypes: string[] = [];
+
+    const isOrangeSection = section === "ideas" || section === "notes" || section === "creative";
 
     try {
       const allPosts = await db.post.findMany({
@@ -189,17 +196,38 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
     }
 
     const isCreative = section === "creative";
-    const defaultTypes = isCreative ? ["POEM", "SHAYARI", "QUOTE"] : ["ARTICLE", "ESSAY", "NOTE"];
-    const combinedTypes = Array.from(new Set([...allSectionPostTypes, ...defaultTypes]));
+    const defaultTypes = isCreative
+      ? ["POEM", "SHAYARI", "QUOTE", "MICROFICTION", "SHORT_STORY", "SHORT_PROSE"]
+      : section === "ideas"
+      ? ["ESSAY", "ARTICLE"]
+      : section === "notes"
+      ? ["NOTE", "ARTICLE"]
+      : ["ARTICLE", "TUTORIAL", "GUIDE"];
+
+    // Ensure non-creative sections never include QUOTE
+    const combinedTypes = Array.from(new Set([...allSectionPostTypes, ...defaultTypes]))
+      .filter((t) => isCreative || t !== "QUOTE");
     const availableTypes = ["ALL", ...combinedTypes];
 
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-10 min-h-screen">
         {/* Section Header */}
-        <header className="space-y-4 border-b border-border pb-8">
-          <span className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 font-mono">
-            Section Archive
-          </span>
+        <header className={cn(
+          "space-y-4 border-b pb-8 rounded-2xl p-6 sm:p-8",
+          isOrangeSection
+            ? "border-amber-500/20 bg-gradient-to-br from-amber-500/[0.08] via-orange-500/[0.04] to-transparent dark:from-amber-950/20 dark:via-orange-950/10 dark:to-transparent"
+            : "border-border"
+        )}>
+          <div className="flex items-center space-x-2">
+            <span className={cn(
+              "text-xs font-semibold uppercase tracking-widest font-mono px-2.5 py-0.5 rounded-full border",
+              isOrangeSection
+                ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+            )}>
+              Section Archive
+            </span>
+          </div>
           <h1 className="font-serif-editorial text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
             {sectionConfig.title}
           </h1>
@@ -216,11 +244,16 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
                 <Link
                   key={t}
                   href={t === "ALL" ? `/${section}` : `/${section}?type=${t.toLowerCase()}`}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                  className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium transition-all",
                     isActive
-                      ? "bg-foreground text-background font-semibold shadow-xs"
+                      ? isOrangeSection
+                        ? "bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold shadow-xs"
+                        : "bg-foreground text-background font-semibold shadow-xs"
+                      : isOrangeSection
+                      ? "bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 border border-amber-500/20"
                       : "bg-muted text-muted-foreground hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-foreground"
-                  }`}
+                  )}
                 >
                   {t === "ALL" ? "All Content" : t.replace(/_/g, " ")}
                 </Link>
@@ -231,13 +264,16 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
 
         {/* Posts Grid */}
         {posts.length === 0 ? (
-          <div className="py-20 text-center space-y-3 rounded-2xl bg-card border border-border">
+          <div className={cn(
+            "py-20 text-center space-y-3 rounded-2xl border",
+            isOrangeSection ? "bg-amber-500/5 border-amber-500/20" : "bg-card border-border"
+          )}>
             <p className="text-lg font-semibold text-foreground">
               {typeFilter ? `No ${typeFilter.toLowerCase()}s found in this section.` : "No articles published in this section yet."}
             </p>
             <p className="text-sm text-muted-foreground">
               {typeFilter ? (
-                <Link href={`/${section}`} className="text-blue-600 dark:text-blue-400 hover:underline">
+                <Link href={`/${section}`} className={isOrangeSection ? "text-amber-600 dark:text-amber-400 hover:underline" : "text-blue-600 dark:text-blue-400 hover:underline"}>
                   View all {sectionConfig.title} publications
                 </Link>
               ) : (
