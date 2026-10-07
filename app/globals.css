@@ -189,3 +189,18 @@ pre code {
   border-color: #3f3f46;
 }
 
+/* Responsive Editorial and Prose Images */
+.prose-editorial img,
+.prose img,
+article img {
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: center;
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
+}
+

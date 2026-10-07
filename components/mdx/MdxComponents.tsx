@@ -53,8 +53,8 @@ export function CustomQuote({ children, author, citation }: { children: React.Re
 export function CustomFigure({ src, alt, caption }: { src: string; alt: string; caption?: string }) {
   return (
     <figure className="my-8 space-y-2">
-      <div className="relative h-96 w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-border">
-        <Image src={src} alt={alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 800px" />
+      <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-border">
+        <Image src={src} alt={alt} fill className="object-cover object-center" sizes="(max-width: 768px) 100vw, 800px" />
       </div>
       {caption && (
         <figcaption className="text-center text-xs text-muted-foreground italic font-serif">

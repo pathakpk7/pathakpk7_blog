@@ -226,12 +226,12 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
         </div>
         {hasValidCoverImage && (
-          <div className="lg:col-span-5 relative h-64 sm:h-80 w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+          <div className="lg:col-span-5 relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-inner">
             <Image
               src={post.coverImageUrl!}
               alt={post.title}
               fill
-              className="object-cover group-hover:scale-102 transition-transform duration-200"
+              className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
               sizes="(max-width: 1024px) 100vw, 45vw"
               priority
             />
@@ -322,13 +322,13 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
       <article className={cn("group relative flex flex-col sm:flex-row gap-6 rounded-xl p-5 border transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
         {AdminOverlay}
         {hasValidCoverImage && (
-          <div className="relative h-48 sm:h-auto sm:w-48 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+          <div className="relative aspect-[16/9] w-full sm:w-56 sm:h-36 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-inner">
             <Image
               src={post.coverImageUrl!}
               alt={post.title}
               fill
-              className="object-cover group-hover:scale-102 transition-transform duration-200"
-              sizes="(max-width: 640px) 100vw, 200px"
+              className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
+              sizes="(max-width: 640px) 100vw, 224px"
             />
           </div>
         )}
@@ -379,13 +379,13 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     <article className={cn("group relative flex flex-col rounded-xl overflow-hidden border transition-all duration-200 shadow-xs active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
       {AdminOverlay}
       {hasValidCoverImage && (
-        <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+        <div className="relative aspect-[16/9] w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-inner">
           <Image
             src={post.coverImageUrl!}
             alt={post.title}
             fill
-            className="object-cover group-hover:scale-102 transition-transform duration-200"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
       )}

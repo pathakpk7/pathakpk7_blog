@@ -415,12 +415,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Cover Image */}
         {post.coverImageUrl && (
-          <div className="relative h-80 sm:h-[450px] w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-border">
+          <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9] w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-border shadow-xs">
             <Image
               src={post.coverImageUrl}
               alt={post.coverImageAlt || post.title}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               sizes="(max-width: 1024px) 100vw, 900px"
               priority
             />

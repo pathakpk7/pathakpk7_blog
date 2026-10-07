@@ -674,15 +674,26 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
           {/* LIVE PREVIEW MODE */}
           {editorMode === "preview" && (
             <div className="p-8 rounded-2xl bg-card border border-border space-y-6">
-              <div className="border-b border-border pb-4">
+              <div className="border-b border-border pb-4 space-y-2">
                 <span className="text-xs uppercase font-mono tracking-widest text-blue-600 dark:text-blue-400 font-semibold">
                   Preview Mode
                 </span>
-                <h1 className="font-serif-editorial text-3xl sm:text-4xl font-bold mt-2 text-foreground">
+                <h1 className="font-serif-editorial text-3xl sm:text-4xl font-bold text-foreground">
                   {title || "Untitled Article"}
                 </h1>
-                {subtitle && <p className="text-lg text-muted-foreground mt-1">{subtitle}</p>}
+                {subtitle && <p className="text-lg text-muted-foreground font-medium">{subtitle}</p>}
               </div>
+
+              {coverImageUrl && (
+                <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-border">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={coverImageUrl}
+                    alt={title || "Cover Preview"}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
+              )}
 
               <div
                 className="prose prose-zinc dark:prose-invert prose-editorial max-w-none"
