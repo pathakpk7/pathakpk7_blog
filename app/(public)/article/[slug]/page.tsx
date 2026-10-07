@@ -341,9 +341,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
       </div>
 
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-7">
         {/* Article Header */}
-        <header className="space-y-6 text-center sm:text-left">
+        <header className="space-y-4 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start space-x-3 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
             <span>{post.section}</span>
             <span>•</span>
@@ -375,14 +375,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </h1>
 
               {post.subtitle && (
-                <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
+                <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
                   {post.subtitle}
                 </p>
               )}
             </>
           )}
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 pt-4 border-t border-b border-border py-4 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 py-3 border-t border-b border-border text-xs text-muted-foreground mt-3">
             <Link
               href={`/${post.author?.profile?.username || "pathak"}`}
               className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
@@ -413,16 +413,22 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         </header>
 
-        {/* Cover Image */}
+        {/* Cover Image - uncropped and fitting all aspect ratios */}
         {post.coverImageUrl && (
-          <div className="relative aspect-[16/9] sm:aspect-[21/9] md:aspect-[16/9] w-full rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-border shadow-xs">
-            <Image
+          <div className="relative w-full rounded-2xl overflow-hidden bg-zinc-950/80 border border-border shadow-sm flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImageUrl}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-25 pointer-events-none"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={post.coverImageUrl}
               alt={post.coverImageAlt || post.title}
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 100vw, 900px"
-              priority
+              className="relative z-10 w-full h-auto max-h-[650px] object-contain rounded-2xl mx-auto"
+              loading="eager"
             />
           </div>
         )}

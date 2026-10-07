@@ -226,14 +226,20 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
         </div>
         {hasValidCoverImage && (
-          <div className="lg:col-span-5 relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-inner">
-            <Image
+          <div className="lg:col-span-5 relative aspect-video w-full rounded-xl overflow-hidden bg-zinc-950/90 shadow-inner flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImageUrl!}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={post.coverImageUrl!}
               alt={post.title}
-              fill
-              className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
-              sizes="(max-width: 1024px) 100vw, 45vw"
-              priority
+              className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+              loading="lazy"
             />
           </div>
         )}
@@ -322,13 +328,20 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
       <article className={cn("group relative flex flex-col sm:flex-row gap-6 rounded-xl p-5 border transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
         {AdminOverlay}
         {hasValidCoverImage && (
-          <div className="relative aspect-[16/9] w-full sm:w-56 sm:h-36 shrink-0 rounded-lg overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-inner">
-            <Image
+          <div className="relative aspect-video w-full sm:w-56 shrink-0 rounded-lg overflow-hidden bg-zinc-950/90 shadow-inner flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImageUrl!}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={post.coverImageUrl!}
               alt={post.title}
-              fill
-              className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
-              sizes="(max-width: 640px) 100vw, 224px"
+              className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+              loading="lazy"
             />
           </div>
         )}
@@ -379,13 +392,20 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     <article className={cn("group relative flex flex-col rounded-xl overflow-hidden border transition-all duration-200 shadow-xs active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
       {AdminOverlay}
       {hasValidCoverImage && (
-        <div className="relative aspect-[16/9] w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-inner">
-          <Image
+        <div className="relative aspect-video w-full bg-zinc-950/90 overflow-hidden shadow-inner flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={post.coverImageUrl!}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={post.coverImageUrl!}
             alt={post.title}
-            fill
-            className="object-cover object-center group-hover:scale-102 transition-transform duration-200"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+            loading="lazy"
           />
         </div>
       )}

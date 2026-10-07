@@ -685,12 +685,19 @@ export function PostEditor({ initialPost, availableTags = [] }: PostEditorProps)
               </div>
 
               {coverImageUrl && (
-                <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-border">
+                <div className="relative w-full rounded-xl overflow-hidden bg-zinc-950/80 border border-border flex items-center justify-center">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={coverImageUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-25 pointer-events-none"
+                  />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={coverImageUrl}
                     alt={title || "Cover Preview"}
-                    className="w-full h-full object-cover object-center"
+                    className="relative z-10 w-full h-auto max-h-[500px] object-contain rounded-xl mx-auto"
                   />
                 </div>
               )}

@@ -189,10 +189,11 @@ pre code {
   border-color: #3f3f46;
 }
 
-/* Responsive Editorial and Prose Images */
-.prose-editorial img,
-.prose img,
-article img {
+/* Inline content images inside rich-text article body only */
+.prose-editorial > img,
+.prose-editorial > p > img,
+.prose-editorial figure > img,
+.prose-editorial div > img:not([class*="object-cover"]) {
   border-radius: 0.75rem;
   border: 1px solid var(--border);
   width: 100%;
@@ -200,7 +201,7 @@ article img {
   height: auto;
   object-fit: cover;
   object-position: center;
-  margin-top: 1.75em;
-  margin-bottom: 1.75em;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
 }
 
