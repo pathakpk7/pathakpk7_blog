@@ -8,7 +8,7 @@ import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn, getBaseUrl } fr
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { Clock, Calendar, Tag as TagIcon, ArrowLeft, Quote, Edit3 } from "lucide-react";
+import { Clock, Calendar, ArrowLeft, Edit3 } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 import { headers } from "next/headers";
@@ -24,12 +24,11 @@ async function renderArticleContent(content: string, isCreative: boolean, isQuot
   if (!content) return null;
 
   const containerClass = isQuote
-    ? "max-w-3xl mx-auto space-y-6 text-xl sm:text-2xl leading-relaxed font-serif-editorial italic text-center py-6 px-4 whitespace-pre-line"
+    ? "max-w-3xl mx-auto space-y-6 text-xl sm:text-2xl leading-relaxed font-serif-editorial italic text-center py-8 px-4 whitespace-pre-line"
     : isCreative
-    ? "max-w-2xl mx-auto space-y-6 text-lg leading-relaxed font-serif whitespace-pre-line py-4"
+    ? "max-w-2xl mx-auto space-y-6 text-lg leading-relaxed font-serif whitespace-pre-line py-6"
     : "prose prose-zinc dark:prose-invert prose-editorial mx-auto max-w-3xl";
 
-  // Check if content is HTML from the Tiptap editor or rich HTML
   const isHtml =
     /^\s*<[a-z][\s\S]*>/i.test(content) ||
     /<\/(p|h[1-6]|ul|ol|li|blockquote|div|pre|table|figure|section)>/i.test(content) ||
@@ -44,7 +43,6 @@ async function renderArticleContent(content: string, isCreative: boolean, isQuot
     );
   }
 
-  // Attempt to compile Markdown / MDX
   try {
     const { content: compiledContent } = await compileMDX({
       source: content,
@@ -116,7 +114,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       post.excerpt ||
       post.subtitle ||
       (plainContent ? `${plainContent}...` : "") ||
-      "An editorial publication on ThePathak.tech — Technology • Science • Code • Ideas • Words.";
+      "An editorial publication on ThePathak.tech";
 
     const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
 
@@ -303,7 +301,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
-  const authorBio = post.author?.profile?.bio || "Lead Software Architect, Writer & Thinker.";
+  const authorBio = post.author?.profile?.bio || "Lead Software Architect, Writer & Thinker";
   const authorAvatar = post.author?.profile?.avatarUrl;
   const isCreative = post.section === "creative";
   const isQuote = post.contentType?.toUpperCase() === "QUOTE";
@@ -311,25 +309,25 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const contentElement = await renderArticleContent(post.content, isCreative, isQuote);
 
   return (
-    <main className="min-h-screen pb-32 pt-6 sm:pt-8">
-      {/* Back button and Admin controls */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-6 flex flex-wrap items-center justify-between gap-3">
+    <main className="min-h-screen pb-32 pt-8 sm:pt-12">
+      {/* Navigation and Administration Controls */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-8 flex flex-wrap items-center justify-between gap-4">
         <Link
           href={`/${post.section}`}
-          className="inline-flex items-center space-x-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center space-x-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to {post.section.toUpperCase()}</span>
+          <span className="capitalize">Back to {post.section}</span>
         </Link>
 
         {isAdmin && (
           <div className="flex items-center space-x-2">
             <Link
               href={`/studio/posts/${post.id}/edit`}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-semibold transition-colors"
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-sm bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Article</span>
+              <span>Edit Dispatch</span>
             </Link>
             <DeletePostButton
               postId={post.id}
@@ -341,53 +339,49 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
       </div>
 
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-7">
-        {/* Article Header */}
-        <header className="space-y-4 text-center sm:text-left">
-          <div className="flex items-center justify-center sm:justify-start space-x-3 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-            <span>{post.section}</span>
-            <span>•</span>
-            <span className="inline-flex items-center space-x-1 text-muted-foreground font-normal">
-              {isQuote && <Quote className="w-3 h-3 text-amber-500" />}
-              <span>{post.contentType}</span>
-            </span>
+      <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
+        {/* Masthead Header */}
+        <header className="space-y-6">
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground capitalize">{post.section}</span>
+            <span>/</span>
+            <span className="capitalize">{post.contentType?.toLowerCase()}</span>
           </div>
 
           {isQuote ? (
-            <div className="p-8 sm:p-12 rounded-3xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-center my-6 relative shadow-xs">
-              <Quote className="w-10 h-10 text-amber-500/30 mx-auto mb-4" />
+            <div className="py-12 px-6 sm:px-12 text-center my-6 space-y-6">
               <blockquote className={cn(
-                "text-2xl sm:text-4xl lg:text-5xl font-serif-editorial italic font-medium tracking-tight text-foreground leading-snug",
-                isHindi && "font-devanagari not-italic text-3xl sm:text-4xl"
+                "text-2xl sm:text-4xl lg:text-5xl font-serif-editorial font-normal tracking-tight text-foreground leading-relaxed",
+                isHindi && "font-devanagari text-3xl sm:text-4xl"
               )}>
                 &ldquo;{post.title}&rdquo;
               </blockquote>
               {post.subtitle && (
-                <cite className="block text-base sm:text-lg text-amber-800/80 dark:text-amber-300/80 font-serif mt-6 not-italic font-medium">
+                <cite className="block text-base sm:text-lg text-muted-foreground font-serif not-italic">
                   — {post.subtitle}
                 </cite>
               )}
             </div>
           ) : (
-            <>
-              <h1 className={isCreative && isHindi ? "font-devanagari text-4xl sm:text-5xl font-bold leading-snug" : "font-serif-editorial text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight"}>
+            <div className="space-y-4">
+              <h1 className={isCreative && isHindi ? "font-devanagari text-4xl sm:text-5xl font-semibold leading-snug" : "font-serif-editorial text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-foreground leading-[1.12]"}>
                 {post.title}
               </h1>
 
               {post.subtitle && (
-                <p className="text-lg sm:text-xl text-muted-foreground font-medium leading-relaxed max-w-3xl">
+                <p className="text-lg sm:text-xl text-muted-foreground font-normal leading-relaxed max-w-3xl">
                   {post.subtitle}
                 </p>
               )}
-            </>
+            </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 py-3 border-t border-b border-border text-xs text-muted-foreground mt-3">
+          <div className="flex flex-wrap items-center gap-4 py-4 border-t border-b border-border text-xs text-muted-foreground">
             <Link
               href={`/${post.author?.profile?.username || "pathak"}`}
-              className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+              className="flex items-center space-x-2 text-foreground font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 border border-zinc-200 dark:border-zinc-800">
+              <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted shrink-0 border border-border">
                 <Image
                   src={getSafeAvatarUrl(authorAvatar, post.author?.profile?.username || "pathak")}
                   alt={authorName}
@@ -395,39 +389,29 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   className="object-cover"
                 />
               </div>
-              <span className="font-bold text-zinc-950 dark:text-zinc-50 text-xs sm:text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{authorName}</span>
-              {post.author?.profile?.username && (
-                <span className="font-mono text-zinc-600 dark:text-zinc-400 text-[11px] font-medium">@{post.author.profile.username}</span>
-              )}
+              <span>{authorName}</span>
             </Link>
             <span>•</span>
-            <div className="flex items-center space-x-1 text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center space-x-1">
               <Calendar className="w-3.5 h-3.5" />
               <span>{formatDate(post.publishedAt)}</span>
             </div>
             <span>•</span>
-            <div className="flex items-center space-x-1 text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center space-x-1">
               <Clock className="w-3.5 h-3.5" />
               <span>{post.readingTime || calculateReadingTime(post.content)} min read</span>
             </div>
           </div>
         </header>
 
-        {/* Cover Image - uncropped and fitting all aspect ratios */}
+        {/* Cover Image */}
         {post.coverImageUrl && (
-          <div className="relative w-full rounded-2xl overflow-hidden bg-zinc-950/80 border border-border shadow-sm flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.coverImageUrl}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover blur-2xl scale-125 opacity-25 pointer-events-none"
-            />
+          <div className="relative w-full rounded-sm overflow-hidden bg-muted flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.coverImageUrl}
               alt={post.coverImageAlt || post.title}
-              className="relative z-10 w-full h-auto max-h-[650px] object-contain rounded-2xl mx-auto"
+              className="w-full h-auto max-h-[650px] object-contain rounded-sm"
               loading="eager"
             />
           </div>
@@ -436,41 +420,39 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         {/* Article Body */}
         {contentElement}
 
-        {/* Tags list */}
+        {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-border max-w-3xl mx-auto">
-            <TagIcon className="w-3.5 h-3.5 text-muted-foreground" />
+          <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-border max-w-3xl mx-auto text-xs text-muted-foreground">
+            <span>Keywords:</span>
             {post.tags.map(({ tag }: any) => (
-              <span key={tag.id} className="px-3 py-1 text-xs rounded-full bg-muted text-foreground">
-                #{tag.name}
+              <span key={tag.id} className="text-foreground hover:underline">
+                {tag.name}
               </span>
             ))}
           </div>
         )}
 
-        {/* Author Bio Box */}
-        <div className="p-6 rounded-2xl bg-card border border-border max-w-3xl mx-auto flex items-start space-x-4 shadow-xs">
-          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0 group">
-            <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 p-0.5 group-hover:scale-105 transition-transform">
+        {/* Author Byline Box */}
+        <div className="p-6 sm:p-8 bg-secondary/40 rounded-sm max-w-3xl mx-auto flex items-start space-x-5">
+          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted border border-border">
               <Image
                 src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
                 alt={authorName}
                 fill
-                className="object-contain p-0.5"
+                className="object-cover"
                 unoptimized
               />
             </div>
           </Link>
           <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <Link href={`/${post.author?.profile?.username || "pathak"}`} className="font-bold text-zinc-950 dark:text-zinc-50 text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                {authorName}
-              </Link>
-              {post.author?.profile?.username && (
-                <span className="font-mono text-zinc-600 dark:text-zinc-400 text-xs font-medium">@{post.author.profile.username}</span>
-              )}
-            </div>
-            <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed font-normal">{authorBio}</p>
+            <Link
+              href={`/${post.author?.profile?.username || "pathak"}`}
+              className="font-medium text-foreground text-sm hover:underline"
+            >
+              {authorName}
+            </Link>
+            <p className="text-xs text-muted-foreground leading-relaxed">{authorBio}</p>
           </div>
         </div>
 
@@ -492,7 +474,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           />
         </div>
 
-        {/* Comment Section with comment liking and edit permissions */}
+        {/* Comments Section */}
         <CommentSection
           postId={post.id}
           comments={formattedComments}
@@ -503,11 +485,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Related Articles */}
         {relatedPosts.length > 0 && (
-          <section className="pt-16 border-t border-border space-y-6 max-w-4xl mx-auto">
-            <h3 className="font-serif-editorial text-2xl font-bold text-foreground">
-              More from {post.section.toUpperCase()}
+          <section className="pt-16 border-t border-border space-y-8 max-w-4xl mx-auto">
+            <h3 className="font-serif-editorial text-2xl font-semibold text-foreground">
+              Further Reading
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rel) => (
                 <ArticleCard key={rel.id} post={rel as any} variant="standard" />
               ))}

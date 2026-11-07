@@ -9,6 +9,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useSession, signOut } from "next-auth/react";
 import { getSafeAvatarUrl } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeaderProps {
   onOpenSearch?: () => void;
@@ -24,7 +25,6 @@ export function Header({ onOpenSearch }: HeaderProps) {
   const username = (session?.user as any)?.username || (session?.user?.name ? session.user.name.toLowerCase().replace(/\s+/g, "_") : "reader");
   const avatarUrl = getSafeAvatarUrl(session?.user?.image, username);
 
-  // Close mobile menu on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && mobileMenuOpen) {
@@ -35,7 +35,6 @@ export function Header({ onOpenSearch }: HeaderProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileMenuOpen]);
 
-  // Lock body scroll when mobile menu is open on small screens
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -49,39 +48,38 @@ export function Header({ onOpenSearch }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md transition-colors">
+      <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md border-b border-border transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-2 sm:gap-4 lg:gap-6">
-            {/* Top-Left: Hamburger Icon for Mobile & Tablet + Brand Logo */}
-            <div className="flex items-center space-x-2 sm:space-x-3 shrink-0 mr-2 sm:mr-4 lg:mr-8 xl:mr-10">
+          <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
+            {/* Top-Left: Mobile Menu Toggle + Brand Identity */}
+            <div className="flex items-center space-x-3 sm:space-x-4 shrink-0">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 -ml-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
+                className="lg:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-sm transition-colors"
                 aria-label="Toggle navigation menu"
                 aria-expanded={mobileMenuOpen}
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
 
-              {/* Brand Logo & Editorial Subtitle */}
               <Link href="/" className="group flex items-center space-x-2.5 shrink-0">
-                <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden shadow-xs border border-zinc-200/80 dark:border-zinc-800 shrink-0 bg-zinc-950 flex items-center justify-center">
+                <div className="relative w-8 h-8 rounded-sm overflow-hidden bg-foreground shrink-0 flex items-center justify-center">
                   <Image
                     src="/emblem.png"
-                    alt="ThePathak.tech Logo"
+                    alt="ThePathak Logo"
                     fill
                     sizes="(max-width: 640px) 32px, 36px"
-                    className="object-contain p-0.5"
+                    className="object-contain p-0.5 invert dark:invert-0"
                     priority
                     unoptimized
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-serif-editorial text-lg sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors whitespace-nowrap">
-                    ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+                  <span className="font-serif-editorial text-xl sm:text-2xl font-semibold tracking-tight text-foreground transition-colors">
+                    ThePathak<span className="text-blue-600 dark:text-blue-400">.tech</span>
                   </span>
-                  <span className="hidden sm:inline-block text-[9.5px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 -mt-1 font-medium whitespace-nowrap">
-                    Tech • Science • Code • Words
+                  <span className="hidden sm:inline-block text-[10px] tracking-wider text-muted-foreground -mt-1 font-sans">
+                    Interpretation over repetition
                   </span>
                 </div>
               </Link>
@@ -90,18 +88,18 @@ export function Header({ onOpenSearch }: HeaderProps) {
             {/* Desktop Navigation */}
             <Navigation />
 
-            {/* Actions & Controls */}
-            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-2.5 shrink-0 ml-auto lg:ml-0">
+            {/* Actions & Reader Controls */}
+            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0 ml-auto lg:ml-0">
               {/* Search Trigger */}
               <button
                 onClick={onOpenSearch}
-                className="flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
-                title="Search articles (Cmd+K)"
+                className="flex items-center space-x-2 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground bg-secondary/80 hover:bg-secondary rounded-sm transition-colors"
+                title="Search publications (⌘K)"
                 aria-label="Search articles"
               >
                 <Search className="w-3.5 h-3.5" />
-                <span className="hidden md:inline">Search...</span>
-                <kbd className="hidden lg:inline text-[10px] bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 dark:text-zinc-400 font-mono">
+                <span className="hidden md:inline">Search</span>
+                <kbd className="hidden lg:inline text-[10px] bg-background px-1.5 py-0.5 rounded-xs border border-border text-muted-foreground font-mono">
                   ⌘K
                 </kbd>
               </button>
@@ -109,17 +107,16 @@ export function Header({ onOpenSearch }: HeaderProps) {
               {/* Theme Toggle */}
               <ThemeToggle />
 
-              {/* User / Admin Notification Bell */}
+              {/* Notification Bell */}
               {session?.user && <NotificationBell variant="header" />}
 
-              {/* User State */}
+              {/* Session State */}
               {session?.user ? (
-                <div className="flex items-center space-x-1 sm:space-x-1.5 lg:space-x-2">
-                  {/* Studio Button - Desktop/Tablet Only to keep mobile header clean */}
+                <div className="flex items-center space-x-1 sm:space-x-1.5">
                   {isAdmin && (
                     <Link
                       href="/studio"
-                      className="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl transition-colors shadow-xs active:scale-95"
+                      className="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-primary-foreground bg-primary hover:opacity-90 rounded-sm transition-opacity"
                       title="Writer Studio CMS"
                     >
                       <PenTool className="w-3.5 h-3.5" />
@@ -127,22 +124,20 @@ export function Header({ onOpenSearch }: HeaderProps) {
                     </Link>
                   )}
 
-                  {/* My Library Button */}
                   <Link
                     href="/library"
-                    className="p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
-                    title="My Library (Bookmarks & History)"
+                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-sm transition-colors"
+                    title="Saved Library"
                   >
                     <BookOpen className="w-4 h-4" />
                   </Link>
 
-                  {/* Profile Avatar Button */}
                   <Link
                     href={`/${username}`}
-                    className="group flex items-center space-x-2 p-1 pr-1.5 sm:pr-2.5 rounded-full border border-border hover:border-blue-500/60 bg-card hover:bg-muted/40 transition-all duration-150 active:scale-95 shadow-xs"
-                    title={`View Profile & Activity (@${username})`}
+                    className="group flex items-center space-x-2 p-1 pr-2 rounded-sm hover:bg-secondary transition-colors"
+                    title={`Profile (@${username})`}
                   >
-                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-zinc-800 border border-border/60 shrink-0">
+                    <div className="relative w-7 h-7 rounded-full overflow-hidden bg-muted border border-border shrink-0">
                       <Image
                         src={avatarUrl}
                         alt={session.user.name || "Profile"}
@@ -150,27 +145,25 @@ export function Header({ onOpenSearch }: HeaderProps) {
                         className="object-cover"
                       />
                     </div>
-                    <span className="hidden xl:inline-block text-xs font-semibold text-zinc-900 dark:text-zinc-100 max-w-[95px] truncate">
+                    <span className="hidden xl:inline-block text-xs font-medium text-foreground max-w-[90px] truncate">
                       {session.user.name || username}
                     </span>
                   </Link>
 
-                  {/* Account Settings */}
                   <Link
                     href="/settings"
-                    className="hidden sm:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
-                    title="Account Settings"
+                    className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-sm transition-colors"
+                    title="Settings"
                   >
                     <Settings className="w-4 h-4" />
                   </Link>
 
-                  {/* Log Out */}
                   <button
                     onClick={async () => {
                       await signOut({ redirect: false });
                       window.location.href = "/";
                     }}
-                    className="hidden lg:flex p-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors active:scale-95"
+                    className="hidden lg:flex p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-sm transition-colors"
                     title="Log out"
                   >
                     <LogOut className="w-4 h-4" />
@@ -179,200 +172,163 @@ export function Header({ onOpenSearch }: HeaderProps) {
               ) : (
                 <Link
                   href="/login"
-                  className="inline-flex items-center px-3.5 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition-colors active:scale-95"
+                  className="inline-flex items-center px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary rounded-sm transition-colors"
                 >
-                  Sign In
+                  Sign in
                 </Link>
               )}
             </div>
           </div>
         </div>
 
-        {/* Mobile & Tablet Drawer */}
-        {mobileMenuOpen && (
-          <div
-            ref={drawerRef}
-            className="lg:hidden border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-4 pt-3 pb-6 space-y-4 relative z-40 shadow-xl"
-          >
-            {session?.user && (
-              <div className="p-3 rounded-2xl bg-card border border-border flex items-center justify-between">
-                <Link
-                  href={`/${username}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center space-x-3"
-                >
-                  <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-zinc-900 border border-border shrink-0">
-                    <Image
-                      src={avatarUrl}
-                      alt={session.user.name || "Profile"}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-semibold text-foreground leading-tight">
-                      {session.user.name || "Reader"}
-                    </p>
-                    <p className="text-xs font-mono text-blue-600 dark:text-blue-400">
-                      @{username}
-                    </p>
-                  </div>
-                </Link>
-                <Link
-                  href="/settings"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 rounded-xl bg-muted hover:bg-zinc-200 dark:hover:bg-zinc-800 text-muted-foreground"
-                  title="Settings"
-                >
-                  <Settings className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
-
-            <div className="flex flex-col space-y-1">
-              <Link
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium rounded-lg text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                <Home className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                <span>Home</span>
-              </Link>
-              <Link
-                href="/technology"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Technology & AI
-              </Link>
-              <Link
-                href="/science"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Science & Space
-              </Link>
-              <Link
-                href="/coding"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Coding & Tutorials
-              </Link>
-              <Link
-                href="/ideas"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Ideas & Essays
-              </Link>
-              <Link
-                href="/creative"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Creative & Poems
-              </Link>
-              <Link
-                href="/notes"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                Notes & Musings
-              </Link>
-              <Link
-                href="/about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 text-sm font-medium rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-              >
-                About Platform
-              </Link>
-            </div>
-
-            <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex flex-col space-y-1.5">
-              {session?.user ? (
-                <>
-                  {isAdmin && (
-                    <Link
-                      href="/studio"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center space-x-2.5 px-3 py-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-lg transition-colors"
-                    >
-                      <PenTool className="w-4 h-4" />
-                      <span>Writer Studio CMS</span>
-                    </Link>
-                  )}
-                  <Link
-                    href="/library"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-                  >
-                    <BookOpen className="w-4 h-4 text-blue-500" />
-                    <span>My Library & Reading List</span>
-                  </Link>
+        {/* Animated Mobile & Tablet Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              ref={drawerRef}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="lg:hidden border-t border-border bg-background px-5 pt-4 pb-8 space-y-5 relative z-40 shadow-xl"
+            >
+              {session?.user && (
+                <div className="p-3 bg-secondary/60 rounded-sm flex items-center justify-between">
                   <Link
                     href={`/${username}`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                    className="flex items-center space-x-3"
                   >
-                    <User className="w-4 h-4 text-zinc-500" />
-                    <span>My Profile & Interactions</span>
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden bg-muted border border-border shrink-0">
+                      <Image
+                        src={avatarUrl}
+                        alt={session.user.name || "Profile"}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-foreground leading-tight">
+                        {session.user.name || "Reader"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        @{username}
+                      </p>
+                    </div>
                   </Link>
                   <Link
                     href="/settings"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                    className="p-2 text-muted-foreground hover:text-foreground"
+                    title="Settings"
                   >
-                    <Settings className="w-4 h-4 text-zinc-500" />
-                    <span>Account Settings</span>
+                    <Settings className="w-4 h-4" />
                   </Link>
-                  <button
-                    onClick={async () => {
-                      setMobileMenuOpen(false);
-                      await signOut({ redirect: false });
-                      window.location.href = "/";
-                    }}
-                    className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 w-full text-left transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md"
-                >
-                  Sign In
-                </Link>
+                </div>
               )}
-            </div>
-          </div>
-        )}
+
+              <div className="flex flex-col space-y-1">
+                {[
+                  { name: "Home", href: "/" },
+                  { name: "Technology & AI", href: "/technology" },
+                  { name: "Science & Space", href: "/science" },
+                  { name: "Coding & Tutorials", href: "/coding" },
+                  { name: "Ideas & Essays", href: "/ideas" },
+                  { name: "Creative & Poems", href: "/creative" },
+                  { name: "Notes & Musings", href: "/notes" },
+                  { name: "About Platform", href: "/about" },
+                ].map((item, idx) => (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.03, duration: 0.2 }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-sm transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-border flex flex-col space-y-2">
+                {session?.user ? (
+                  <>
+                    {isAdmin && (
+                      <Link
+                        href="/studio"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center space-x-2.5 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-sm transition-opacity"
+                      >
+                        <PenTool className="w-4 h-4" />
+                        <span>Writer Studio CMS</span>
+                      </Link>
+                    )}
+                    <Link
+                      href="/library"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center space-x-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Saved Library</span>
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        setMobileMenuOpen(false);
+                        await signOut({ redirect: false });
+                        window.location.href = "/";
+                      }}
+                      className="flex items-center space-x-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-sm w-full text-left transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign out</span>
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center px-4 py-2.5 text-sm font-medium text-primary-foreground bg-primary rounded-sm"
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Admin Mobile Floating Action Button (Lower & Separate for Mobile View Only) */}
+      {/* Admin Mobile Floating Action Button */}
       {isAdmin && (
         <Link
           href="/studio"
-          className="fixed bottom-6 right-5 z-40 lg:hidden flex items-center space-x-2 px-4 py-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xl shadow-blue-500/30 border border-blue-400/40 backdrop-blur-md active:scale-95 transition-all group"
-          title="Open Writer Studio CMS"
+          className="fixed bottom-6 right-5 z-40 lg:hidden flex items-center space-x-2 px-4 py-2.5 rounded-sm bg-primary text-primary-foreground font-medium text-xs shadow-lg active:scale-95 transition-transform"
+          title="Open Writer Studio"
           aria-label="Open Writer Studio"
         >
-          <PenTool className="w-4 h-4 text-white group-hover:rotate-12 transition-transform" />
-          <span className="font-sans font-semibold tracking-wide">Studio</span>
+          <PenTool className="w-4 h-4" />
+          <span>Studio</span>
         </Link>
       )}
 
-      {/* Backdrop overlay for closing mobile menu on click anywhere outside */}
-      {mobileMenuOpen && (
-        <div
-          onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 top-16 bg-black/60 backdrop-blur-xs z-30 lg:hidden transition-opacity duration-200"
-          aria-hidden="true"
-        />
-      )}
+      {/* Backdrop overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 top-16 bg-black/40 backdrop-blur-xs z-30 lg:hidden"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

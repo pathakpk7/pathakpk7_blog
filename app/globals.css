@@ -2,49 +2,49 @@
 
 @layer base {
   :root {
-    --background: #fcfbf9;
-    --foreground: #1c1b1a;
+    --background: #fbfaf7;
+    --foreground: #141416;
     --card: #ffffff;
-    --card-foreground: #1c1b1a;
+    --card-foreground: #141416;
     --popover: #ffffff;
-    --popover-foreground: #1c1b1a;
-    --primary: #18181b;
-    --primary-foreground: #fafafa;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #52525b;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
-    --destructive: #ef4444;
+    --popover-foreground: #141416;
+    --primary: #121214;
+    --primary-foreground: #fafaf8;
+    --secondary: #f1ede5;
+    --secondary-foreground: #141416;
+    --muted: #f1ede5;
+    --muted-foreground: #616068;
+    --accent: #ebe7de;
+    --accent-foreground: #141416;
+    --destructive: #dc2626;
     --destructive-foreground: #fafafa;
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #18181b;
-    --radius: 0.5rem;
-    --editorial-accent: #2563eb;
+    --border: #e6e2d8;
+    --input: #e6e2d8;
+    --ring: #141416;
+    --radius: 0.25rem;
+    --editorial-accent: #1e3a8a;
   }
 
   .dark {
-    --background: #09090b;
-    --foreground: #f4f4f5;
-    --card: #121215;
-    --card-foreground: #f4f4f5;
-    --popover: #121215;
-    --popover-foreground: #f4f4f5;
-    --primary: #fafafa;
-    --primary-foreground: #18181b;
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #7f1d1d;
+    --background: #0b0c0e;
+    --foreground: #ececed;
+    --card: #121317;
+    --card-foreground: #ececed;
+    --popover: #121317;
+    --popover-foreground: #ececed;
+    --primary: #f5f5f7;
+    --primary-foreground: #0b0c0e;
+    --secondary: #181920;
+    --secondary-foreground: #ececed;
+    --muted: #181920;
+    --muted-foreground: #9495a0;
+    --accent: #1e2028;
+    --accent-foreground: #ececed;
+    --destructive: #991b1b;
     --destructive-foreground: #fafafa;
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #d4d4d8;
+    --border: #20222a;
+    --input: #20222a;
+    --ring: #9495a0;
     --editorial-accent: #3b82f6;
   }
 
@@ -53,14 +53,21 @@
     box-sizing: border-box;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   html,
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     overflow-x: hidden;
     max-width: 100vw;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   img,
@@ -71,9 +78,10 @@
   }
 }
 
-/* Editorial & Creative Typography Classes */
+/* Editorial & Literary Typography */
 .font-serif-editorial {
   font-family: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+  letter-spacing: -0.01em;
 }
 
 .font-mono-code {
@@ -81,14 +89,14 @@
 }
 
 .font-devanagari {
-  font-family: "Noto Serif Devanagari", "Rozha One", "Tiro Devanagari Hindi", serif;
-  line-height: 1.8;
+  font-family: var(--font-devanagari), "Noto Serif Devanagari", "Rozha One", serif;
+  line-height: 1.85;
 }
 
-/* Custom Scrollbar */
+/* Minimal Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -97,8 +105,8 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--muted-foreground);
-  opacity: 0.3;
-  border-radius: 4px;
+  opacity: 0.25;
+  border-radius: 3px;
 }
 
 /* Article Prose Styling */
@@ -121,37 +129,38 @@
 .prose-editorial h3,
 .prose-editorial h4 {
   font-family: var(--font-serif), Georgia, serif;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-top: 2.25em;
-  margin-bottom: 0.75em;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-top: 2.5em;
+  margin-bottom: 0.85em;
+  color: var(--foreground);
 }
 
 .prose-editorial p {
-  margin-bottom: 1.5em;
+  margin-bottom: 1.6em;
 }
 
 .prose-editorial blockquote {
-  border-left: 3px solid var(--editorial-accent);
-  padding-left: 1.25rem;
+  border-left: 2px solid var(--editorial-accent);
+  padding-left: 1.5rem;
   font-style: italic;
-  margin-top: 1.75em;
-  margin-bottom: 1.75em;
+  margin-top: 2em;
+  margin-bottom: 2em;
   color: var(--muted-foreground);
 }
 
 .prose-editorial pre,
 .prose pre,
 pre {
-  background-color: #0f172a !important;
-  color: #f1f5f9 !important;
-  border: 1px solid #1e293b !important;
-  border-radius: 0.75rem;
+  background-color: #0d1117 !important;
+  color: #e6edf3 !important;
+  border: 1px solid #1f242c !important;
+  border-radius: 0.5rem;
   padding: 1.25rem;
   overflow-x: auto;
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
-  font-size: 0.9em;
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
+  font-size: 0.875rem;
   line-height: 1.7;
 }
 
@@ -159,10 +168,10 @@ pre {
 .prose pre code,
 pre code {
   background-color: transparent !important;
-  color: #f1f5f9 !important;
+  color: #e6edf3 !important;
   border: none !important;
   padding: 0 !important;
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-family: var(--font-mono), monospace !important;
   font-size: inherit;
   font-weight: 400;
 }
@@ -171,37 +180,51 @@ pre code {
 .prose-editorial :not(pre) > code,
 .prose :not(pre) > code,
 :not(pre) > code {
-  background-color: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #e2e8f0;
+  background-color: #f1ede5;
+  color: #141416;
+  border: 1px solid #e3ded3;
   padding: 0.15rem 0.35rem;
-  border-radius: 0.375rem;
+  border-radius: 0.25rem;
   font-family: var(--font-mono), monospace;
   font-size: 0.875em;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .dark .prose-editorial :not(pre) > code,
 .dark .prose :not(pre) > code,
 .dark :not(pre) > code {
-  background-color: #27272a;
-  color: #f4f4f5;
-  border-color: #3f3f46;
+  background-color: #1a1c22;
+  color: #ececed;
+  border-color: #272a33;
 }
 
-/* Inline content images inside rich-text article body only */
 .prose-editorial > img,
 .prose-editorial > p > img,
 .prose-editorial figure > img,
 .prose-editorial div > img:not([class*="object-cover"]) {
-  border-radius: 0.75rem;
+  border-radius: 0.375rem;
   border: 1px solid var(--border);
   width: 100%;
   max-width: 100%;
   height: auto;
   object-fit: cover;
   object-position: center;
-  margin-top: 1.5em;
-  margin-bottom: 1.5em;
+  margin-top: 1.75em;
+  margin-bottom: 1.75em;
 }
 
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid var(--editorial-accent);
+  outline-offset: 2px;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

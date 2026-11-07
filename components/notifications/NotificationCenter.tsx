@@ -241,10 +241,10 @@ export function NotificationCenter({
   return (
     <div className="space-y-6">
       {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-card p-4 rounded-2xl border border-border shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-card p-4 rounded-sm border border-border shadow-xs">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-            <Bell className="w-5 h-5" />
+          <div className="p-2 rounded-sm bg-secondary text-foreground">
+            <Bell className="w-4 h-4" />
           </div>
           <div>
             <h2 className="font-serif-editorial text-lg sm:text-xl font-bold text-foreground">

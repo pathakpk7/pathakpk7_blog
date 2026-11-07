@@ -217,7 +217,7 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
 
         {/* Mobile Expanded Menu */}
         {mobileMenuOpen && (
-          <div className="mt-2.5 p-2 rounded-2xl bg-card border border-border shadow-lg space-y-1">
+          <div className="mt-2.5 p-2 rounded-sm bg-card border border-border shadow-lg space-y-1">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -228,26 +228,26 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
                     setActiveTab(tab.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-sm text-xs font-medium transition-colors text-left ${
                     isActive
-                      ? "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-secondary text-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                   }`}
                 >
                   <span className="flex items-center space-x-2.5">
                     <Icon className={`w-4 h-4 ${tab.iconColor || ""}`} />
                     <span>{tab.label}</span>
                   </span>
-                  {isActive && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                  {isActive && <Check className="w-3.5 h-3.5" />}
                 </button>
               );
             })}
 
-            <div className="pt-2 border-t border-border/80">
+            <div className="pt-2 border-t border-border">
               <Link
                 href={`/${user.profile?.username || cleanHandle}`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-sm text-xs font-medium text-foreground bg-secondary/40 hover:bg-secondary transition-colors"
               >
                 <span className="flex items-center space-x-2.5">
                   <User className="w-3.5 h-3.5" />
@@ -261,7 +261,7 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
       </div>
 
       {/* Desktop Sidebar Navigation */}
-      <div className="hidden md:flex md:flex-col gap-2 border-r border-border pr-4">
+      <div className="hidden md:flex md:flex-col gap-1.5 border-r border-border pr-4">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -269,10 +269,10 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-semibold transition-colors text-left ${
+              className={`flex items-center space-x-2 px-3.5 py-2 rounded-sm text-xs font-medium transition-colors text-left ${
                 isActive
-                  ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-secondary text-foreground font-semibold"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               }`}
             >
               <Icon className={`w-4 h-4 ${tab.iconColor || ""}`} />
@@ -281,10 +281,10 @@ export function SettingsForm({ user, activity }: SettingsFormProps) {
           );
         })}
 
-        <div className="pt-2 border-t border-border/80">
+        <div className="pt-2 border-t border-border mt-2">
           <Link
             href={`/${user.profile?.username || cleanHandle}`}
-            className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/80 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+            className="flex items-center justify-between px-3.5 py-2 rounded-sm text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
           >
             <span className="flex items-center space-x-2">
               <User className="w-3.5 h-3.5" />

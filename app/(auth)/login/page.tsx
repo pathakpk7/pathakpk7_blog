@@ -23,8 +23,6 @@ function LoginForm() {
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
-
-    // Determine target redirect: defaults to homepage for all users (including admin) unless an explicit callback is requested
     const targetUrl = explicitCallback || "/";
 
     try {
@@ -38,11 +36,10 @@ function LoginForm() {
       if (res?.error) {
         setError("Invalid email or password credentials.");
       } else {
-        // Full navigation ensures the cookie is committed and picked up cleanly by middleware and server components
         window.location.href = targetUrl;
         return;
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -50,64 +47,64 @@ function LoginForm() {
   };
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-card p-8 rounded-2xl border border-border shadow-xl">
+    <div className="max-w-md w-full space-y-8 bg-card p-8 sm:p-10 rounded-sm border border-border shadow-xs">
       <div className="text-center space-y-3">
         <Link href="/" className="inline-flex flex-col items-center group">
-          <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-md border border-border mb-2 group-hover:scale-105 transition-transform bg-zinc-950">
+          <div className="relative w-12 h-12 rounded-sm overflow-hidden border border-border mb-3 bg-foreground flex items-center justify-center">
             <Image
               src="/emblem.png"
-              alt="ThePathak.tech Logo"
+              alt="ThePathak Logo"
               fill
-              sizes="128px"
-              className="object-contain p-1"
+              sizes="96px"
+              className="object-contain p-1 invert dark:invert-0"
               priority
               unoptimized
             />
           </div>
-          <span className="font-serif-editorial text-2xl font-bold tracking-tight text-foreground">
-            ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+          <span className="font-serif-editorial text-2xl font-semibold tracking-tight text-foreground">
+            ThePathak<span className="text-blue-600 dark:text-blue-400">.tech</span>
           </span>
         </Link>
-        <h2 className="text-xl font-bold text-foreground">Sign In to Your Account</h2>
+        <h2 className="text-lg font-medium text-foreground">Sign in to your account</h2>
         <p className="text-xs text-muted-foreground">
-          Access your library, saved articles, comments, and Writer Studio.
+          Access your library, reading history, comments, and writer tools.
         </p>
       </div>
 
       {error && (
-        <div className="flex items-center space-x-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs">
+        <div className="flex items-center space-x-2 p-3 rounded-sm bg-destructive/10 text-destructive text-xs">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Email Address</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-foreground">Email Address</label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+            <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
             />
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Password</label>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-foreground">Password</label>
           <div className="relative">
-            <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+            <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
             />
           </div>
         </div>
@@ -115,17 +112,17 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+          className="w-full py-2.5 rounded-sm bg-foreground text-background font-medium text-xs transition-opacity hover:opacity-90 flex items-center justify-center space-x-2 disabled:opacity-50"
         >
-          <span>{loading ? "Signing in to Writer Studio..." : "Sign In"}</span>
-          <ArrowRight className="w-4 h-4" />
+          <span>{loading ? "Authenticating..." : "Sign In"}</span>
+          <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </form>
 
       <div className="text-center text-xs text-muted-foreground">
         Don&apos;t have an account yet?{" "}
-        <Link href="/signup" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-          Create an Account
+        <Link href="/signup" className="text-foreground font-medium underline">
+          Create an account
         </Link>
       </div>
     </div>
@@ -134,8 +131,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
-      <Suspense fallback={<div className="max-w-md w-full p-8 rounded-2xl bg-card border border-border animate-pulse text-center text-xs text-muted-foreground">Loading Sign In...</div>}>
+    <main className="min-h-screen flex items-center justify-center py-16 px-4 bg-background">
+      <Suspense fallback={<div className="max-w-md w-full p-8 rounded-sm bg-card border border-border text-center text-xs text-muted-foreground">Loading...</div>}>
         <LoginForm />
       </Suspense>
     </main>

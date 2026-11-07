@@ -233,19 +233,19 @@ export function NotificationBell({ variant = "header" }: NotificationBellProps) 
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-sm bg-background border border-border shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150">
           {/* Header */}
-          <div className="px-4 py-3 bg-zinc-50 dark:bg-zinc-950/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+          <div className="px-4 py-3 bg-secondary/30 border-b border-border flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold font-serif-editorial text-zinc-900 dark:text-zinc-100 tracking-tight">
+              <span className="text-xs font-semibold text-foreground tracking-tight">
                 Notifications
               </span>
               {unreadCount > 0 ? (
-                <span className="px-2 py-0.5 text-[10px] font-semibold bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-400 rounded-full border border-rose-200 dark:border-rose-800/60">
+                <span className="px-1.5 py-0.5 text-[10px] font-medium bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 rounded-sm">
                   {unreadCount} new
                 </span>
               ) : (
-                <span className="text-[10px] text-zinc-400">All caught up</span>
+                <span className="text-[10px] text-muted-foreground">All caught up</span>
               )}
             </div>
 

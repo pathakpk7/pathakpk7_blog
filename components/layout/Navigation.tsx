@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
@@ -18,7 +19,7 @@ export function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden lg:flex items-center space-x-3.5 xl:space-x-6 text-sm font-medium">
+    <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2 text-sm font-medium">
       {SECTIONS.map((item) => {
         const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return (
@@ -27,13 +28,20 @@ export function Navigation() {
             href={item.href}
             prefetch={true}
             className={cn(
-              "transition-colors hover:text-zinc-900 dark:hover:text-zinc-100 whitespace-nowrap text-xs xl:text-[13px] py-1 font-medium",
+              "relative px-3 py-1.5 text-xs xl:text-[13px] transition-colors rounded-sm",
               isActive
-                ? "text-zinc-900 dark:text-zinc-100 font-semibold border-b-2 border-blue-600 dark:border-blue-500 pb-0.5"
-                : "text-zinc-600 dark:text-zinc-400"
+                ? "text-foreground font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {item.name}
+            <span className="relative z-10">{item.name}</span>
+            {isActive && (
+              <motion.div
+                layoutId="activeNavIndicator"
+                className="absolute inset-0 bg-secondary/80 rounded-sm -z-0"
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              />
+            )}
           </Link>
         );
       })}

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Clock, Quote, Edit3, MoreVertical } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -42,23 +41,12 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
 
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
-  const sectionUpper = (post.section || "technology").toUpperCase();
+  const sectionLabel = post.section ? post.section.charAt(0).toUpperCase() + post.section.slice(1) : "General";
+  const typeLabel = post.contentType ? post.contentType.replace(/_/g, " ").toLowerCase() : "article";
   const isHindi = post.tags?.some((t: any) => (t.tag?.slug || t.slug) === "hindi");
   const hasValidCoverImage = typeof post.coverImageUrl === "string" && post.coverImageUrl.trim().length > 5;
   const isQuote = post.contentType?.toUpperCase() === "QUOTE" || variant === "quote";
 
-  const isOrangeTheme =
-    post.section === "ideas" ||
-    post.section === "notes" ||
-    post.section === "creative" ||
-    ["ESSAY", "NOTE", "QUOTE", "POEM", "SHAYARI", "SHORT_STORY", "MICROFICTION", "SHORT_PROSE"].includes(
-      (post.contentType || "").toUpperCase()
-    );
-
-  const orangeCardBg = "bg-gradient-to-br from-amber-500/[0.09] via-orange-500/[0.04] to-transparent dark:from-amber-950/30 dark:via-orange-950/15 dark:to-zinc-900/90 border-amber-500/30 dark:border-amber-500/25 hover:border-orange-500/60 dark:hover:border-orange-500/50 shadow-xs hover:shadow-orange-500/10";
-  const defaultCardBg = "bg-card border-border hover:border-zinc-400 dark:hover:border-zinc-600 shadow-xs";
-
-  // Close admin menu when clicking outside or pressing Escape
   useEffect(() => {
     if (!menuOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,35 +77,33 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         aria-expanded={menuOpen}
         aria-haspopup="menu"
         aria-label="Post administration options"
-        className="p-1.5 rounded-lg bg-zinc-950/80 hover:bg-zinc-900 text-zinc-300 hover:text-white border border-zinc-700/80 backdrop-blur-md shadow-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="p-1.5 rounded-sm bg-background/90 text-foreground border border-border shadow-xs hover:bg-secondary transition-colors"
       >
-        <MoreVertical className="w-4 h-4" />
+        <MoreVertical className="w-3.5 h-3.5" />
       </button>
 
       {menuOpen && (
         <div
           role="menu"
           aria-label="Administrative actions"
-          className="absolute right-0 mt-1.5 w-40 py-1 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl backdrop-blur-md z-40 text-xs animate-in fade-in zoom-in-95 duration-100"
+          className="absolute right-0 mt-1 w-36 py-1 bg-background border border-border rounded-sm shadow-lg z-40 text-xs animate-in fade-in duration-100"
         >
           <Link
             href={`/studio/posts/${post.id}/edit`}
             role="menuitem"
-            className="flex items-center space-x-2 px-3 py-2 text-zinc-300 hover:text-white hover:bg-zinc-800/80 transition-colors"
+            className="flex items-center space-x-2 px-3 py-1.5 text-foreground hover:bg-secondary transition-colors"
             onClick={() => setMenuOpen(false)}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>Edit Article</span>
+            <span>Edit</span>
           </Link>
-
-          <div className="border-t border-zinc-800 my-1" />
-
+          <div className="border-t border-border my-1" />
           <div role="menuitem" className="w-full">
             <DeletePostButton
               postId={post.id}
               postTitle={post.title}
               variant="minimal"
-              className="w-full px-3 py-2 justify-start text-rose-400 hover:bg-rose-950/30 hover:text-rose-300 rounded-none"
+              className="w-full px-3 py-1.5 justify-start text-destructive hover:bg-destructive/10 rounded-none"
               onSuccess={() => setMenuOpen(false)}
             />
           </div>
@@ -126,23 +112,23 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     </div>
   ) : null;
 
+  // Quote or Poetic Broadsheet
   if (isQuote) {
     return (
-      <article className={cn("group relative bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-amber-500/5 dark:from-amber-950/35 dark:via-orange-950/20 dark:to-zinc-900 rounded-2xl p-7 border border-amber-500/40 hover:border-amber-500/70 dark:border-amber-500/30 dark:hover:border-amber-500/60 transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-5 shadow-xs", className)}>
+      <article className={cn("group relative p-8 sm:p-10 bg-secondary/40 hover:bg-secondary/70 transition-colors duration-200 flex flex-col justify-between space-y-6 rounded-sm", className)}>
         {AdminOverlay}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
-            <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/40 text-[10px] font-bold uppercase tracking-wider font-mono">
-              <Quote className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-              <span>QUOTE</span>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="text-[11px] font-medium tracking-wide text-foreground/80">
+              {sectionLabel} / {typeLabel}
             </span>
-            <span>{formatDate(post.publishedAt)}</span>
+            <span className="text-[11px]">{formatDate(post.publishedAt)}</span>
           </div>
 
-          <div className="relative pl-4 border-l-2 border-amber-500/60 dark:border-amber-400/60 py-1 my-1">
+          <div className="relative pl-4 border-l border-foreground/30 py-1">
             <h3 className={cn(
-              "text-xl sm:text-2xl font-serif-editorial italic font-medium tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 leading-snug",
-              isHindi && "font-devanagari text-2xl not-italic"
+              "text-xl sm:text-2xl font-serif-editorial font-normal tracking-tight text-foreground transition-colors leading-relaxed",
+              isHindi && "font-devanagari text-2xl"
             )}>
               <Link href={`/article/${post.slug}`} prefetch={true}>
                 <span className="absolute inset-0" aria-hidden="true" />
@@ -152,14 +138,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
 
           {post.subtitle && (
-            <p className="text-sm font-medium text-amber-800/80 dark:text-amber-300/80 pl-4 font-serif">
+            <p className="text-sm font-normal text-muted-foreground pl-4 font-serif">
               — {post.subtitle}
             </p>
           )}
 
           {post.excerpt && (
             <p className={cn(
-              "text-xs sm:text-sm text-muted-foreground leading-relaxed pl-4 line-clamp-3 pt-1",
+              "text-xs sm:text-sm text-muted-foreground leading-relaxed pl-4 line-clamp-3",
               isHindi && "font-devanagari"
             )}>
               {post.excerpt}
@@ -167,55 +153,49 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-amber-500/20 text-xs text-muted-foreground">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
-          <span className="font-mono text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">CREATIVE</span>
+        <div className="flex items-center justify-between pt-4 border-t border-border text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">{authorName}</span>
+          <span>{post.readingTime} min read</span>
         </div>
       </article>
     );
   }
 
+  // Featured Lead Story
   if (variant === "featured") {
     return (
-      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center rounded-2xl p-6 lg:p-8 border shadow-xs transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
+      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-6", className)}>
         {AdminOverlay}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="flex items-center space-x-2 text-xs font-semibold tracking-wider uppercase">
-            {isOrangeTheme ? (
-              <span className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[11px] font-bold">
-                <span>{sectionUpper}</span>
-                <span>•</span>
-                <span className="font-normal">{post.contentType}</span>
-              </span>
-            ) : (
-              <span className="text-blue-600 dark:text-blue-400">
-                <span>{sectionUpper}</span>
-                <span className="mx-1.5">•</span>
-                <span className="text-zinc-500 font-normal">{post.contentType}</span>
-              </span>
-            )}
+        <div className="lg:col-span-7 space-y-5">
+          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+            <span className="text-[11px] font-medium tracking-wide text-blue-600 dark:text-blue-400">
+              {sectionLabel}
+            </span>
+            <span>/</span>
+            <span className="text-[11px] capitalize">{typeLabel}</span>
           </div>
-          <h2 className={cn(
-            "font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground transition-colors duration-150 leading-tight",
-            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-          )}>
+
+          <h2 className="font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-[1.15]">
             <Link href={`/article/${post.slug}`} prefetch={true} className="focus:outline-none">
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
           </h2>
+
           {post.subtitle && (
-            <p className="text-lg text-muted-foreground font-medium line-clamp-2 leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground font-normal line-clamp-2 leading-relaxed">
               {post.subtitle}
             </p>
           )}
+
           {post.excerpt && (
             <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed hidden sm:block">
               {post.excerpt}
             </p>
           )}
-          <div className="flex items-center space-x-4 pt-2 text-xs text-muted-foreground">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
+
+          <div className="flex items-center space-x-3 pt-2 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">{authorName}</span>
             <span>•</span>
             <span>{formatDate(post.publishedAt)}</span>
             <span>•</span>
@@ -225,20 +205,14 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             </span>
           </div>
         </div>
+
         {hasValidCoverImage && (
-          <div className="lg:col-span-5 relative aspect-video w-full rounded-xl overflow-hidden bg-zinc-950/90 shadow-inner flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.coverImageUrl!}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
-            />
+          <div className="lg:col-span-5 relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-muted flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.coverImageUrl!}
               alt={post.title}
-              className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               loading="lazy"
             />
           </div>
@@ -247,75 +221,72 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     );
   }
 
+  // Creative / Poetry variant
   if (variant === "creative") {
     return (
-      <article className={cn("group relative rounded-2xl p-8 border transition-all duration-200 active:scale-[0.995] flex flex-col justify-between space-y-6", orangeCardBg, className)}>
+      <article className={cn("group relative p-6 sm:p-8 bg-secondary/30 hover:bg-secondary/60 rounded-sm transition-colors duration-200 flex flex-col justify-between space-y-6", className)}>
         {AdminOverlay}
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-400 font-mono">
-            <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 text-[10px] font-bold uppercase tracking-wider">
-              {post.contentType}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="text-[11px] font-medium tracking-wide text-foreground/80 capitalize">
+              {typeLabel}
             </span>
-            <span>{formatDate(post.publishedAt)}</span>
+            <span className="text-[11px]">{formatDate(post.publishedAt)}</span>
           </div>
+
           <h3 className={cn(
-            "text-xl sm:text-2xl font-bold tracking-tight text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-150 leading-snug",
-            isHindi ? "font-devanagari text-2xl" : "font-serif-editorial"
+            "text-xl sm:text-2xl font-serif-editorial font-medium tracking-tight text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug",
+            isHindi && "font-devanagari text-2xl"
           )}>
             <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
           </h3>
+
           {post.subtitle && (
-            <p className="text-sm italic text-muted-foreground">{post.subtitle}</p>
+            <p className="text-sm text-muted-foreground font-serif">{post.subtitle}</p>
           )}
+
           {post.excerpt && (
             <p className={cn(
-              "text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3 pt-1",
+              "text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3",
               isHindi && "font-devanagari"
             )}>
               {post.excerpt}
             </p>
           )}
         </div>
-        <div className="flex items-center justify-between pt-4 border-t border-amber-500/20 text-xs text-muted-foreground">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
+
+        <div className="flex items-center justify-between pt-4 border-t border-border text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">{authorName}</span>
           <span>{post.readingTime} min read</span>
         </div>
       </article>
     );
   }
 
+  // Compact List Item variant
   if (variant === "compact") {
     return (
       <article className={cn(
-        "group relative flex items-start justify-between space-x-4 py-3.5 px-3 rounded-xl border transition-all duration-150 active:scale-[0.995]",
-        isOrangeTheme
-          ? "border-amber-500/25 bg-gradient-to-r from-amber-500/[0.08] via-orange-500/[0.04] to-transparent dark:from-amber-950/25 dark:to-transparent hover:border-amber-500/50"
-          : "border-border/60 hover:bg-muted/30",
+        "group relative flex items-start justify-between py-4 border-b border-border transition-colors hover:bg-secondary/30 px-2 rounded-sm",
         className
       )}>
-        <div className="space-y-1.5 pr-14">
-          <span className={cn(
-            "text-xs uppercase tracking-wider font-semibold",
-            isOrangeTheme ? "text-amber-700 dark:text-amber-400 font-mono" : "text-blue-600 dark:text-blue-400"
-          )}>
-            {sectionUpper}
-          </span>
-          <h4 className={cn(
-            "font-serif-editorial text-base font-bold text-foreground transition-colors duration-150 line-clamp-2",
-            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-          )}>
+        <div className="space-y-1 pr-6">
+          <div className="text-[11px] font-medium text-muted-foreground">
+            <span>{sectionLabel}</span>
+          </div>
+          <h4 className="font-serif-editorial text-base font-medium text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
             <Link href={`/article/${post.slug}`} prefetch={true}>
               <span className="absolute inset-0" aria-hidden="true" />
               {post.title}
             </Link>
           </h4>
-          <div className="text-xs text-muted-foreground flex items-center space-x-2">
+          <div className="text-xs text-muted-foreground flex items-center space-x-2 pt-1">
             <span>{formatDate(post.publishedAt)}</span>
             <span>•</span>
-            <span>{post.readingTime} min</span>
+            <span>{post.readingTime} min read</span>
           </div>
         </div>
         {AdminOverlay}
@@ -323,49 +294,32 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     );
   }
 
+  // Horizontal variant
   if (variant === "horizontal") {
     return (
-      <article className={cn("group relative flex flex-col sm:flex-row gap-6 rounded-xl p-5 border transition-all duration-200 active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
+      <article className={cn("group relative flex flex-col sm:flex-row gap-6 py-6 border-b border-border transition-colors", className)}>
         {AdminOverlay}
         {hasValidCoverImage && (
-          <div className="relative aspect-video w-full sm:w-56 shrink-0 rounded-lg overflow-hidden bg-zinc-950/90 shadow-inner flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={post.coverImageUrl!}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
-            />
+          <div className="relative aspect-[16/10] w-full sm:w-52 shrink-0 rounded-sm overflow-hidden bg-muted">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.coverImageUrl!}
               alt={post.title}
-              className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               loading="lazy"
             />
           </div>
         )}
         <div className="flex flex-col justify-between space-y-3">
           <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-              {isOrangeTheme ? (
-                <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[10px] font-bold">
-                  <span>{sectionUpper}</span>
-                  <span>•</span>
-                  <span className="font-normal">{post.contentType}</span>
-                </span>
-              ) : (
-                <span className="text-blue-600 dark:text-blue-400">
-                  <span>{sectionUpper}</span>
-                  <span className="mx-1.5">•</span>
-                  <span className="text-zinc-500 font-normal">{post.contentType}</span>
-                </span>
-              )}
+            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+              <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                {sectionLabel}
+              </span>
+              <span>/</span>
+              <span className="text-[11px] capitalize">{typeLabel}</span>
             </div>
-            <h3 className={cn(
-              "font-serif-editorial text-xl font-bold text-foreground transition-colors duration-150",
-              isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-            )}>
+            <h3 className="font-serif-editorial text-xl font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
               <Link href={`/article/${post.slug}`} prefetch={true}>
                 <span className="absolute inset-0" aria-hidden="true" />
                 {post.title}
@@ -378,6 +332,8 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             )}
           </div>
           <div className="flex items-center space-x-3 text-xs text-muted-foreground pt-1">
+            <span className="font-medium text-foreground">{authorName}</span>
+            <span>•</span>
             <span>{formatDate(post.publishedAt)}</span>
             <span>•</span>
             <span>{post.readingTime} min read</span>
@@ -387,64 +343,44 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     );
   }
 
-  // Standard vertical card
+  // Standard vertical card (Magazine Column entry)
   return (
-    <article className={cn("group relative flex flex-col rounded-xl overflow-hidden border transition-all duration-200 shadow-xs active:scale-[0.995]", isOrangeTheme ? orangeCardBg : defaultCardBg, className)}>
+    <article className={cn("group relative flex flex-col space-y-4 py-4", className)}>
       {AdminOverlay}
       {hasValidCoverImage && (
-        <div className="relative aspect-video w-full bg-zinc-950/90 overflow-hidden shadow-inner flex items-center justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.coverImageUrl!}
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover blur-xl scale-125 opacity-30 pointer-events-none"
-          />
+        <div className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.coverImageUrl!}
             alt={post.title}
-            className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain transition-transform duration-200 group-hover:scale-102"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
             loading="lazy"
           />
         </div>
       )}
-      <div className="flex-1 p-6 flex flex-col justify-between space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider">
-            {isOrangeTheme ? (
-              <span className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/35 font-mono text-[10px] font-bold">
-                <span>{sectionUpper}</span>
-                <span>•</span>
-                <span className="font-normal">{post.contentType}</span>
-              </span>
-            ) : (
-              <span className="text-blue-600 dark:text-blue-400">
-                <span>{sectionUpper}</span>
-                <span className="mx-1.5">•</span>
-                <span className="text-zinc-500 font-normal">{post.contentType}</span>
-              </span>
-            )}
-          </div>
-          <h3 className={cn(
-            "font-serif-editorial text-xl font-bold text-foreground transition-colors duration-150 leading-snug",
-            isOrangeTheme ? "group-hover:text-amber-600 dark:group-hover:text-amber-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"
-          )}>
-            <Link href={`/article/${post.slug}`} prefetch={true}>
-              <span className="absolute inset-0" aria-hidden="true" />
-              {post.title}
-            </Link>
-          </h3>
-          {post.excerpt && (
-            <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-              {post.excerpt}
-            </p>
-          )}
+      <div className="space-y-2 flex-1">
+        <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+          <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400">
+            {sectionLabel}
+          </span>
+          <span>/</span>
+          <span className="text-[11px] capitalize">{typeLabel}</span>
         </div>
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border/50">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">{authorName}</span>
-          <span>{post.readingTime} min read</span>
-        </div>
+        <h3 className="font-serif-editorial text-xl sm:text-2xl font-semibold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+          <Link href={`/article/${post.slug}`} prefetch={true}>
+            <span className="absolute inset-0" aria-hidden="true" />
+            {post.title}
+          </Link>
+        </h3>
+        {post.excerpt && (
+          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+            {post.excerpt}
+          </p>
+        )}
+      </div>
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
+        <span className="font-medium text-foreground">{authorName}</span>
+        <span>{post.readingTime} min read</span>
       </div>
     </article>
   );

@@ -47,7 +47,7 @@ export default function SignupPage() {
         } else {
           setUsernameStatus({ checking: false, available: false, error: data.error || "Username is unavailable." });
         }
-      } catch (err) {
+      } catch {
         setUsernameStatus({ checking: false });
       }
     }, 350);
@@ -87,7 +87,6 @@ export default function SignupPage() {
         return;
       }
 
-      // Auto sign-in after successful registration
       const authRes = await signIn("credentials", {
         email: email.trim().toLowerCase(),
         password,
@@ -101,114 +100,114 @@ export default function SignupPage() {
         router.push("/");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-50 dark:bg-zinc-950">
-      <div className="max-w-md w-full space-y-6 bg-card p-8 rounded-2xl border border-border shadow-xl">
+    <main className="min-h-screen flex items-center justify-center py-16 px-4 bg-background">
+      <div className="max-w-md w-full space-y-8 bg-card p-8 sm:p-10 rounded-sm border border-border shadow-xs">
         <div className="text-center space-y-3">
           <Link href="/" className="inline-flex flex-col items-center group">
-            <div className="relative w-14 h-14 rounded-2xl overflow-hidden shadow-md border border-border mb-2 group-hover:scale-105 transition-transform bg-zinc-950">
+            <div className="relative w-12 h-12 rounded-sm overflow-hidden border border-border mb-3 bg-foreground flex items-center justify-center">
               <Image
                 src="/emblem.png"
-                alt="ThePathak.tech Logo"
+                alt="ThePathak Logo"
                 fill
-                sizes="112px"
-                className="object-contain p-1"
+                sizes="96px"
+                className="object-contain p-1 invert dark:invert-0"
                 priority
                 unoptimized
               />
             </div>
-            <span className="font-serif-editorial text-2xl font-bold tracking-tight text-foreground">
-              ThePathak<span className="text-blue-600 dark:text-blue-500">.tech</span>
+            <span className="font-serif-editorial text-2xl font-semibold tracking-tight text-foreground">
+              ThePathak<span className="text-blue-600 dark:text-blue-400">.tech</span>
             </span>
           </Link>
-          <h2 className="text-xl font-bold text-foreground">Create a Reader Account</h2>
+          <h2 className="text-lg font-medium text-foreground">Create a reader account</h2>
           <p className="text-xs text-muted-foreground">
             Choose your permanent unique handle to join discussions and track your reading.
           </p>
         </div>
 
         {error && (
-          <div className="flex items-center space-x-2 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs">
+          <div className="flex items-center space-x-2 p-3 rounded-sm bg-destructive/10 text-destructive text-xs">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Full Name</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Full Name</label>
             <div className="relative">
-              <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+              <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Jane Doe"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500"
+                placeholder="Your Name"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Username Handle</label>
-              <span className="text-[10px] font-mono text-muted-foreground">{username.length}/30</span>
+              <label className="text-xs font-medium text-foreground">Username Handle</label>
+              <span className="text-[10px] text-muted-foreground">{username.length}/30</span>
             </div>
             <div className="relative">
-              <AtSign className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+              <AtSign className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
                 type="text"
                 required
                 maxLength={30}
                 value={username}
                 onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
-                placeholder="janedoe"
-                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500 font-mono"
+                placeholder="handle"
+                className="w-full pl-9 pr-9 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground font-mono"
               />
-              <div className="absolute right-3 top-3.5">
-                {usernameStatus.checking && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+              <div className="absolute right-3 top-3">
+                {usernameStatus.checking && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
                 {!usernameStatus.checking && usernameStatus.available && (
-                  <Check className="w-4 h-4 text-emerald-500" />
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
                 )}
                 {!usernameStatus.checking && usernameStatus.error && (
-                  <AlertCircle className="w-4 h-4 text-rose-500" />
+                  <AlertCircle className="w-3.5 h-3.5 text-destructive" />
                 )}
               </div>
             </div>
             {usernameStatus.error && (
-              <p className="text-[11px] text-rose-500 dark:text-rose-400 mt-1">{usernameStatus.error}</p>
+              <p className="text-[11px] text-destructive mt-1">{usernameStatus.error}</p>
             )}
             <p className="text-[10px] text-muted-foreground">
-              Unique handle (a-z, 0-9, _, . only, max 30 chars). URL: thepathak.tech/{username || "handle"}
+              thepathak.tech/{username || "handle"}
             </p>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Email Address</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+              <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-foreground uppercase tracking-wider">Password</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3.5" />
+              <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
               <input
                 type="password"
                 required
@@ -216,7 +215,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-muted border border-border text-sm focus:outline-none focus:border-blue-500"
+                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
               />
             </div>
           </div>
@@ -224,21 +223,20 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading || (usernameStatus.error ? true : false)}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-2.5 rounded-sm bg-foreground text-background font-medium text-xs transition-opacity hover:opacity-90 flex items-center justify-center space-x-2 disabled:opacity-50"
           >
-            <span>{loading ? "Creating Account..." : "Create Account"}</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>{loading ? "Creating account..." : "Create Account"}</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </form>
 
         <div className="text-center text-xs text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
-            Sign In
+          <Link href="/login" className="text-foreground font-medium underline">
+            Sign in
           </Link>
         </div>
       </div>
     </main>
   );
 }
-
