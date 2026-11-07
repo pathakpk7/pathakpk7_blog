@@ -342,10 +342,20 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
         {/* Masthead Header */}
         <header className="space-y-6">
-          <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground capitalize">{post.section}</span>
-            <span>/</span>
-            <span className="capitalize">{post.contentType?.toLowerCase()}</span>
+          <div className="flex items-center space-x-2 text-xs">
+            <span className={cn(
+              "font-semibold uppercase tracking-wider text-[11px]",
+              post.section === "technology" && "text-blue-600 dark:text-blue-400",
+              post.section === "science" && "text-indigo-600 dark:text-indigo-400",
+              post.section === "coding" && "text-emerald-600 dark:text-emerald-400",
+              post.section === "ideas" && "text-amber-600 dark:text-amber-400",
+              post.section === "creative" && "text-orange-600 dark:text-orange-400",
+              post.section === "notes" && "text-cyan-600 dark:text-cyan-400"
+            )}>
+              {post.section}
+            </span>
+            <span className="text-muted-foreground">/</span>
+            <span className="capitalize text-muted-foreground">{post.contentType?.toLowerCase()}</span>
           </div>
 
           {isQuote ? (
@@ -422,12 +432,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-border max-w-3xl mx-auto text-xs text-muted-foreground">
-            <span>Keywords:</span>
+          <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-border max-w-3xl mx-auto text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Topics:</span>
             {post.tags.map(({ tag }: any) => (
-              <span key={tag.id} className="text-foreground hover:underline">
-                {tag.name}
-              </span>
+              <Link
+                key={tag.id}
+                href={`/search?q=${tag.slug}`}
+                className="px-2.5 py-1 text-xs font-mono rounded-xs bg-secondary/80 hover:bg-secondary text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors border border-border"
+              >
+                #{tag.name}
+              </Link>
             ))}
           </div>
         )}

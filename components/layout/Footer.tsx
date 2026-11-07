@@ -10,13 +10,13 @@ export function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-5 space-y-4">
             <Link href="/" className="inline-flex items-center space-x-2.5 group">
-              <div className="relative w-8 h-8 rounded-sm overflow-hidden bg-foreground shrink-0 flex items-center justify-center">
+              <div className="relative w-8 h-8 rounded-sm overflow-hidden bg-[#0d1117] border border-border/80 shrink-0 flex items-center justify-center shadow-xs">
                 <Image
                   src="/emblem.png"
                   alt="ThePathak Logo"
                   fill
                   sizes="64px"
-                  className="object-contain p-0.5 invert dark:invert-0"
+                  className="object-contain p-0.5"
                   unoptimized
                 />
               </div>

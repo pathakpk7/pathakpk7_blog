@@ -30,7 +30,7 @@ export function Navigation() {
             className={cn(
               "relative px-3 py-1.5 text-xs xl:text-[13px] transition-colors rounded-sm",
               isActive
-                ? "text-foreground font-semibold"
+                ? "text-blue-600 dark:text-blue-400 font-semibold"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -38,7 +38,7 @@ export function Navigation() {
             {isActive && (
               <motion.div
                 layoutId="activeNavIndicator"
-                className="absolute inset-0 bg-secondary/80 rounded-sm -z-0"
+                className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 rounded-sm -z-0"
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}

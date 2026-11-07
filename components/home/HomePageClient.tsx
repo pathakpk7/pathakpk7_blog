@@ -25,9 +25,12 @@ export function HomePageClient({
   notesPosts,
 }: HomePageClientProps) {
   return (
-    <div className="space-y-28 pb-24">
+    <div className="space-y-28 pb-24 relative">
       {/* Editorial Hero Section */}
-      <section className="relative pt-16 sm:pt-24 pb-12">
+      <section className="relative pt-16 sm:pt-24 pb-12 overflow-hidden">
+        {/* Subtle Ambient Color Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 bg-gradient-to-b from-blue-500/[0.08] via-indigo-500/[0.04] to-transparent pointer-events-none blur-3xl -z-10" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl space-y-8">
             <motion.div
@@ -36,7 +39,9 @@ export function HomePageClient({
               transition={{ duration: 0.6, ease }}
               className="flex items-center space-x-3 text-xs tracking-wider text-muted-foreground"
             >
-              <span>Volume IV</span>
+              <span className="px-2.5 py-0.5 text-[11px] font-mono font-medium rounded-xs bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
+                Volume IV
+              </span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/60" />
               <span>Independent Technical & Cultural Review</span>
             </motion.div>
@@ -68,14 +73,14 @@ export function HomePageClient({
             >
               <Link
                 href="/technology"
-                className="group inline-flex items-center space-x-2 px-5 py-2.5 bg-foreground text-background text-xs sm:text-sm font-medium rounded-sm hover:opacity-90 transition-opacity"
+                className="group inline-flex items-center space-x-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-medium rounded-sm shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
               >
                 <span>Read recent dispatches</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center space-x-1.5 px-4 py-2.5 text-xs sm:text-sm font-medium text-foreground hover:bg-secondary rounded-sm transition-colors"
+                className="inline-flex items-center space-x-1.5 px-4 py-2.5 text-xs sm:text-sm font-medium text-foreground bg-secondary/80 hover:bg-secondary rounded-sm transition-colors border border-border/80"
               >
                 <span>Editorial manifesto</span>
                 <ArrowUpRight className="w-3.5 h-3.5 opacity-60" />
@@ -95,9 +100,12 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3 mb-8">
-            <h2 className="text-xs font-medium tracking-wider text-muted-foreground">
-              Lead Story
-            </h2>
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 rounded-xs bg-blue-600 dark:bg-blue-400 inline-block" />
+              <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                Lead Story
+              </h2>
+            </div>
             <span className="text-xs text-muted-foreground">
               Curated Dispatch
             </span>
@@ -121,14 +129,15 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
-            <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-blue-600 dark:bg-blue-400 inline-block" />
               <h2 className="font-serif-editorial text-2xl sm:text-3xl font-semibold text-foreground">
                 Technology & Intelligence
               </h2>
             </div>
             <Link
               href="/technology"
-              className="group inline-flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="group inline-flex items-center space-x-1 text-xs text-blue-600 dark:text-blue-400 hover:underline transition-colors"
             >
               <span>Explore all</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -153,14 +162,15 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
-            <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-indigo-600 dark:bg-indigo-400 inline-block" />
               <h2 className="font-serif-editorial text-2xl sm:text-3xl font-semibold text-foreground">
                 Science & Cosmos
               </h2>
             </div>
             <Link
               href="/science"
-              className="group inline-flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="group inline-flex items-center space-x-1 text-xs text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
             >
               <span>Explore all</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -185,14 +195,15 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
-            <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-emerald-600 dark:bg-emerald-400 inline-block" />
               <h2 className="font-serif-editorial text-2xl sm:text-3xl font-semibold text-foreground">
                 Engineering & Architecture
               </h2>
             </div>
             <Link
               href="/coding"
-              className="group inline-flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="group inline-flex items-center space-x-1 text-xs text-emerald-600 dark:text-emerald-400 hover:underline transition-colors"
             >
               <span>Explore all</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -217,14 +228,15 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
-            <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-amber-600 dark:bg-amber-400 inline-block" />
               <h2 className="font-serif-editorial text-2xl sm:text-3xl font-semibold text-foreground">
                 The Literary Quarter
               </h2>
             </div>
             <Link
               href="/creative"
-              className="group inline-flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="group inline-flex items-center space-x-1 text-xs text-amber-600 dark:text-amber-400 hover:underline transition-colors"
             >
               <span>Explore poetry & prose</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
@@ -253,14 +265,15 @@ export function HomePageClient({
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
-            <div className="space-y-1">
+            <div className="flex items-center space-x-2.5">
+              <span className="w-2.5 h-2.5 rounded-xs bg-cyan-600 dark:bg-cyan-400 inline-block" />
               <h2 className="font-serif-editorial text-2xl sm:text-3xl font-semibold text-foreground">
                 Field Notes & Fragments
               </h2>
             </div>
             <Link
               href="/notes"
-              className="group inline-flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="group inline-flex items-center space-x-1 text-xs text-cyan-600 dark:text-cyan-400 hover:underline transition-colors"
             >
               <span>View archive</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />

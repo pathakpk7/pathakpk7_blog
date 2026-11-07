@@ -1,37 +1,49 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { Sun, Moon, Laptop } from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    return <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 animate-pulse" />;
+    return <div className="w-8 h-8 rounded-sm bg-secondary/80 animate-pulse" />;
   }
+
+  const isDark = resolvedTheme === "dark";
+
+  const handleToggle = () => {
+    setTheme(isDark ? "light" : "dark");
+  };
 
   return (
     <button
-      onClick={() => {
-        if (theme === "dark") setTheme("light");
-        else if (theme === "light") setTheme("system");
-        else setTheme("dark");
-      }}
-      className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-      title={`Current theme: ${theme}. Click to switch.`}
-      aria-label="Toggle theme"
+      onClick={handleToggle}
+      className="relative p-2 rounded-sm text-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
+      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      aria-label="Toggle light/dark theme"
     >
-      {theme === "dark" ? (
-        <Moon className="w-4 h-4" />
-      ) : theme === "light" ? (
-        <Sun className="w-4 h-4" />
-      ) : (
-        <Laptop className="w-4 h-4" />
-      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={isDark ? "dark" : "light"}
+          initial={{ rotate: -45, opacity: 0, scale: 0.7 }}
+          animate={{ rotate: 0, opacity: 1, scale: 1 }}
+          exit={{ rotate: 45, opacity: 0, scale: 0.7 }}
+          transition={{ duration: 0.18 }}
+          className="flex items-center justify-center"
+        >
+          {isDark ? (
+            <Sun className="w-4 h-4 text-amber-400 hover:text-amber-300 transition-colors" />
+          ) : (
+            <Moon className="w-4 h-4 text-indigo-600 hover:text-indigo-700 transition-colors" />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </button>
   );
 }

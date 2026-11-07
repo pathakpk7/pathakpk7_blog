@@ -196,13 +196,44 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
       .filter((t) => isCreative || t !== "QUOTE");
     const availableTypes = ["ALL", ...combinedTypes];
 
+    const sectionThemeMap: Record<string, { badge: string; tabActive: string }> = {
+      technology: {
+        badge: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
+        tabActive: "bg-blue-600 text-white font-medium shadow-xs",
+      },
+      science: {
+        badge: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+        tabActive: "bg-indigo-600 text-white font-medium shadow-xs",
+      },
+      coding: {
+        badge: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+        tabActive: "bg-emerald-600 text-white font-medium shadow-xs",
+      },
+      ideas: {
+        badge: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
+        tabActive: "bg-amber-600 text-white font-medium shadow-xs",
+      },
+      creative: {
+        badge: "text-orange-600 dark:text-orange-400 bg-orange-500/10 border-orange-500/20",
+        tabActive: "bg-orange-600 text-white font-medium shadow-xs",
+      },
+      notes: {
+        badge: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
+        tabActive: "bg-cyan-600 text-white font-medium shadow-xs",
+      },
+    };
+    const currentTheme = sectionThemeMap[section.toLowerCase()] || sectionThemeMap.technology;
+
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12 min-h-screen">
         {/* Section Masthead */}
         <header className="space-y-4 pb-8 border-b border-border">
-          <span className="text-xs font-medium tracking-wider text-muted-foreground">
-            Archive
-          </span>
+          <div className="flex items-center space-x-2.5">
+            <span className={cn("px-2.5 py-0.5 text-[11px] font-mono font-medium rounded-xs border", currentTheme.badge)}>
+              {section.toUpperCase()}
+            </span>
+            <span className="text-xs text-muted-foreground">Archive</span>
+          </div>
           <h1 className="font-serif-editorial text-4xl sm:text-5xl font-semibold tracking-tight text-foreground">
             {sectionConfig.title}
           </h1>
@@ -219,9 +250,9 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
                   key={t}
                   href={t === "ALL" ? `/${section}` : `/${section}?type=${t.toLowerCase()}`}
                   className={cn(
-                    "px-3 py-1 text-xs rounded-sm transition-colors",
+                    "px-3 py-1 text-xs rounded-sm transition-all",
                     isActive
-                      ? "bg-foreground text-background font-medium"
+                      ? currentTheme.tabActive
                       : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   )}
                 >

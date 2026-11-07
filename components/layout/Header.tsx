@@ -63,13 +63,13 @@ export function Header({ onOpenSearch }: HeaderProps) {
               </button>
 
               <Link href="/" className="group flex items-center space-x-2.5 shrink-0">
-                <div className="relative w-8 h-8 rounded-sm overflow-hidden bg-foreground shrink-0 flex items-center justify-center">
+                <div className="relative w-8 h-8 rounded-sm overflow-hidden bg-[#0d1117] border border-border/80 shrink-0 flex items-center justify-center shadow-xs">
                   <Image
                     src="/emblem.png"
                     alt="ThePathak Logo"
                     fill
                     sizes="(max-width: 640px) 32px, 36px"
-                    className="object-contain p-0.5 invert dark:invert-0"
+                    className="object-contain p-0.5"
                     priority
                     unoptimized
                   />
