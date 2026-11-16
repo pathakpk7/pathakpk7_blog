@@ -8,7 +8,7 @@ import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { Calendar, ArrowLeft, Settings, ExternalLink } from "lucide-react";
 import { formatDate, getSafeAvatarUrl, getBaseUrl, cn } from "@/lib/utils";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 interface SectionPageProps {
   params: Promise<{ section: string }>;
@@ -44,14 +44,15 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string }> = {
 
 export async function generateMetadata({ params }: SectionPageProps) {
   const { section } = await params;
+  const normalizedSection = section.toLowerCase();
   const baseUrl = getBaseUrl();
 
-  const config = VALID_SECTIONS[section];
+  const config = VALID_SECTIONS[normalizedSection];
 
   if (config) {
     const title = `${config.title} | ThePathak.tech`;
     const description = config.subtitle;
-    const url = `${baseUrl}/${section}`;
+    const url = `${baseUrl}/${normalizedSection}`;
 
     return {
       title,
@@ -133,22 +134,30 @@ export async function generateMetadata({ params }: SectionPageProps) {
 
 export default async function SectionOrProfilePage({ params, searchParams }: SectionPageProps) {
   const { section } = await params;
+  const normalizedSection = section.toLowerCase();
   const resolvedSearchParams = await searchParams;
-  const typeFilter = resolvedSearchParams?.type?.toUpperCase();
-  const sectionConfig = VALID_SECTIONS[section];
+  const rawTypeFilter = resolvedSearchParams?.type?.trim().toUpperCase();
+  const typeFilter = rawTypeFilter === "ALL" || !rawTypeFilter ? undefined : rawTypeFilter;
+  const sectionConfig = VALID_SECTIONS[normalizedSection];
 
-  if (sectionConfig && section !== "creative" && typeFilter === "QUOTE") {
+  if (sectionConfig && normalizedSection !== "creative" && typeFilter === "QUOTE") {
     redirect("/creative?type=quote");
   }
 
   if (sectionConfig) {
-    const isCreative = section === "creative";
+    const isCreative = normalizedSection === "creative";
     const whereClause: any = {
-      section,
+      section: {
+        equals: normalizedSection,
+        mode: "insensitive",
+      },
       status: "PUBLISHED",
     };
-    if (typeFilter && typeFilter !== "ALL") {
-      whereClause.contentType = typeFilter;
+    if (typeFilter) {
+      whereClause.contentType = {
+        equals: typeFilter,
+        mode: "insensitive",
+      };
     }
 
     const [posts, allSectionPosts] = await Promise.all([
@@ -170,7 +179,10 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
       }),
       db.post.findMany({
         where: {
-          section,
+          section: {
+            equals: normalizedSection,
+            mode: "insensitive",
+          },
           status: "PUBLISHED",
         },
         select: {
@@ -247,7 +259,8 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
               return (
                 <Link
                   key={t}
-                  href={t === "ALL" ? `/${section}` : `/${section}?type=${t.toLowerCase()}`}
+                  href={t === "ALL" ? `/${normalizedSection}` : `/${normalizedSection}?type=${t.toLowerCase()}`}
+                  prefetch={true}
                   className={cn(
                     "px-3 py-1 text-xs rounded-sm transition-all",
                     isActive
@@ -270,7 +283,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
             </p>
             <p className="text-xs text-muted-foreground">
               {typeFilter ? (
-                <Link href={`/${section}`} className="text-foreground hover:underline">
+                <Link href={`/${normalizedSection}`} prefetch={true} className="text-foreground hover:underline">
                   View all {sectionConfig.title} dispatches
                 </Link>
               ) : (

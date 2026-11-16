@@ -246,6 +246,7 @@ export function Header({ onOpenSearch }: HeaderProps) {
                   >
                     <Link
                       href={item.href}
+                      prefetch={true}
                       onClick={() => setMobileMenuOpen(false)}
                       className="block px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-sm transition-colors"
                     >
