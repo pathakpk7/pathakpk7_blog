@@ -153,15 +153,6 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
     let allSectionPostTypes: string[] = [];
 
     try {
-      const allPosts = await db.post.findMany({
-        where: {
-          status: "PUBLISHED",
-          section: section,
-        },
-        select: { contentType: true },
-      });
-      allSectionPostTypes = Array.from(new Set(allPosts.map((p) => p.contentType)));
-
       const whereClause: any = {
         status: "PUBLISHED",
         section: section,
@@ -169,16 +160,35 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
 
       if (typeFilter && typeFilter !== "ALL") {
         whereClause.contentType = typeFilter;
+        // Run both queries in parallel only when filtering
+        const [filteredPosts, allPosts] = await Promise.all([
+          db.post.findMany({
+            where: whereClause,
+            include: {
+              author: { include: { profile: true } },
+              tags: { include: { tag: true } },
+            },
+            orderBy: { publishedAt: "desc" },
+          }),
+          db.post.findMany({
+            where: { status: "PUBLISHED", section },
+            select: { contentType: true },
+          }),
+        ]);
+        posts = filteredPosts;
+        allSectionPostTypes = Array.from(new Set(allPosts.map((p) => p.contentType)));
+      } else {
+        // Single fast query when viewing all
+        posts = await db.post.findMany({
+          where: whereClause,
+          include: {
+            author: { include: { profile: true } },
+            tags: { include: { tag: true } },
+          },
+          orderBy: { publishedAt: "desc" },
+        });
+        allSectionPostTypes = Array.from(new Set(posts.map((p) => p.contentType)));
       }
-
-      posts = await db.post.findMany({
-        where: whereClause,
-        include: {
-          author: { include: { profile: true } },
-          tags: { include: { tag: true } },
-        },
-        orderBy: { publishedAt: "desc" },
-      });
     } catch (err) {
       console.warn("SectionPage DB query fallback:", err);
     }

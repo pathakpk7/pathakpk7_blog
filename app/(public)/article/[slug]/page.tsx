@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { cache } from "react";
 import { db } from "@/lib/db/prisma";
 import { auth } from "@/auth";
 import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn, getBaseUrl } from "@/lib/utils";
@@ -60,35 +61,81 @@ async function renderArticleContent(content: string, isCreative: boolean, isQuot
   }
 }
 
-export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
-  try {
-    const { slug } = await params;
-    const post = await db.post.findUnique({
-      where: { slug },
-      select: {
-        title: true,
-        subtitle: true,
-        excerpt: true,
-        content: true,
-        section: true,
-        contentType: true,
-        seoTitle: true,
-        seoDescription: true,
-        coverImageUrl: true,
-        publishedAt: true,
-        author: {
-          select: {
-            name: true,
-            profile: {
-              select: {
-                displayName: true,
-                username: true,
+const getArticleData = cache(async (slug: string) => {
+  return await db.post.findUnique({
+    where: { slug },
+    include: {
+      author: {
+        include: { profile: true },
+      },
+      category: true,
+      tags: { include: { tag: true } },
+      likes: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  displayName: true,
+                  username: true,
+                  avatarUrl: true,
+                },
               },
             },
           },
         },
+        orderBy: { createdAt: "desc" },
       },
-    });
+      bookmarks: true,
+      comments: {
+        where: { parentId: null, status: "APPROVED" },
+        include: {
+          user: { include: { profile: true } },
+          likes: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  profile: { select: { displayName: true, username: true, avatarUrl: true } },
+                },
+              },
+            },
+          },
+          replies: {
+            where: { status: "APPROVED" },
+            include: {
+              user: { include: { profile: true } },
+              likes: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      image: true,
+                      profile: { select: { displayName: true, username: true, avatarUrl: true } },
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+});
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  try {
+    const { slug } = await params;
+    const post = await getArticleData(slug);
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
 
@@ -176,74 +223,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   let relatedPosts: any[] = [];
 
   try {
-    post = await db.post.findUnique({
-      where: { slug },
-      include: {
-        author: {
-          include: { profile: true },
-        },
-        category: true,
-        tags: { include: { tag: true } },
-        likes: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                profile: {
-                  select: {
-                    displayName: true,
-                    username: true,
-                    avatarUrl: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        },
-        bookmarks: true,
-        comments: {
-          where: { parentId: null, status: "APPROVED" },
-          include: {
-            user: { include: { profile: true } },
-            likes: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    name: true,
-                    image: true,
-                    profile: { select: { displayName: true, username: true, avatarUrl: true } },
-                  },
-                },
-              },
-            },
-            replies: {
-              where: { status: "APPROVED" },
-              include: {
-                user: { include: { profile: true } },
-                likes: {
-                  include: {
-                    user: {
-                      select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                        profile: { select: { displayName: true, username: true, avatarUrl: true } },
-                      },
-                    },
-                  },
-                },
-              },
-              orderBy: { createdAt: "asc" },
-            },
-          },
-          orderBy: { createdAt: "desc" },
-        },
-      },
-    });
+    post = await getArticleData(slug);
 
     if (post) {
       relatedPosts = await db.post.findMany({
@@ -254,6 +234,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         },
         take: 3,
         orderBy: { publishedAt: "desc" },
+        include: {
+          author: { include: { profile: true } },
+        },
       });
     }
   } catch (err) {

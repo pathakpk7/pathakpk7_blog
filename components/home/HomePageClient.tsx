@@ -95,8 +95,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3 mb-8">
@@ -124,8 +124,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
@@ -157,8 +157,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
@@ -190,8 +190,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
@@ -223,8 +223,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">
@@ -260,8 +260,8 @@ export function HomePageClient({
         <motion.section
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7, ease }}
+          viewport={{ once: true, margin: "120px" }}
+          transition={{ duration: 0.5, ease }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6"
         >
           <div className="flex items-baseline justify-between border-b border-border pb-3">

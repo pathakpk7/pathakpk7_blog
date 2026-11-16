@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { SearchModal } from "@/components/search/SearchModal";
+import { TopProgressBar } from "./TopProgressBar";
 import { usePathname } from "next/navigation";
 
 export function ClientLayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,9 @@ export function ClientLayoutWrapper({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Suspense fallback={null}>
+        <TopProgressBar />
+      </Suspense>
       <Header onOpenSearch={() => setSearchOpen(true)} />
       <div className="flex-1">{children}</div>
       <Footer />
