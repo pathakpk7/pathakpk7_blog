@@ -164,7 +164,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     return (
       <article className={cn("group relative p-8 sm:p-10 bg-amber-500/[0.04] dark:bg-amber-500/[0.07] border-l-2 border-amber-600/70 dark:border-amber-400/70 hover:bg-amber-500/[0.07] dark:hover:bg-amber-500/[0.11] transition-colors duration-200 flex flex-col justify-between space-y-6 rounded-sm shadow-xs cursor-pointer", className)}>
         {AdminOverlay}
-        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} />
+        <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} />
         <div className="space-y-4 relative z-10 pointer-events-none">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="text-[11px] font-semibold tracking-wide text-amber-700 dark:text-amber-400">
@@ -211,8 +211,8 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     return (
       <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center p-6 sm:p-8 bg-card border border-border/80 hover:border-border rounded-sm shadow-xs transition-all duration-200 cursor-pointer", colors.borderHover, className)}>
         {AdminOverlay}
-        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
-        <div className="lg:col-span-7 space-y-5 relative z-10">
+        <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
+        <div className="lg:col-span-7 space-y-5 relative z-10 pointer-events-none">
           <div className="flex items-center space-x-2 text-xs">
             <span className={cn("text-[11px] font-semibold tracking-wide", colors.label)}>
               {sectionLabel}
@@ -222,9 +222,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
 
           <h2 className={cn("font-serif-editorial text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground transition-colors leading-[1.14]", colors.hover)}>
-            <Link href={`/article/${post.slug}`} className="hover:underline focus:outline-none">
-              {post.title}
-            </Link>
+            {post.title}
           </h2>
 
           {post.subtitle && (
@@ -241,7 +239,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20 pointer-events-auto">
               {post.tags.slice(0, 3).map((t: any) => {
                 const tagName = t.tag?.name || t.name;
                 const tagSlug = t.tag?.slug || t.slug;
@@ -276,12 +274,8 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         </div>
 
         {hasValidCoverImage && (
-          <div className="lg:col-span-5 relative z-10">
-            <Link
-              href={`/article/${post.slug}`}
-              className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary flex items-center justify-center border border-border/50 block group-hover:opacity-95 transition-opacity"
-              aria-label={post.title}
-            >
+          <div className="lg:col-span-5 relative z-10 pointer-events-none">
+            <div className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary flex items-center justify-center border border-border/50 block group-hover:opacity-95 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.coverImageUrl!}
@@ -289,7 +283,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               />
-            </Link>
+            </div>
           </div>
         )}
       </article>
@@ -301,7 +295,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     return (
       <article className={cn("group relative p-6 sm:p-8 bg-amber-500/[0.03] dark:bg-amber-500/[0.06] border border-amber-500/20 hover:border-amber-500/40 rounded-sm transition-all duration-200 flex flex-col justify-between space-y-6 shadow-xs cursor-pointer", className)}>
         {AdminOverlay}
-        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} />
+        <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} />
         <div className="space-y-3 relative z-10 pointer-events-none">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 capitalize">
@@ -370,7 +364,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         "group relative flex items-start justify-between py-4 border-b border-border/80 transition-colors hover:bg-secondary/40 px-3 rounded-sm cursor-pointer",
         className
       )}>
-        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} />
+        <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} />
         <div className="space-y-1 pr-6 relative z-10 pointer-events-none">
           <div className="text-[11px] font-semibold">
             <span className={colors.label}>{sectionLabel}</span>
@@ -394,14 +388,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
     return (
       <article className={cn("group relative flex flex-col sm:flex-row gap-6 p-4 sm:p-5 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200 cursor-pointer", colors.borderHover, className)}>
         {AdminOverlay}
-        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
+        <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
         {hasValidCoverImage && (
-          <div className="w-full sm:w-52 shrink-0 relative z-10">
-            <Link
-              href={`/article/${post.slug}`}
-              className="relative aspect-[16/10] w-full block rounded-sm overflow-hidden bg-secondary border border-border/40 group-hover:opacity-95 transition-opacity"
-              aria-label={post.title}
-            >
+          <div className="w-full sm:w-52 shrink-0 relative z-10 pointer-events-none">
+            <div className="relative aspect-[16/10] w-full block rounded-sm overflow-hidden bg-secondary border border-border/40 group-hover:opacity-95 transition-opacity">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={post.coverImageUrl!}
@@ -409,10 +399,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
                 className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                 loading="lazy"
               />
-            </Link>
+            </div>
           </div>
         )}
-        <div className="flex flex-col justify-between space-y-3 flex-1 relative z-10">
+        <div className="flex flex-col justify-between space-y-3 flex-1 relative z-10 pointer-events-none">
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-xs">
               <span className={cn("text-[11px] font-semibold", colors.label)}>
@@ -422,9 +412,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               <span className="text-[11px] text-muted-foreground capitalize">{typeLabel}</span>
             </div>
             <h3 className={cn("font-serif-editorial text-xl font-semibold text-foreground transition-colors", colors.hover)}>
-              <Link href={`/article/${post.slug}`} className="hover:underline">
-                {post.title}
-              </Link>
+              {post.title}
             </h3>
             {post.excerpt && (
               <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
@@ -434,7 +422,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
             {/* Tags */}
             {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20">
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20 pointer-events-auto">
                 {post.tags.slice(0, 2).map((t: any) => {
                   const tagName = t.tag?.name || t.name;
                   const tagSlug = t.tag?.slug || t.slug;
@@ -472,14 +460,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   return (
     <article className={cn("group relative flex flex-col space-y-4 p-5 sm:p-6 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer", colors.borderHover, className)}>
       {AdminOverlay}
-      <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
+      <Link href={`/article/${post.slug}`} prefetch={true} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
       {hasValidCoverImage && (
-        <div className="relative z-10">
-          <Link
-            href={`/article/${post.slug}`}
-            className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary border border-border/40 block group-hover:opacity-95 transition-opacity"
-            aria-label={post.title}
-          >
+        <div className="relative z-10 pointer-events-none">
+          <div className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary border border-border/40 block group-hover:opacity-95 transition-opacity">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={post.coverImageUrl!}
@@ -487,10 +471,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
               className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               loading="lazy"
             />
-          </Link>
+          </div>
         </div>
       )}
-      <div className="space-y-2 flex-1 relative z-10">
+      <div className="space-y-2 flex-1 relative z-10 pointer-events-none">
         <div className="flex items-center space-x-2 text-xs">
           <span className={cn("text-[11px] font-semibold", colors.label)}>
             {sectionLabel}
@@ -499,9 +483,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           <span className="text-[11px] text-muted-foreground capitalize">{typeLabel}</span>
         </div>
         <h3 className={cn("font-serif-editorial text-xl sm:text-2xl font-semibold text-foreground transition-colors leading-snug", colors.hover)}>
-          <Link href={`/article/${post.slug}`} className="hover:underline">
-            {post.title}
-          </Link>
+          {post.title}
         </h3>
         {post.excerpt && (
           <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
@@ -511,7 +493,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
         {/* Tags */}
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20">
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 relative z-20 pointer-events-auto">
             {post.tags.slice(0, 2).map((t: any) => {
               const tagName = t.tag?.name || t.name;
               const tagSlug = t.tag?.slug || t.slug;
@@ -533,7 +515,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60 relative z-10">
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60 relative z-10 pointer-events-none">
         <span className="font-medium text-foreground">{authorName}</span>
         <span>{post.readingTime} min read</span>
       </div>

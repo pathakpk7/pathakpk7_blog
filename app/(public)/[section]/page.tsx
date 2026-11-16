@@ -3,25 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
-import { getCachedSectionData } from "@/lib/db/cached-queries";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { Calendar, ArrowLeft, Settings, ExternalLink } from "lucide-react";
 import { formatDate, getSafeAvatarUrl, getBaseUrl, cn } from "@/lib/utils";
-import { headers } from "next/headers";
 
-export const revalidate = 120;
-
-export async function generateStaticParams() {
-  return [
-    { section: "technology" },
-    { section: "science" },
-    { section: "coding" },
-    { section: "ideas" },
-    { section: "creative" },
-    { section: "notes" },
-  ];
-}
+export const revalidate = 60;
 
 interface SectionPageProps {
   params: Promise<{ section: string }>;
@@ -57,13 +44,7 @@ const VALID_SECTIONS: Record<string, { title: string; subtitle: string }> = {
 
 export async function generateMetadata({ params }: SectionPageProps) {
   const { section } = await params;
-  let baseUrl = getBaseUrl();
-  try {
-    const headerList = await headers();
-    const host = headerList.get("x-forwarded-host") || headerList.get("host");
-    const proto = headerList.get("x-forwarded-proto") || "https";
-    if (host) baseUrl = `${proto}://${host}`;
-  } catch {}
+  const baseUrl = getBaseUrl();
 
   const config = VALID_SECTIONS[section];
 
@@ -161,9 +142,47 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
   }
 
   if (sectionConfig) {
-    const { posts, allSectionPostTypes } = await getCachedSectionData(section, typeFilter);
-
     const isCreative = section === "creative";
+    const whereClause: any = {
+      section,
+      status: "PUBLISHED",
+    };
+    if (typeFilter && typeFilter !== "ALL") {
+      whereClause.contentType = typeFilter;
+    }
+
+    const [posts, allSectionPosts] = await Promise.all([
+      db.post.findMany({
+        where: whereClause,
+        orderBy: { publishedAt: "desc" },
+        include: {
+          author: {
+            include: {
+              profile: true,
+            },
+          },
+          tags: {
+            include: {
+              tag: true,
+            },
+          },
+        },
+      }),
+      db.post.findMany({
+        where: {
+          section,
+          status: "PUBLISHED",
+        },
+        select: {
+          contentType: true,
+        },
+      }),
+    ]);
+
+    const allSectionPostTypes = Array.from(
+      new Set(allSectionPosts.map((p) => p.contentType).filter(Boolean))
+    );
+
     const defaultTypes = isCreative
       ? ["POEM", "SHAYARI", "QUOTE", "MICROFICTION", "SHORT_STORY", "SHORT_PROSE"]
       : section === "ideas"

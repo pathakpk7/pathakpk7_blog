@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { cache } from "react";
 import { db } from "@/lib/db/prisma";
-import { getCachedArticleData, getCachedRelatedPosts } from "@/lib/db/cached-queries";
 import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn, getBaseUrl } from "@/lib/utils";
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
@@ -17,6 +17,123 @@ export const revalidate = 300;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
+}
+
+const getArticle = cache(async (slug: string) => {
+  return await db.post.findUnique({
+    where: { slug },
+    include: {
+      author: {
+        include: {
+          profile: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+      likes: {
+        select: {
+          userId: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              profile: {
+                select: {
+                  displayName: true,
+                  username: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      bookmarks: {
+        select: {
+          userId: true,
+        },
+      },
+      comments: {
+        where: {
+          status: "APPROVED",
+          parentId: null,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          likes: {
+            select: {
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  profile: {
+                    select: {
+                      displayName: true,
+                      username: true,
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          replies: {
+            where: {
+              status: "APPROVED",
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+            include: {
+              likes: {
+                select: {
+                  userId: true,
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      image: true,
+                      profile: {
+                        select: {
+                          displayName: true,
+                          username: true,
+                          avatarUrl: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+});
+
+async function getRelatedPosts(section: string, currentPostId: string) {
+  return await db.post.findMany({
+    where: {
+      section,
+      status: "PUBLISHED",
+      id: { not: currentPostId },
+    },
+    take: 3,
+    orderBy: { publishedAt: "desc" },
+    include: {
+      author: { include: { profile: true } },
+      tags: { include: { tag: true } },
+    },
+  });
 }
 
 export async function generateStaticParams() {
@@ -76,7 +193,7 @@ async function renderArticleContent(content: string, isCreative: boolean, isQuot
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const post = await getCachedArticleData(slug);
+    const post = await getArticle(slug);
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
 
@@ -146,13 +263,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const post = await getCachedArticleData(slug);
+  const post = await getArticle(slug);
 
   if (!post || post.status !== "PUBLISHED") {
     notFound();
   }
 
-  const relatedPosts = await getCachedRelatedPosts(post.section, post.id);
+  const relatedPosts = await getRelatedPosts(post.section, post.id);
 
   const formatCommentLikedUsers = (likesList: any[]) =>
     (likesList || []).map((l: any) => ({
