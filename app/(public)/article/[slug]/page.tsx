@@ -2,23 +2,35 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
-import { cache } from "react";
 import { db } from "@/lib/db/prisma";
-import { auth } from "@/auth";
+import { getCachedArticleData, getCachedRelatedPosts } from "@/lib/db/cached-queries";
 import { formatDate, calculateReadingTime, getSafeAvatarUrl, cn, getBaseUrl } from "@/lib/utils";
 import { ArticleActions } from "@/components/article/ArticleActions";
 import { CommentSection } from "@/components/article/CommentSection";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { Clock, Calendar, ArrowLeft, Edit3 } from "lucide-react";
+import { ArticleAdminControls } from "@/components/article/ArticleAdminControls";
+import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
-import { headers } from "next/headers";
-import { DeletePostButton } from "@/components/article/DeletePostButton";
 
-export const revalidate = 60;
+export const revalidate = 300;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  try {
+    const posts = await db.post.findMany({
+      where: { status: "PUBLISHED" },
+      select: { slug: true },
+      take: 30,
+      orderBy: { publishedAt: "desc" },
+    });
+    return posts.map((post) => ({ slug: post.slug }));
+  } catch {
+    return [];
+  }
 }
 
 async function renderArticleContent(content: string, isCreative: boolean, isQuote: boolean = false) {
@@ -61,94 +73,14 @@ async function renderArticleContent(content: string, isCreative: boolean, isQuot
   }
 }
 
-const getArticleData = cache(async (slug: string) => {
-  return await db.post.findUnique({
-    where: { slug },
-    include: {
-      author: {
-        include: { profile: true },
-      },
-      category: true,
-      tags: { include: { tag: true } },
-      likes: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: {
-                select: {
-                  displayName: true,
-                  username: true,
-                  avatarUrl: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      },
-      bookmarks: true,
-      comments: {
-        where: { parentId: null, status: "APPROVED" },
-        include: {
-          user: { include: { profile: true } },
-          likes: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  profile: { select: { displayName: true, username: true, avatarUrl: true } },
-                },
-              },
-            },
-          },
-          replies: {
-            where: { status: "APPROVED" },
-            include: {
-              user: { include: { profile: true } },
-              likes: {
-                include: {
-                  user: {
-                    select: {
-                      id: true,
-                      name: true,
-                      image: true,
-                      profile: { select: { displayName: true, username: true, avatarUrl: true } },
-                    },
-                  },
-                },
-              },
-            },
-            orderBy: { createdAt: "asc" },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      },
-    },
-  });
-});
-
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const post = await getArticleData(slug);
+    const post = await getCachedArticleData(slug);
 
     if (!post) return { title: "Article Not Found | ThePathak.tech" };
 
-    let baseUrl = getBaseUrl();
-    try {
-      const headerList = await headers();
-      const host = headerList.get("x-forwarded-host") || headerList.get("host");
-      const proto = headerList.get("x-forwarded-proto") || "https";
-      if (host) {
-        baseUrl = `${proto}://${host}`;
-      }
-    } catch {}
-
+    const baseUrl = getBaseUrl();
     const isQuote = post.contentType === "QUOTE";
     const rawTitle = post.seoTitle || (isQuote ? `“${post.title}”` : post.title);
 
@@ -214,48 +146,13 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const session = await auth();
-  const userId = session?.user?.id;
-  const userEmail = session?.user?.email?.toLowerCase();
-  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com";
-
-  let post: any = null;
-  let relatedPosts: any[] = [];
-
-  try {
-    post = await getArticleData(slug);
-
-    if (post) {
-      relatedPosts = await db.post.findMany({
-        where: {
-          status: "PUBLISHED",
-          section: post.section,
-          NOT: { id: post.id },
-        },
-        take: 3,
-        orderBy: { publishedAt: "desc" },
-        include: {
-          author: { include: { profile: true } },
-        },
-      });
-    }
-  } catch (err) {
-    console.warn("ArticlePage DB query fallback:", err);
-  }
+  const post = await getCachedArticleData(slug);
 
   if (!post || post.status !== "PUBLISHED") {
     notFound();
   }
 
-  const isLiked = userId ? post.likes?.some((l: any) => l.userId === userId) : false;
-  const isBookmarked = userId ? (post.bookmarks as any[])?.some((b: any) => b.userId === userId) : false;
-  const bookmarkCount = (post.bookmarks as any[])?.length || 0;
-  const likedUsers = (post.likes || []).map((l: any) => ({
-    id: l.user?.id,
-    name: l.user?.profile?.displayName || l.user?.name || "Reader",
-    username: l.user?.profile?.username || (l.user?.name ? l.user.name.toLowerCase().replace(/\s+/g, "_") : "reader"),
-    avatarUrl: l.user?.profile?.avatarUrl || l.user?.image,
-  }));
+  const relatedPosts = await getCachedRelatedPosts(post.section, post.id);
 
   const formatCommentLikedUsers = (likesList: any[]) =>
     (likesList || []).map((l: any) => ({
@@ -267,12 +164,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const formattedComments = (post.comments || []).map((c: any) => ({
     ...c,
-    isLiked: userId ? (c.likes || []).some((l: any) => l.userId === userId) : false,
+    isLiked: false,
     likesCount: c.likes?.length || 0,
     likedUsers: formatCommentLikedUsers(c.likes),
     replies: (c.replies || []).map((r: any) => ({
       ...r,
-      isLiked: userId ? (r.likes || []).some((l: any) => l.userId === userId) : false,
+      isLiked: false,
       likesCount: r.likes?.length || 0,
       likedUsers: formatCommentLikedUsers(r.likes),
     })),
@@ -282,6 +179,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     (acc: number, c: any) => acc + 1 + (c.replies?.length || 0),
     0
   );
+
+  const likedUsers = (post.likes || []).map((l: any) => ({
+    id: l.user?.id,
+    name: l.user?.profile?.displayName || l.user?.name || "Reader",
+    username: l.user?.profile?.username || (l.user?.name ? l.user.name.toLowerCase().replace(/\s+/g, "_") : "reader"),
+    avatarUrl: l.user?.profile?.avatarUrl || l.user?.image,
+  }));
 
   const authorName = post.author?.profile?.displayName || post.author?.name || "The Pathak";
   const authorBio = post.author?.profile?.bio || "Lead Software Architect, Writer & Thinker";
@@ -303,23 +207,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <span className="capitalize">Back to {post.section}</span>
         </Link>
 
-        {isAdmin && (
-          <div className="flex items-center space-x-2">
-            <Link
-              href={`/studio/posts/${post.id}/edit`}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-sm bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium transition-colors"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Dispatch</span>
-            </Link>
-            <DeletePostButton
-              postId={post.id}
-              postTitle={post.title}
-              redirectTo={`/${post.section}`}
-              variant="button"
-            />
-          </div>
-        )}
+        {/* Client-side dynamic admin controls */}
+        <ArticleAdminControls
+          postId={post.id}
+          postTitle={post.title}
+          section={post.section}
+        />
       </div>
 
       <article className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
@@ -430,69 +323,61 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         )}
 
         {/* Author Byline Box */}
-        <div className="p-6 sm:p-8 bg-secondary/40 rounded-sm max-w-3xl mx-auto flex items-start space-x-5">
-          <Link href={`/${post.author?.profile?.username || "pathak"}`} className="shrink-0">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted border border-border">
-              <Image
-                src={authorAvatar || `https://api.dicebear.com/9.x/adventurer/svg?seed=${post.author?.profile?.username || "pathak"}`}
-                alt={authorName}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          </Link>
+        <div className="p-6 sm:p-8 bg-secondary/30 rounded-sm border border-border max-w-3xl mx-auto flex items-start space-x-4">
+          <div className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 border border-border">
+            <Image
+              src={getSafeAvatarUrl(authorAvatar, post.author?.profile?.username || "pathak")}
+              alt={authorName}
+              fill
+              className="object-cover"
+            />
+          </div>
           <div className="space-y-1">
-            <Link
-              href={`/${post.author?.profile?.username || "pathak"}`}
-              className="font-medium text-foreground text-sm hover:underline"
-            >
+            <h3 className="font-serif-editorial text-lg font-semibold text-foreground">
               {authorName}
-            </Link>
-            <p className="text-xs text-muted-foreground leading-relaxed">{authorBio}</p>
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {authorBio}
+            </p>
           </div>
         </div>
 
-        {/* Floating Action Bar */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-          <ArticleActions
+        {/* Related Dispatches */}
+        {relatedPosts.length > 0 && (
+          <div className="pt-12 border-t border-border space-y-6 max-w-3xl mx-auto">
+            <h3 className="font-serif-editorial text-xl font-semibold text-foreground">
+              Related Dispatches
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {relatedPosts.map((related: any) => (
+                <ArticleCard key={related.id} post={related} variant="compact" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Comments Section */}
+        <div className="max-w-3xl mx-auto pt-8 border-t border-border">
+          <CommentSection
             postId={post.id}
-            initialLiked={isLiked}
-            initialLikeCount={post.likes?.length || 0}
-            initialBookmarked={isBookmarked}
-            initialBookmarkCount={bookmarkCount}
-            commentCount={totalCommentsCount}
-            likedUsers={likedUsers}
-            slug={post.slug}
-            title={post.title}
-            isLoggedIn={!!userId}
-            isAdmin={isAdmin}
-            section={post.section}
+            comments={formattedComments}
+            isLoggedIn={false}
           />
         </div>
 
-        {/* Comments Section */}
-        <CommentSection
+        {/* Reader Floating Dock */}
+        <ArticleActions
           postId={post.id}
-          comments={formattedComments}
-          isLoggedIn={!!userId}
-          currentUserId={userId}
-          isAdmin={isAdmin}
+          initialLiked={false}
+          initialLikeCount={post.likes?.length || 0}
+          initialBookmarked={false}
+          initialBookmarkCount={post.bookmarks?.length || 0}
+          commentCount={totalCommentsCount}
+          likedUsers={likedUsers}
+          slug={post.slug}
+          title={post.title}
+          section={post.section}
         />
-
-        {/* Related Articles */}
-        {relatedPosts.length > 0 && (
-          <section className="pt-16 border-t border-border space-y-8 max-w-4xl mx-auto">
-            <h3 className="font-serif-editorial text-2xl font-semibold text-foreground">
-              Further Reading
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {relatedPosts.map((rel) => (
-                <ArticleCard key={rel.id} post={rel as any} variant="standard" />
-              ))}
-            </div>
-          </section>
-        )}
       </article>
     </main>
   );

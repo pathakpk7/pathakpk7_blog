@@ -51,10 +51,18 @@ export function TopProgressBar() {
         // Advance progress smoothly while waiting
         const t1 = setTimeout(() => setProgress(55), 150);
         const t2 = setTimeout(() => setProgress(80), 400);
+        const safety = setTimeout(() => {
+          setProgress(100);
+          setTimeout(() => {
+            setLoading(false);
+            setProgress(0);
+          }, 200);
+        }, 3500);
 
         return () => {
           clearTimeout(t1);
           clearTimeout(t2);
+          clearTimeout(safety);
         };
       }
     };

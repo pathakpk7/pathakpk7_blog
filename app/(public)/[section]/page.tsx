@@ -3,13 +3,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db/prisma";
+import { getCachedSectionData } from "@/lib/db/cached-queries";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ProfileTabs } from "@/components/profile/ProfileTabs";
 import { Calendar, ArrowLeft, Settings, ExternalLink } from "lucide-react";
 import { formatDate, getSafeAvatarUrl, getBaseUrl, cn } from "@/lib/utils";
 import { headers } from "next/headers";
 
-export const revalidate = 60;
+export const revalidate = 120;
+
+export async function generateStaticParams() {
+  return [
+    { section: "technology" },
+    { section: "science" },
+    { section: "coding" },
+    { section: "ideas" },
+    { section: "creative" },
+    { section: "notes" },
+  ];
+}
 
 interface SectionPageProps {
   params: Promise<{ section: string }>;
@@ -149,49 +161,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
   }
 
   if (sectionConfig) {
-    let posts: any[] = [];
-    let allSectionPostTypes: string[] = [];
-
-    try {
-      const whereClause: any = {
-        status: "PUBLISHED",
-        section: section,
-      };
-
-      if (typeFilter && typeFilter !== "ALL") {
-        whereClause.contentType = typeFilter;
-        // Run both queries in parallel only when filtering
-        const [filteredPosts, allPosts] = await Promise.all([
-          db.post.findMany({
-            where: whereClause,
-            include: {
-              author: { include: { profile: true } },
-              tags: { include: { tag: true } },
-            },
-            orderBy: { publishedAt: "desc" },
-          }),
-          db.post.findMany({
-            where: { status: "PUBLISHED", section },
-            select: { contentType: true },
-          }),
-        ]);
-        posts = filteredPosts;
-        allSectionPostTypes = Array.from(new Set(allPosts.map((p) => p.contentType)));
-      } else {
-        // Single fast query when viewing all
-        posts = await db.post.findMany({
-          where: whereClause,
-          include: {
-            author: { include: { profile: true } },
-            tags: { include: { tag: true } },
-          },
-          orderBy: { publishedAt: "desc" },
-        });
-        allSectionPostTypes = Array.from(new Set(posts.map((p) => p.contentType)));
-      }
-    } catch (err) {
-      console.warn("SectionPage DB query fallback:", err);
-    }
+    const { posts, allSectionPostTypes } = await getCachedSectionData(section, typeFilter);
 
     const isCreative = section === "creative";
     const defaultTypes = isCreative

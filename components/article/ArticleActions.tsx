@@ -73,7 +73,10 @@ export function ArticleActions({
     setBookmarked(initialBookmarked);
     setBookmarkCount(initialBookmarkCount);
     setLikedUsers(initialLikedUsers);
-  }, [initialLiked, initialLikeCount, initialBookmarked, initialBookmarkCount, initialLikedUsers]);
+    if (currentUserId && initialLikedUsers.some((u) => u.id === currentUserId)) {
+      setLiked(true);
+    }
+  }, [initialLiked, initialLikeCount, initialBookmarked, initialBookmarkCount, initialLikedUsers, currentUserId]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

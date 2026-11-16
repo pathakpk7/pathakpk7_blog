@@ -209,9 +209,10 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   // Featured Lead Story
   if (variant === "featured") {
     return (
-      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center p-6 sm:p-8 bg-card border border-border/80 hover:border-border rounded-sm shadow-xs transition-all duration-200", colors.borderHover, className)}>
+      <article className={cn("group relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center p-6 sm:p-8 bg-card border border-border/80 hover:border-border rounded-sm shadow-xs transition-all duration-200 cursor-pointer", colors.borderHover, className)}>
         {AdminOverlay}
-        <div className="lg:col-span-7 space-y-5">
+        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
+        <div className="lg:col-span-7 space-y-5 relative z-10">
           <div className="flex items-center space-x-2 text-xs">
             <span className={cn("text-[11px] font-semibold tracking-wide", colors.label)}>
               {sectionLabel}
@@ -275,7 +276,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
         </div>
 
         {hasValidCoverImage && (
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 relative z-10">
             <Link
               href={`/article/${post.slug}`}
               className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary flex items-center justify-center border border-border/50 block group-hover:opacity-95 transition-opacity"
@@ -391,10 +392,11 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
   // Horizontal variant
   if (variant === "horizontal") {
     return (
-      <article className={cn("group relative flex flex-col sm:flex-row gap-6 p-4 sm:p-5 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200", colors.borderHover, className)}>
+      <article className={cn("group relative flex flex-col sm:flex-row gap-6 p-4 sm:p-5 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200 cursor-pointer", colors.borderHover, className)}>
         {AdminOverlay}
+        <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
         {hasValidCoverImage && (
-          <div className="w-full sm:w-52 shrink-0">
+          <div className="w-full sm:w-52 shrink-0 relative z-10">
             <Link
               href={`/article/${post.slug}`}
               className="relative aspect-[16/10] w-full block rounded-sm overflow-hidden bg-secondary border border-border/40 group-hover:opacity-95 transition-opacity"
@@ -410,7 +412,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
             </Link>
           </div>
         )}
-        <div className="flex flex-col justify-between space-y-3 flex-1">
+        <div className="flex flex-col justify-between space-y-3 flex-1 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-xs">
               <span className={cn("text-[11px] font-semibold", colors.label)}>
@@ -468,24 +470,27 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
 
   // Standard vertical card
   return (
-    <article className={cn("group relative flex flex-col space-y-4 p-5 sm:p-6 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md", colors.borderHover, className)}>
+    <article className={cn("group relative flex flex-col space-y-4 p-5 sm:p-6 bg-card border border-border/70 hover:border-border rounded-sm shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md cursor-pointer", colors.borderHover, className)}>
       {AdminOverlay}
+      <Link href={`/article/${post.slug}`} className="absolute inset-0 z-0" aria-label={post.title} tabIndex={-1} />
       {hasValidCoverImage && (
-        <Link
-          href={`/article/${post.slug}`}
-          className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary border border-border/40 block group-hover:opacity-95 transition-opacity"
-          aria-label={post.title}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.coverImageUrl!}
-            alt={post.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-            loading="lazy"
-          />
-        </Link>
+        <div className="relative z-10">
+          <Link
+            href={`/article/${post.slug}`}
+            className="relative aspect-[16/10] w-full rounded-sm overflow-hidden bg-secondary border border-border/40 block group-hover:opacity-95 transition-opacity"
+            aria-label={post.title}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={post.coverImageUrl!}
+              alt={post.title}
+              className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+              loading="lazy"
+            />
+          </Link>
+        </div>
       )}
-      <div className="space-y-2 flex-1">
+      <div className="space-y-2 flex-1 relative z-10">
         <div className="flex items-center space-x-2 text-xs">
           <span className={cn("text-[11px] font-semibold", colors.label)}>
             {sectionLabel}
@@ -528,7 +533,7 @@ export function ArticleCard({ post, variant = "standard", className }: ArticleCa
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60">
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/60 relative z-10">
         <span className="font-medium text-foreground">{authorName}</span>
         <span>{post.readingTime} min read</span>
       </div>

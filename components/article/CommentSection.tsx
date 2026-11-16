@@ -8,6 +8,7 @@ import { toggleCommentLike } from "@/app/actions/comment-like";
 import { formatDate, getSafeAvatarUrl } from "@/lib/utils";
 import { Send, MessageSquare, CornerDownRight, AtSign, Edit3, Trash2, Check, X, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export interface CommentItem {
   id: string;
@@ -52,11 +53,16 @@ interface ReplyTarget {
 export function CommentSection({
   postId,
   comments: initialComments,
-  isLoggedIn,
-  currentUserId,
-  isAdmin = false,
+  isLoggedIn: initialIsLoggedIn = false,
+  currentUserId: initialCurrentUserId,
+  isAdmin: initialIsAdmin = false,
 }: CommentSectionProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email?.toLowerCase();
+  const isLoggedIn = !!session?.user || initialIsLoggedIn;
+  const currentUserId = session?.user?.id || initialCurrentUserId;
+  const isAdmin = (session?.user as any)?.role === "ADMIN" || userEmail === "prasoon7pathak@gmail.com" || initialIsAdmin;
   const [commentList, setCommentList] = useState<CommentItem[]>(initialComments);
   const [content, setContent] = useState("");
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
