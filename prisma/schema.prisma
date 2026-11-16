@@ -197,7 +197,8 @@ model Post {
 
   @@index([slug])
   @@index([status, publishedAt])
-  @@index([section])
+  @@index([section, status, publishedAt(sort: Desc)])
+  @@index([section, contentType, status, publishedAt(sort: Desc)])
   @@map("posts")
 }
 
