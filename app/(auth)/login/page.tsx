@@ -8,7 +8,7 @@ import { EnchantedDesk } from "@/components/enchanted/EnchantedDesk";
 import { Parchment } from "@/components/enchanted/Parchment";
 import { FeatherQuill } from "@/components/enchanted/FeatherQuill";
 import { Inkpot } from "@/components/enchanted/Inkpot";
-import { InkButton } from "@/components/enchanted/InkButton";
+import { WaxSealButton } from "@/components/enchanted/WaxSealButton";
 import { HandwrittenInput } from "@/components/enchanted/HandwrittenInput";
 import { journalAudio } from "@/lib/audio/journalAudio";
 
@@ -121,32 +121,31 @@ function LoginForm() {
           )}
         </div>
 
-        {/* Unseal Journal Button */}
-        <div className="text-center pt-4">
-          <InkButton
+        {/* Unseal Journal Action (Wax Seal) */}
+        <div className="text-center pt-6 flex justify-center">
+          <WaxSealButton
             type="submit"
             loading={loading}
             disabled={loading || !email.trim() || !password}
-            className="w-full sm:w-auto"
           >
-            {loading ? "Verifying the Seal..." : "UNSEAL MY JOURNAL"}
-          </InkButton>
+            UNSEAL MY JOURNAL
+          </WaxSealButton>
         </div>
       </form>
 
       {/* Navigation Footer */}
-      <div className="pt-6 border-t border-[#8C6745]/20 flex flex-col sm:flex-row items-center justify-between text-xs font-serif text-[#49321F] gap-3">
+      <div className="pt-6 border-t border-[#8C6745]/20 flex flex-col sm:flex-row items-center justify-between text-xs font-serif text-[#5A3A1E] gap-4">
         <Link
           href="/signup"
-          className="hover:text-[#24190F] underline decoration-[#8C6745]/40 hover:decoration-[#24190F] transition-all"
+          className="hover:text-[#1A1209] italic transition-all"
         >
-          Don&apos;t have an account? Create one.
+          ~ Don&apos;t have an account? Create one. ~
         </Link>
         <Link
           href="/"
-          className="text-[#8C6745] hover:text-[#24190F] transition-colors"
+          className="text-[#7A5230] hover:text-[#1A1209] italic transition-colors"
         >
-          ← Back to the Journal
+          ← Return to the Desk
         </Link>
       </div>
 

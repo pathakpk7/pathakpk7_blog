@@ -317,19 +317,39 @@ pre code {
     0 10px 25px -5px rgba(36, 25, 15, 0.4);
 }
 
-/* Wood desk texture */
+/* Wood desk texture: Antique oiled walnut planks with realistic grain and joint lines */
 .desk-surface {
-  background-color: #17110D;
+  background-color: #120c08;
   background-image:
-    radial-gradient(ellipse at 20% 15%, rgba(185, 154, 99, 0.22) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 85%, rgba(73, 50, 31, 0.3) 0%, transparent 50%),
-    linear-gradient(135deg, #1c1510 0%, #17110d 50%, #100b08 100%);
+    /* Plank joint lines */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(7, 4, 2, 0.95) 0px,
+      rgba(7, 4, 2, 0.95) 3px,
+      rgba(55, 36, 22, 0.35) 4px,
+      transparent 5px,
+      transparent 175px
+    ),
+    /* Fine longitudinal wood grain fibers */
+    repeating-linear-gradient(
+      90deg,
+      rgba(45, 28, 16, 0.12) 0px,
+      rgba(45, 28, 16, 0.12) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    /* Warm directional candlelight reflection */
+    radial-gradient(ellipse at 85% 12%, rgba(245, 158, 11, 0.28) 0%, transparent 50%),
+    /* Ambient desk center warmth */
+    radial-gradient(ellipse at 50% 50%, rgba(185, 154, 99, 0.14) 0%, transparent 65%),
+    /* Deep mahogany/walnut wood base */
+    linear-gradient(135deg, #1c130b 0%, #130c07 50%, #0a0604 100%);
 }
 
-/* Ink bleed text styling */
+/* Genuine iron-gall ink bleed text styling */
 .text-ink {
-  color: #24190F;
-  text-shadow: 0 0 0.5px rgba(36, 25, 15, 0.6);
+  color: #1A1209;
+  text-shadow: 0 0 0.5px rgba(26, 18, 9, 0.7);
 }
 
 /* Respect user's motion preferences */
