@@ -25,7 +25,7 @@ type Stage =
   | "unfolding"; // page transition unfolding to blog
 
 export function LandingJournalExperience({ onEnterJournal }: LandingJournalExperienceProps) {
-  const [stage, setStage] = useState<Stage>("checking");
+  const [stage, setStage] = useState<Stage>("intro");
   const [visitorName, setVisitorName] = useState("");
   const [inputName, setInputName] = useState("");
   const [isRippling, setIsRippling] = useState(false);
@@ -39,10 +39,9 @@ export function LandingJournalExperience({ onEnterJournal }: LandingJournalExper
       if (savedName && savedName.trim()) {
         setVisitorName(savedName.trim());
         setStage("returning");
-      } else {
-        setStage("intro");
       }
-    } catch {
+    } catch {}
+  }, []);
       setStage("intro");
     }
   }, []);
