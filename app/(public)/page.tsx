@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/prisma";
 import { HomePageClient } from "@/components/home/HomePageClient";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   let featuredPosts: any[] = [];

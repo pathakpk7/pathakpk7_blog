@@ -56,13 +56,10 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   };
 
-  // If navigating to non-home page, journal is naturally considered open
-  const effectiveIsOpen = pathname !== "/" || isJournalOpen;
-
   return (
     <JournalContext.Provider
       value={{
-        isJournalOpen: effectiveIsOpen,
+        isJournalOpen,
         openJournal,
         closeJournal,
         visitorName,

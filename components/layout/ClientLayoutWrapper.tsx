@@ -14,7 +14,7 @@ function InnerLayoutWrapper({ children }: { children: React.ReactNode }) {
 
   const isStudio = pathname.startsWith("/studio");
   const isAuth = pathname === "/login" || pathname === "/signup";
-  const isLandingDesk = pathname === "/" && !isJournalOpen;
+  const isLandingDesk = (pathname === "/" || pathname === "") && !isJournalOpen;
 
   // For Studio, Login/Signup, or the initial full-screen Enchanted Desk, don't show the standard tech navbar/footer
   if (isStudio || isAuth || isLandingDesk) {
