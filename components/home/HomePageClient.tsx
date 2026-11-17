@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArticleCard } from "@/components/article/ArticleCard";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Feather } from "lucide-react";
+import { useJournal } from "@/components/enchanted/JournalContext";
+import { LandingJournalExperience } from "@/components/enchanted/LandingJournalExperience";
 
 interface HomePageClientProps {
   featuredPosts: any[];
@@ -24,8 +26,14 @@ export function HomePageClient({
   creativePosts,
   notesPosts,
 }: HomePageClientProps) {
+  const { isJournalOpen, openJournal, closeJournal, visitorName } = useJournal();
+
+  if (!isJournalOpen) {
+    return <LandingJournalExperience onEnterJournal={() => openJournal()} />;
+  }
+
   return (
-    <div className="space-y-28 pb-24 relative">
+    <div className="space-y-28 pb-24 relative animate-fadeIn">
       {/* Editorial Hero Section */}
       <section className="relative pt-16 sm:pt-24 pb-12 overflow-hidden">
         {/* Subtle Ambient Color Glow */}
@@ -37,13 +45,29 @@ export function HomePageClient({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease }}
-              className="flex items-center space-x-3 text-xs tracking-wider text-muted-foreground"
+              className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs tracking-wider text-muted-foreground"
             >
               <span className="px-2.5 py-0.5 text-[11px] font-mono font-medium rounded-xs bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20">
                 Volume IV
               </span>
               <span className="w-1 h-1 rounded-full bg-muted-foreground/60" />
               <span>Independent Technical & Cultural Review</span>
+              {visitorName && (
+                <>
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground/60" />
+                  <span className="font-serif italic text-amber-700 dark:text-amber-400">
+                    Inscribed for {visitorName}
+                  </span>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={() => closeJournal()}
+                className="ml-auto inline-flex items-center space-x-1 text-[11px] font-serif text-amber-700/80 dark:text-amber-400/80 hover:underline cursor-pointer"
+              >
+                <Feather className="w-3 h-3" />
+                <span>Return to Desk</span>
+              </button>
             </motion.div>
 
             <motion.h1

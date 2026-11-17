@@ -112,6 +112,25 @@
   letter-spacing: -0.01em;
 }
 
+/* Enchanted Journal Fonts */
+.font-manuscript {
+  font-family: "IM Fell English", Georgia, "Times New Roman", serif;
+  letter-spacing: 0.01em;
+}
+
+.font-cormorant {
+  font-family: "Cormorant Garamond", Garamond, Georgia, serif;
+}
+
+.font-handwritten {
+  font-family: "Pinyon Script", "Brush Script MT", cursive, serif;
+  letter-spacing: 0.02em;
+}
+
+.font-eb-garamond {
+  font-family: "EB Garamond", Garamond, Georgia, serif;
+}
+
 .font-mono-code {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -245,6 +264,72 @@ pre code {
 :focus-visible {
   outline: 2px solid var(--editorial-accent);
   outline-offset: 2px;
+}
+
+/* Enchanted Journal Animations */
+@keyframes candleFlicker {
+  0%, 100% {
+    opacity: 0.85;
+    filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.45));
+  }
+  25% {
+    opacity: 0.95;
+    filter: drop-shadow(0 0 35px rgba(245, 158, 11, 0.55));
+  }
+  50% {
+    opacity: 0.78;
+    filter: drop-shadow(0 0 22px rgba(245, 158, 11, 0.4));
+  }
+  75% {
+    opacity: 0.92;
+    filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.5));
+  }
+}
+
+.animate-candle {
+  animation: candleFlicker 5s ease-in-out infinite;
+}
+
+/* Realistic aged parchment texturing */
+.parchment-texture {
+  background-color: #E8D5AD;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15), rgba(73, 50, 31, 0.12)),
+    radial-gradient(circle at 10% 20%, rgba(140, 103, 69, 0.08), transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(36, 25, 15, 0.1), transparent 50%);
+  box-shadow:
+    inset 0 0 45px rgba(73, 50, 31, 0.28),
+    inset 0 0 10px rgba(73, 50, 31, 0.2),
+    0 25px 60px -15px rgba(23, 17, 13, 0.75),
+    0 10px 25px -5px rgba(36, 25, 15, 0.45);
+}
+
+.parchment-texture-fresh {
+  background-color: #EDE0BE;
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2), rgba(73, 50, 31, 0.08)),
+    radial-gradient(circle at 85% 15%, rgba(140, 103, 69, 0.06), transparent 35%),
+    radial-gradient(circle at 15% 85%, rgba(36, 25, 15, 0.08), transparent 40%);
+  box-shadow:
+    inset 0 0 35px rgba(73, 50, 31, 0.2),
+    inset 0 0 8px rgba(73, 50, 31, 0.15),
+    0 25px 60px -15px rgba(23, 17, 13, 0.7),
+    0 10px 25px -5px rgba(36, 25, 15, 0.4);
+}
+
+/* Wood desk texture */
+.desk-surface {
+  background-color: #17110D;
+  background-image:
+    radial-gradient(ellipse at 20% 15%, rgba(185, 154, 99, 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 85%, rgba(73, 50, 31, 0.3) 0%, transparent 50%),
+    linear-gradient(135deg, #1c1510 0%, #17110d 50%, #100b08 100%);
+}
+
+/* Ink bleed text styling */
+.text-ink {
+  color: #24190F;
+  text-shadow: 0 0 0.5px rgba(36, 25, 15, 0.6);
 }
 
 /* Respect user's motion preferences */

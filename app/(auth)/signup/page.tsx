@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { User, Mail, Lock, AtSign, ArrowRight, AlertCircle, Check, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { EnchantedDesk } from "@/components/enchanted/EnchantedDesk";
+import { Parchment } from "@/components/enchanted/Parchment";
+import { FeatherQuill } from "@/components/enchanted/FeatherQuill";
+import { Inkpot } from "@/components/enchanted/Inkpot";
+import { InkButton } from "@/components/enchanted/InkButton";
+import { HandwrittenInput } from "@/components/enchanted/HandwrittenInput";
 import { validateUsername } from "@/lib/validation/username";
+import { journalAudio } from "@/lib/audio/journalAudio";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,8 +20,10 @@ export default function SignupPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registeredName, setRegisteredName] = useState<string | null>(null);
 
   const [usernameStatus, setUsernameStatus] = useState<{
     checking: boolean;
@@ -40,12 +47,18 @@ export default function SignupPage() {
     setUsernameStatus({ checking: true });
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/profile/check-username?username=${encodeURIComponent(val.cleanUsername || "")}`);
+        const res = await fetch(
+          `/api/profile/check-username?username=${encodeURIComponent(val.cleanUsername || "")}`
+        );
         const data = await res.json();
         if (data.available) {
           setUsernameStatus({ checking: false, available: true });
         } else {
-          setUsernameStatus({ checking: false, available: false, error: data.error || "Username is unavailable." });
+          setUsernameStatus({
+            checking: false,
+            available: false,
+            error: data.error || "This pseudonym is already claimed.",
+          });
         }
       } catch {
         setUsernameStatus({ checking: false });
@@ -59,15 +72,22 @@ export default function SignupPage() {
     e.preventDefault();
     setError("");
 
+    if (password !== confirmPassword) {
+      setError("The ciphers do not match. Please verify both passwords.");
+      journalAudio.playQuillScratch();
+      return;
+    }
+
     const val = validateUsername(username);
     if (!val.valid) {
-      setError(val.error || "Please choose a valid username.");
+      setError(val.error || "Please choose a valid author handle.");
       return;
     }
 
     setLoading(true);
 
     try {
+      journalAudio.playPaperTurn();
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,11 +102,16 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Failed to create account.");
+        setError(data.error || "The ink failed to bind. Please check your details.");
         setLoading(false);
         return;
       }
 
+      // Success animation state
+      setRegisteredName(name.trim());
+      journalAudio.playMagicalUnseal();
+
+      // Sign in automatically
       const authRes = await signIn("credentials", {
         email: email.trim().toLowerCase(),
         password,
@@ -94,149 +119,174 @@ export default function SignupPage() {
         callbackUrl: "/",
       });
 
-      if (authRes?.error) {
-        router.push("/login");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
+      setTimeout(() => {
+        if (authRes?.error) {
+          router.push("/login");
+        } else {
+          router.push("/");
+          router.refresh();
+        }
+      }, 1500);
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("An unexpected enchantment failed. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center py-16 px-4 bg-background">
-      <div className="max-w-md w-full space-y-8 bg-card p-8 sm:p-10 rounded-sm border border-border shadow-xs">
-        <div className="text-center space-y-3">
-          <Link href="/" className="inline-flex flex-col items-center group">
-            <div className="relative w-12 h-12 rounded-sm overflow-hidden border border-border mb-3 bg-foreground flex items-center justify-center">
-              <Image
-                src="/emblem.png"
-                alt="ThePathak Logo"
-                fill
-                sizes="96px"
-                className="object-contain p-1 invert dark:invert-0"
-                priority
-                unoptimized
-              />
+    <EnchantedDesk>
+      <div className="w-full py-6 sm:py-10">
+        <Parchment variant="fresh">
+          {registeredName ? (
+            /* Registration Success Reveal */
+            <div className="text-center space-y-6 py-12 sm:py-16 animate-fadeIn">
+              <span className="text-xs font-serif tracking-widest uppercase text-[#8C6745]">
+                A New Story Begins
+              </span>
+              <h2 className="font-manuscript text-3xl sm:text-5xl text-ink leading-tight">
+                Your first page awaits,{" "}
+                <span className="font-handwritten text-4xl sm:text-6xl text-[#17110D]">
+                  {registeredName}
+                </span>
+                .
+              </h2>
+              <p className="font-cormorant text-xl text-[#49321F]/90 italic">
+                Binding your name into the enchanted archive...
+              </p>
             </div>
-            <span className="font-serif-editorial text-2xl font-semibold tracking-tight text-foreground">
-              ThePathak<span className="text-blue-600 dark:text-blue-400">.tech</span>
-            </span>
-          </Link>
-          <h2 className="text-lg font-medium text-foreground">Create a reader account</h2>
-          <p className="text-xs text-muted-foreground">
-            Choose your permanent unique handle to join discussions and track your reading.
-          </p>
-        </div>
+          ) : (
+            <div className="w-full max-w-lg mx-auto space-y-6">
+              {/* Fresh Page Masthead */}
+              <div className="text-center space-y-3 pb-2 border-b border-[#8C6745]/25">
+                <Link
+                  href="/"
+                  className="inline-block font-serif text-xs tracking-widest uppercase text-[#8C6745] hover:text-[#49321F] transition-colors"
+                >
+                  ThePathak.tech • Write Your First Page
+                </Link>
+                <h1 className="font-manuscript text-3xl sm:text-4xl text-ink leading-tight">
+                  Every journal needs an author.
+                </h1>
+                <p className="font-cormorant text-lg sm:text-xl text-[#49321F]/90 italic">
+                  Let&apos;s put a name to the thoughts waiting to be written.
+                </p>
+              </div>
 
-        {error && (
-          <div className="flex items-center space-x-2 p-3 rounded-sm bg-destructive/10 text-destructive text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
+              {/* Error Annotation */}
+              {error && (
+                <div className="p-3 text-center rounded-xs bg-[#8a1c14]/10 border border-[#8a1c14]/30 animate-fadeIn">
+                  <p className="font-handwritten text-lg sm:text-xl text-[#8a1c14] tracking-wide">
+                    {error}
+                  </p>
+                </div>
+              )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">Full Name</label>
-            <div className="relative">
-              <User className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your Name"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-              />
-            </div>
-          </div>
+              {/* Manuscript Signup Fields */}
+              <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+                <HandwrittenInput
+                  label="Full Name"
+                  type="text"
+                  required
+                  autoFocus
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Leonardo da Vinci"
+                  autoComplete="name"
+                />
 
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-foreground">Username Handle</label>
-              <span className="text-[10px] text-muted-foreground">{username.length}/30</span>
-            </div>
-            <div className="relative">
-              <AtSign className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-              <input
-                type="text"
-                required
-                maxLength={30}
-                value={username}
-                onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
-                placeholder="handle"
-                className="w-full pl-9 pr-9 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground font-mono"
-              />
-              <div className="absolute right-3 top-3">
-                {usernameStatus.checking && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
-                {!usernameStatus.checking && usernameStatus.available && (
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                )}
-                {!usernameStatus.checking && usernameStatus.error && (
-                  <AlertCircle className="w-3.5 h-3.5 text-destructive" />
-                )}
+                <div className="space-y-1">
+                  <HandwrittenInput
+                    label="Author Handle / Pseudonym"
+                    type="text"
+                    required
+                    maxLength={30}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().trim())}
+                    placeholder="handle"
+                    autoComplete="username"
+                    error={usernameStatus.error}
+                    hint="thepathak.tech/@yourhandle"
+                  />
+                  {usernameStatus.available && (
+                    <p className="font-handwritten text-sm text-[#2d6a4f] italic">
+                      This name is free to claim.
+                    </p>
+                  )}
+                </div>
+
+                <HandwrittenInput
+                  label="Email Address"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="author@domain.com"
+                  autoComplete="email"
+                />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <HandwrittenInput
+                    label="Password"
+                    type="password"
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                  />
+                  <HandwrittenInput
+                    label="Confirm Password"
+                    type="password"
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                  />
+                </div>
+
+                {/* Create Journal Action Button */}
+                <div className="text-center pt-4">
+                  <InkButton
+                    type="submit"
+                    loading={loading}
+                    disabled={loading || Boolean(usernameStatus.error)}
+                    className="w-full sm:w-auto"
+                  >
+                    {loading ? "Binding Your Journal..." : "CREATE MY JOURNAL"}
+                  </InkButton>
+                </div>
+              </form>
+
+              {/* Navigation Footer */}
+              <div className="pt-6 border-t border-[#8C6745]/20 flex flex-col sm:flex-row items-center justify-between text-xs font-serif text-[#49321F] gap-3">
+                <Link
+                  href="/login"
+                  className="hover:text-[#24190F] underline decoration-[#8C6745]/40 hover:decoration-[#24190F] transition-all"
+                >
+                  Already have an account? Sign In.
+                </Link>
+                <Link
+                  href="/"
+                  className="text-[#8C6745] hover:text-[#24190F] transition-colors"
+                >
+                  ← Back to the Journal
+                </Link>
+              </div>
+
+              {/* Bottom Decorative Physical Objects */}
+              <div className="flex items-center justify-between pt-4 px-2 opacity-80">
+                <Inkpot className="scale-75 origin-bottom-left" />
+                <div className="rotate-45 scale-75 origin-bottom-right">
+                  <FeatherQuill state="resting" interactive={false} />
+                </div>
               </div>
             </div>
-            {usernameStatus.error && (
-              <p className="text-[11px] text-destructive mt-1">{usernameStatus.error}</p>
-            )}
-            <p className="text-[10px] text-muted-foreground">
-              thepathak.tech/{username || "handle"}
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">Email Address</label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-foreground">Password</label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || (usernameStatus.error ? true : false)}
-            className="w-full py-2.5 rounded-sm bg-foreground text-background font-medium text-xs transition-opacity hover:opacity-90 flex items-center justify-center space-x-2 disabled:opacity-50"
-          >
-            <span>{loading ? "Creating account..." : "Create Account"}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </form>
-
-        <div className="text-center text-xs text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="text-foreground font-medium underline">
-            Sign in
-          </Link>
-        </div>
+          )}
+        </Parchment>
       </div>
-    </main>
+    </EnchantedDesk>
   );
 }

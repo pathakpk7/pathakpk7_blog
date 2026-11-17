@@ -1,14 +1,18 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import Image from "next/image";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, Mail, ArrowRight, AlertCircle } from "lucide-react";
+import { EnchantedDesk } from "@/components/enchanted/EnchantedDesk";
+import { Parchment } from "@/components/enchanted/Parchment";
+import { FeatherQuill } from "@/components/enchanted/FeatherQuill";
+import { Inkpot } from "@/components/enchanted/Inkpot";
+import { InkButton } from "@/components/enchanted/InkButton";
+import { HandwrittenInput } from "@/components/enchanted/HandwrittenInput";
+import { journalAudio } from "@/lib/audio/journalAudio";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const explicitCallback = searchParams.get("callbackUrl");
 
@@ -16,16 +20,19 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setForgotMessage(false);
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
     const targetUrl = explicitCallback || "/";
 
     try {
+      journalAudio.playPaperTurn();
       const res = await signIn("credentials", {
         email: cleanEmail,
         password,
@@ -34,96 +41,121 @@ function LoginForm() {
       });
 
       if (res?.error) {
-        setError("Invalid email or password credentials.");
+        setError("The ink doesn't recognize these credentials. Try again.");
+        journalAudio.playQuillScratch();
       } else {
+        journalAudio.playMagicalUnseal();
         window.location.href = targetUrl;
         return;
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError("The quill faltered in transmission. Please try once more.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-card p-8 sm:p-10 rounded-sm border border-border shadow-xs">
-      <div className="text-center space-y-3">
-        <Link href="/" className="inline-flex flex-col items-center group">
-          <div className="relative w-12 h-12 rounded-sm overflow-hidden border border-border mb-3 bg-foreground flex items-center justify-center">
-            <Image
-              src="/emblem.png"
-              alt="ThePathak Logo"
-              fill
-              sizes="96px"
-              className="object-contain p-1 invert dark:invert-0"
-              priority
-              unoptimized
-            />
-          </div>
-          <span className="font-serif-editorial text-2xl font-semibold tracking-tight text-foreground">
-            ThePathak<span className="text-blue-600 dark:text-blue-400">.tech</span>
-          </span>
+    <div className="w-full max-w-lg mx-auto space-y-6">
+      {/* Manuscript Masthead */}
+      <div className="text-center space-y-3 pb-2 border-b border-[#8C6745]/25">
+        <Link
+          href="/"
+          className="inline-block font-serif text-xs tracking-widest uppercase text-[#8C6745] hover:text-[#49321F] transition-colors"
+        >
+          ThePathak.tech • The Returning Scribe
         </Link>
-        <h2 className="text-lg font-medium text-foreground">Sign in to your account</h2>
-        <p className="text-xs text-muted-foreground">
-          Access your library, reading history, comments, and writer tools.
+        <h1 className="font-manuscript text-3xl sm:text-4xl text-ink leading-tight">
+          Your story continues...
+        </h1>
+        <p className="font-cormorant text-lg sm:text-xl text-[#49321F]/90 italic">
+          Some pages are meant to be revisited.
         </p>
       </div>
 
+      {/* Handwritten Error Annotation */}
       {error && (
-        <div className="flex items-center space-x-2 p-3 rounded-sm bg-destructive/10 text-destructive text-xs">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
+        <div className="p-3 text-center rounded-xs bg-[#8a1c14]/10 border border-[#8a1c14]/30 animate-fadeIn">
+          <p className="font-handwritten text-lg sm:text-xl text-[#8a1c14] tracking-wide">
+            {error}
+          </p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-foreground">Email Address</label>
-          <div className="relative">
-            <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-            />
+      {/* Form Fields as Manuscript Lines */}
+      <form onSubmit={handleSubmit} className="space-y-6 pt-2">
+        <HandwrittenInput
+          label="Email Address"
+          type="email"
+          required
+          autoFocus
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="scribe@domain.com"
+          autoComplete="email"
+        />
+
+        <div className="space-y-1">
+          <HandwrittenInput
+            label="Password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••••••"
+            autoComplete="current-password"
+          />
+          <div className="flex justify-end pt-0.5">
+            <button
+              type="button"
+              onClick={() => setForgotMessage(!forgotMessage)}
+              className="text-xs font-serif text-[#8C6745] hover:text-[#24190F] italic transition-colors cursor-pointer"
+            >
+              Forgotten your cipher?
+            </button>
           </div>
+          {forgotMessage && (
+            <p className="font-handwritten text-sm text-[#49321F] italic text-right pt-1">
+              Contact the archivist at editorial@thepathak.tech to reset your key.
+            </p>
+          )}
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-medium text-foreground">Password</label>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-3" />
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-sm bg-secondary/50 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground"
-            />
-          </div>
+        {/* Unseal Journal Button */}
+        <div className="text-center pt-4">
+          <InkButton
+            type="submit"
+            loading={loading}
+            disabled={loading || !email.trim() || !password}
+            className="w-full sm:w-auto"
+          >
+            {loading ? "Verifying the Seal..." : "UNSEAL MY JOURNAL"}
+          </InkButton>
         </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2.5 rounded-sm bg-foreground text-background font-medium text-xs transition-opacity hover:opacity-90 flex items-center justify-center space-x-2 disabled:opacity-50"
-        >
-          <span>{loading ? "Authenticating..." : "Sign In"}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
       </form>
 
-      <div className="text-center text-xs text-muted-foreground">
-        Don&apos;t have an account yet?{" "}
-        <Link href="/signup" className="text-foreground font-medium underline">
-          Create an account
+      {/* Navigation Footer */}
+      <div className="pt-6 border-t border-[#8C6745]/20 flex flex-col sm:flex-row items-center justify-between text-xs font-serif text-[#49321F] gap-3">
+        <Link
+          href="/signup"
+          className="hover:text-[#24190F] underline decoration-[#8C6745]/40 hover:decoration-[#24190F] transition-all"
+        >
+          Don&apos;t have an account? Create one.
         </Link>
+        <Link
+          href="/"
+          className="text-[#8C6745] hover:text-[#24190F] transition-colors"
+        >
+          ← Back to the Journal
+        </Link>
+      </div>
+
+      {/* Physical Writing Elements at Bottom of Parchment */}
+      <div className="flex items-center justify-between pt-4 px-2 opacity-80">
+        <Inkpot className="scale-75 origin-bottom-left" />
+        <div className="rotate-45 scale-75 origin-bottom-right">
+          <FeatherQuill state="resting" interactive={false} />
+        </div>
       </div>
     </div>
   );
@@ -131,10 +163,20 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center py-16 px-4 bg-background">
-      <Suspense fallback={<div className="max-w-md w-full p-8 rounded-sm bg-card border border-border text-center text-xs text-muted-foreground">Loading...</div>}>
-        <LoginForm />
-      </Suspense>
-    </main>
+    <EnchantedDesk>
+      <div className="w-full py-6 sm:py-10">
+        <Parchment variant="aged">
+          <Suspense
+            fallback={
+              <div className="py-20 text-center font-handwritten text-2xl text-[#49321F] animate-pulse">
+                Preparing the parchment...
+              </div>
+            }
+          >
+            <LoginForm />
+          </Suspense>
+        </Parchment>
+      </div>
+    </EnchantedDesk>
   );
 }

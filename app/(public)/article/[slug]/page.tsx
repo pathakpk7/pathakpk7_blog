@@ -13,7 +13,7 @@ import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { mdxComponents } from "@/components/mdx/MdxComponents";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -136,19 +136,6 @@ async function getRelatedPosts(section: string, currentPostId: string) {
   });
 }
 
-export async function generateStaticParams() {
-  try {
-    const posts = await db.post.findMany({
-      where: { status: "PUBLISHED" },
-      select: { slug: true },
-      take: 30,
-      orderBy: { publishedAt: "desc" },
-    });
-    return posts.map((post) => ({ slug: post.slug }));
-  } catch {
-    return [];
-  }
-}
 
 async function renderArticleContent(content: string, isCreative: boolean, isQuote: boolean = false) {
   if (!content) return null;

@@ -3,13 +3,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { Search, Menu, X, BookOpen, PenTool, LogOut, Home, Settings, User } from "lucide-react";
+import { Search, Menu, X, BookOpen, PenTool, LogOut, Home, Settings, User, Feather } from "lucide-react";
 import { Navigation } from "./Navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useSession, signOut } from "next-auth/react";
 import { getSafeAvatarUrl } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useJournal } from "@/components/enchanted/JournalContext";
 
 interface HeaderProps {
   onOpenSearch?: () => void;
@@ -18,6 +19,7 @@ interface HeaderProps {
 export function Header({ onOpenSearch }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: session } = useSession();
+  const { closeJournal } = useJournal();
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const userEmail = session?.user?.email?.toLowerCase();
@@ -102,6 +104,22 @@ export function Header({ onOpenSearch }: HeaderProps) {
                 <kbd className="hidden lg:inline text-[10px] bg-background px-1.5 py-0.5 rounded-xs border border-border text-muted-foreground font-mono">
                   ⌘K
                 </kbd>
+              </button>
+
+              {/* Return to the Enchanted Desk */}
+              <button
+                type="button"
+                onClick={() => {
+                  closeJournal();
+                  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+                    window.location.href = "/?desk=true";
+                  }
+                }}
+                className="p-2 text-amber-700/80 dark:text-amber-400/80 hover:text-amber-900 dark:hover:text-amber-200 hover:bg-amber-500/10 rounded-sm transition-colors cursor-pointer"
+                title="Return to the Enchanted Desk"
+                aria-label="Return to the Enchanted Desk"
+              >
+                <Feather className="w-4 h-4" />
               </button>
 
               {/* Theme Toggle */}
