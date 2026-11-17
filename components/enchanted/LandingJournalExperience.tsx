@@ -42,9 +42,6 @@ export function LandingJournalExperience({ onEnterJournal }: LandingJournalExper
       }
     } catch {}
   }, []);
-      setStage("intro");
-    }
-  }, []);
 
   // Track cursor position when writing on desktop
   useEffect(() => {
