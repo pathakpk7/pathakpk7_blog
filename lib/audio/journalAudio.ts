@@ -213,6 +213,32 @@ class JournalAudioSynthesizer {
       osc.stop(now + 0.15);
     } catch {}
   }
+
+  // 6. Metallic magnetic lock snap
+  public playMagneticClick(): void {
+    if (!this.isEnabled) return;
+    const ctx = this.initContext();
+    if (!ctx) return;
+
+    try {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1900, now);
+      osc.frequency.exponentialRampToValueAtTime(320, now + 0.045);
+
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } catch {}
+  }
 }
 
 export const journalAudio = new JournalAudioSynthesizer();

@@ -146,11 +146,29 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
 
   if (sectionConfig) {
     const isCreative = normalizedSection === "creative";
+
+    const SECTION_ALIAS_MAP: Record<string, string[]> = {
+      technology: ["technology", "tech", "technology & ai", "technology-ai", "ai"],
+      science: ["science", "space", "science & space", "science-space", "astrophysics"],
+      coding: ["coding", "code", "architecture", "coding & architecture", "coding-architecture", "coding & walkthroughs"],
+      ideas: ["ideas", "essays", "essay", "ideas & essays", "ideas-essays"],
+      creative: ["creative", "poems", "poem", "poetry", "creative & poems", "creative-poems", "shayari", "quotes"],
+      notes: ["notes", "musings", "notes & musings", "notes-musings"],
+    };
+
+    const aliases = SECTION_ALIAS_MAP[normalizedSection] || [normalizedSection];
+    const sectionMatchFilters = [
+      { section: { equals: normalizedSection, mode: "insensitive" as const } },
+      { section: { contains: normalizedSection, mode: "insensitive" as const } },
+      { category: { slug: { equals: normalizedSection, mode: "insensitive" as const } } },
+      { category: { name: { contains: normalizedSection, mode: "insensitive" as const } } },
+      ...aliases.map((a) => ({ section: { equals: a, mode: "insensitive" as const } })),
+      ...aliases.map((a) => ({ section: { contains: a, mode: "insensitive" as const } })),
+      ...aliases.map((a) => ({ category: { slug: { equals: a, mode: "insensitive" as const } } })),
+    ];
+
     const whereClause: any = {
-      section: {
-        equals: normalizedSection,
-        mode: "insensitive",
-      },
+      OR: sectionMatchFilters,
       status: "PUBLISHED",
     };
     if (typeFilter) {
@@ -179,10 +197,7 @@ export default async function SectionOrProfilePage({ params, searchParams }: Sec
       }),
       db.post.findMany({
         where: {
-          section: {
-            equals: normalizedSection,
-            mode: "insensitive",
-          },
+          OR: sectionMatchFilters,
           status: "PUBLISHED",
         },
         select: {
